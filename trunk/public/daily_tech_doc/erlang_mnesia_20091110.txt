@@ -12,7 +12,7 @@
 
 2. 初始和创建数据库, 删除数据库(基于一个节点)
 <1> 启动Erlang的时候指定一个mnesia的数据库路径.
-erl -sname node1 mnesia dir '"/home/woomsgadmin/mnesia.node1"'
+erl -sname node1 -mnesia dir '"/home/woomsgadmin/mnesia.node1"'
 <2> 创建数据库, 在当前节点创建一个数据库
 mnesia:create_schema([node()]).
 mnesia:start()
