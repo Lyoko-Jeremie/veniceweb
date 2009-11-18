@@ -1,0 +1,71 @@
+Simple Metaprogramming for Erlang
+
+smerl
+主要的作用是动态的创建一个模块，或者修改一个已经存在的模块.增加函数，删除函数等等.
+
+主要涉及两种数据类型:
+func_form() - The abstract form for the function
+meta_mod() - A data structure holding the abstract representation for a module
+
+1. 使用smerl的一个入门的例子:
+我们创建一个新的module,并未这个module增加一个函数.
+
+M1 =  smerl:new(foo).
+{meta_mod,foo,undefined,[],[],false}
+{ok, M2} = smerl:add_func(M1, "test() -> 1 + 1.").
+{ok,{meta_mod,foo,undefined,
+              [{test,0}],
+              [{function,1,test,0,
+                         [{clause,1,[],[],
+                                  [{op,1,'+',{integer,1,1},{integer,1,1}}]}]}],
+              false}}
+smerl:compile(M2).
+ok
+foo:test().
+
+同样，我们也可以使用以下语法来为一个module增加一个函数：
+{ok,M2} = smerl:add_func(M1, {function,1,bar,0,
+                              [{clause,1,[],[],
+                                [{op,1,'+',{integer,1,1},{integer,1,1}}]}]).
+
+2. 我们修改一个已经存在的module. (使用 - smerl:for_module/1)
+假设已经存在一个模块:
+
+-module(test).
+-export([hello/0]).
+hello() ->
+    io:format("hello~n").
+
+我们进行修改这个模块:
+{ok, M1} = smerl:for_module(test).
+{ok,{meta_mod,test,"c:/erlang/src/test.erl",
+        [{hello,0}],
+        [{function,3,hello,0,
+             [{clause,3,[],[],
+                  [{call,4,
+                       {remote,4,{atom,4,io},{atom,4,...}},
+                       [{string,4,"hello~n"}]}]}]}],
+        false}}
+{ok, M2} = smerl:add_func(M1, "hellonew() -> 1 + 2.").
+{ok,{meta_mod,test,"c:/erlang/src/test.erl",
+        [{hellonew,0},{hello,0}],
+        [{function,1,hellonew,0,
+             [{clause,1,[],[],[{op,1,'+',{integer,1,1},{integer,1,2}}]}]},
+         {function,3,hello,0,
+             [{clause,3,[],[],
+                  [{call,4,
+                       {remote,4,{atom,4,...},{atom,...}},
+                       [{string,4,[...]}]}]}]}],
+        false}}
+smerl:compile(M2).
+ok
+test:hellonew().
+3
+test:hello().   
+hello
+
+
+3. 小技巧:
+io:parse_erl_form(".").之后会出现一个小shell,在这个shell中输入函数，可以获得函数的abstract form
+
+其实相当于 erl_scan:string/1,和erl_parse:parse_form的组合.
