@@ -1,0 +1,325 @@
+简单介绍Mnesia
+
+1. Mnesia表的存储位置:
+可以把数据存储在内存中, 可以存储在磁盘上, 也可以同时存储在内存和磁盘上，
+可以在不同机器上建立同一份数据的多个副本.
+
+对于存储在内存表中的数据，如果系统崩溃，则数据会丢失.如果物理内存不够大，操作系统会使用虚拟内存，这意味着内存-磁盘的数据换页操作(swap或者page操作)，会导致性能急剧恶化.
+
+基于日志的磁盘表:
+对于磁盘表来说，每次"成功提交"一次Mnesia事物，其底层的实现方式是这样的，它会先将数据写到一个日志中，这个日志会保持增长，每隔一段时间，会把日志中的数据同步到表中，并清除掉日志中的条目。
+如果系统崩溃了，会先检查这个日志，先将尚未写入的数据同步到数据库，然后才开放数据库服务.
+
+2. 初始和创建数据库, 删除数据库(基于一个节点)
+<1> 启动Erlang的时候指定一个mnesia的数据库路径.
+erl -sname node1 mnesia dir '"/home/woomsgadmin/mnesia.node1"'
+<2> 创建数据库, 在当前节点创建一个数据库
+mnesia:create_schema([node()]).
+mnesia:start()
+
+<3> 删除数据库, 删除当前节点的数据库, 必须先停止
+mnesia:stop()
+mnesia:delete_schema([node()]).
+
+3. 创建表和删除表:
+(创建表格以后可以调用mnesia:info()来查看数据库当前状态)
+mnesia:create_table(Name, Args)
+mnesia:delete_table(Name)
+mnesia:clear_table(Name)
+
+Name:atom()
+Args:
+ {type, Type} -> set, ordered_set, bag
+ {disc_copies, NodeList} - 磁盘 + 内存
+ {ram_copies, NodeList}  - 内存
+ {disc_only_copies}      - 磁盘
+ {attributes, AtomList}  
+ {attributes, record_info(fields, myrecord)} 
+
+mnesia:create_table(shop, [{type, set}, 
+                           {disc_copies, [node()]}, 
+                           {attributes, [name, price]}]).
+或者:
+-record(shop, {name, price}).
+mnesia:create_table(shop, [{type, set}, 
+                           {disc_copies, [node()]}, 
+                           {attributes, record_info(fields, shop)}]).
+
+delete_table/1会永久删除这个表格的所有备份.
+clear_table/1删除这个表格所有备份中的所有数据.
+
+4. mnesia:wait_for_table(TableList, Timeout)
+等待所有的表格都确认可以访问.
+
+5. 写入数据的两种方式: 
+dirty和transaction, 可以直接写入，也可以写入一条记录，直接写入的时候，tuple的第一项是表名.
+
+表结构如下: 
+-record(user, {id, username, age})
+<1> 直接写入:
+Huangwei = #user{id=2, username="huangwei", age=27},
+mnesia:dirty_write({user, 1, "liqiang", 29}),
+mnesia:dirty_write(Huangwei).                     %% 可以写入一条记录
+
+<2> 通过事务写入:
+Huangwei = #user{id=2, username="huangwei", age=27},
+F = fun() ->
+	   mnesia:write({user, 1, "liqiang", 20}), %% 不能直接调用, 必须在事务中执行，否则出错.
+           mnesia:write(Huangwei)
+    end,
+mnesia:transaction(F).
+
+6. 删除数据的两种方式:
+dirty和transaction, 可以按照key(表格tuple结构中的第一项)删除, 也可以按照record来删除.
+
+<1> 直接删除
+mnesia:dirty_delete({user, 1})
+mnesia:dirty_delete_object({user, 2, "huangwei", 27})
+
+<2> 通过事务删除
+F = fun() ->
+	   mnesia:delete({user, 1}),
+	   mnesia:delete_object({user, 2, "huangwei", 27})
+    end,
+mnesia:transaction(F).
+
+7. 读取整条数据:
+dirty和transaction, 通过key(表格tuple结构中的第一项)来读取.
+返回的值是ValueList:
+[{user, 1, "liqiang", 20}]
+
+<1> 直接读取
+mnesia:dirty_read({user, 1})
+
+<2> 通过事务读取
+F = fun() ->
+	   mnesia:read({user, 1}).
+    end,
+mnesia:transaction(F).
+
+8. 使用QLC - 查询列表解析来选取数据
+这个工具非常类似于SQL查询语句的方式查询数据库中的内容, 
+使用的时候必须包含这个hrl文件:
+/usr/local/lib/erlang/lib/stdlib-1.16.2/include/qlc.hrl
+
+执行流程分三步:
+Query = qlc:q(XXXX),
+F = fun() ->
+	   qlc:e(Query)
+    end,
+mnesia:transaction(F).
+
+<1> 选取数据: 
+SELECT * FROM user
+Query = qlc:q([X || X <- mnesia:table(user)]).
+<2> 条件查询: 
+SELECT id, username FROM user
+Query = qlc:q([X#user.id, X#user.username || X <- mnesia:table(user)]).
+SELECT id, username FROM user WHERE id < 30
+Query = qlc:q([X#user.id, X#user.username || X <- mnesia:table(user), 
+                                             X#user.id < 30]).
+<3> 关联查询:
+-record(shop, {item, quantity, cost})
+-record(cost, {name, price})
+SELECT shop.item, shop.quantity, cost.name, cost.price 
+  FROM shop, cost
+  WHERE shop.item = cost.name
+    AND cost.price < 2
+    AND shop.quantity < 250
+Query = qlc:q([X#shop.item, X#shop.quantity, Y#cost.name, Y#cost.price || X <- mnesia:table(shop),
+                                                                          Y <- mnesia:table(cost),
+                                                                          X#shop.item =:= Y#cost.name,
+                                                                          Y#cost.price < 2,
+                                                                          X#shop.quantity < 250 ]).
+
+9. 使用mnesia:select来代替QLC的查询.
+这个通常带来比QLC更快的响应速度, 但是查询语法没有QLC简洁, 详细的语法参考: ERTS User's Guide
+http://www.erlang.org/doc/apps/erts/part_frame.html
+
+(mnesia:select必须在mnesia:transaction中执行, 可以使用mnesia:dirty_select/2直接执行.)
+
+mneisa:select(Tab, [MatchSpec], [, Lock]). (最后一项Lock是可选的)
+MatchSpec = [MatchFunction]
+Function = {MatchHead, [Guard], [Result]}
+MatchHead = tuple() | record()
+如果成功返回结果列表.
+
+
+例如:
+<1>SELECT id, username FROM user
+F = fun() ->
+           MatchHead = #user{id = '$1', username = '$2', _ = '_'},
+	   Guard = [],
+	   Result = ['$1','$2'],
+	   mnesia:select(user, [{MetchHead, Guard, Result}])
+    end,
+mnesia:transaction(F).
+
+<2>SELECT id, username FROM user WHERE id < 30
+
+F = fun() ->
+	   MatchHead = #user{id = '$1', username = '$2', _ = '_'},
+	   Guard = [{'<', '$1', 30}],
+	   Result = ['$1','$2'],
+	   mnesia:select(user, [{MetchHead, Guard, Result}])
+    end, 
+mnesia:transaction(F).
+
+
+10. 表格中保存复杂的数据:
+表格中可以是任意的复杂数据，类型不限，同一张表中的数据格式也没有严格限制. 例如:
+-record(design, {id, plan}).
+D1 = design#{id = {liqiang, 1},
+             plan = {circle, 10}},
+D2 = design#{id = huangwei,
+             plan = [{doors, 3}, {windows, 4}, {rooms, 2}]},
+F = fun() ->
+           mnesia:write(D1),
+           mnesia:write(D2)
+    end,
+mnesia:transaction(F).
+
+11. 补充:
+<1> 关于schema
+schema是一个特殊的表，它包含了表名、每个表的存储类型（表应该存储为RAM、硬盘或两者）以及表的位置等信息
+不像数据表，schema表里包含的信息只能通过schema相关的方法来访问和修改.
+
+我们使用mnesia:create_schema(NodeList)来创建一个新的空的schema, Mnesia是一个完全分布的DBMS，而schema是一个系统表，
+它备份到Mnesia系统的所有节点上如果NodeList中某一个节点已经有schema，则该方法会失败. 也就是应用程序只需调用该方法一次，
+因为通常只需要初始化数据库schema一次.
+
+mnesia:delete_schema(DiscNodeList)该方法在DiscNodeList节点上擦除旧的schema，它也删除所有的旧table和数据
+该方法需要所有节点上的Mnesia都停止后才执行.
+
+<2> 如果我们不调用mnesia:cretae_schema(NodeList)会怎样?
+如果我们不调用，可以使用内存表, 但是不能使用磁盘表, 而且内存表在mnesia:stop()之后所有的数据包括表结构会丢失.
+如果我们创建了schema, 使用内存表的时候，数据会丢失，但表结构不会仍然保存，也就是我们下次在启动的时候，内存表的
+表结构也会自动加载进来.
+
+例子a - 不创建schema使用内存表:
+mnesia:start().
+ok
+尝试创建磁盘表，出错, 因为我们没有创建schema.
+mnesia:create_table(user, [{disc_copies, [node()]}, {attributes, [id, username, age]}]).
+{aborted,{bad_type,user,disc_copies,'node1@liqiang-tfs'}}
+创建内存表，成功
+mnesia:create_table(user, [{ram_copies, [node()]}, {attributes, [id, username, age]}]). 
+{atomic,ok}
+写入和读取数据， 成功
+mnesia:dirty_write({user, 1, liqiang, 24}).
+ok
+mnesia:dirty_read({user, 1}).              
+[{user,1,liqiang,24}]
+停止mnesia, 再次启动，尝试写入数据到user表和从user表中读取数据，都失败了, 因为没有schema记录表的信息，所以调用
+mnesia:stop/0之后，所有的数据，包括表结构都丢失了.
+mnesia:stop().
+
+=INFO REPORT==== 13-Nov-2009::14:10:43 ===
+    application: mnesia
+    exited: stopped
+    type: temporary
+stopped
+mnesia:start().              
+ok
+mnesia:dirty_read({user, 1}).
+** exception exit: {aborted,{no_exists,[user,1]}}
+     in function  mnesia:abort/1
+mnesia:dirty_write({user, 1, liqiang, 24}).
+** exception exit: {aborted,{no_exists,user}}
+     in function  mnesia:abort/1
+
+例子b - 创建schema使用内存表:
+创建内存表, 写入和读取数据
+mnesia:create_schema([node()]).
+ok
+mnesia:start().
+ok
+mnesia:create_table(user, [{ram_copies, [node()]}, {attributes, [id, username, age]}]).
+{atomic,ok}
+mnesia:dirty_write({user, 1, liqiang, 23}).
+ok
+mnesia:dirty_read({user, 1}).
+[{user,1,liqiang,23}]
+停止mnesia, 再次启动，然后读取user中的数据，丢失，但是尝试再次写入数据到user表中，成功，读取数据，成功，
+说明内存表结构在mnesia重启后自动加载.
+
+mnesia:stop().                             
+
+=INFO REPORT==== 13-Nov-2009::14:14:44 ===
+    application: mnesia
+    exited: stopped
+    type: temporary
+stopped
+mnesia:start().                                           
+ok                           
+mnesia:dirty_read({user, 1}).
+[]
+mnesia:dirty_write({user, 1, liqiang, 23})
+ok
+mnesia:dirty_read({user, 1}).
+[{user,1,liqiang,23}]
+
+<3> 数据模型
+Mnesia的数据库数据由record组成，record由tuple表示
+record的第一个元素是record名，第二个元素是表的key，前两个元素组成的tuple称为oid 
+所以，在下面的记录生成的表格中, {user, id}称为oid.
+
+-record(user, {id, username, age})
+mnesia:dirty_write({user, 1, liqiang, 24}).
+mnesia:dirty_read({user, 1}).
+
+
+12. 多个节点的表数据同步, 每个节点必须使用不同的mnesia-dir:
+(在我的测试下，如果两个节点使用相同的mnesia-dir, 在调用mnesia:start/0的时候会出错)
+erl -sname node1 -setcookie testcookie -mnesia dir '"/home/woomsgadmin/mnesia/node1"'
+erl -sname node2 -setcookie testcookie -mnesia dir '"/home/woomsgadmin/mnesia/node2"'
+erl -sname node3 -setcookie testcookie -mnesia dir '"/home/woomsgadmin/mnesia/node3"'
+
+在其中一个节点上调用, 会在三个节点对应的mnesia目录下面创建schema表.
+mnesia:create_schema([node() | nodes()]).
+在三个节点上分别调用mnesia:start(), mnesia:start/0, mnesia:stop/0是对当前节点起作用，不涉及其它节点.
+ok
+在其中一个节点上调用, 会在三个节点上创建user表.
+mnesia:create_table(user, [{disc_copies, [node() | nodes()]}, {attributes, [id, username, age]}]).
+{atomic, ok}
+在其中一个节点上写入数据, 数据会自动同步到其它节点上.
+mensia:dirty_write({user, 1, liqiang, 29})
+ok
+在任意一个节点上读取数据:
+mnesia:dirty_read({user, 1}).
+[{user, 1, liqiang, 29}]
+
+注意:
+在创建表格前，每个节点必须首先调用mnesia:start/0,否则create_table失败, 错误如下:
+mnesia:create_table(user, [{disc_copies, [node() | nodes()]}, {attributes, [id, username, age]}]).
+{aborted,{not_active,user,'node3@liqiang-tfs'}}
+
+13.
+<1> 事务的属性:原子性，隔离性，
+事务:保证事务中的操作要么在所有节点上完全原子的成功执行，要么失败并且对所有节点没有任何影响.
+同时保证数据的隔离行, 所有通过事务系统访问数据库的程序都可以当作自己是对数据有唯一访问权限的,
+也就是多个进程同时更新一个数据的时候，不用担心数据同步的问题.
+<2> 五种锁:
+不同的事务管理器使用不同的策略来满足隔离属性Mnesia使用两阶段锁（two-phase locking）标准技术
+这意味着记录在读写之前被加锁，Mnesia使用5种不同的锁
+a. 读锁
+   在record能被读取之前设置读锁
+b. 写锁
+   当事务写一条record时，首先在这条record的所有备份上设置写锁
+c. 读表锁
+   如果一个事务扫描整张表来搜索一条record，那么对表里的记录一条一条的加锁效率很低也很耗内存（如果表很大，读锁本身会消耗很多空间）
+   因此，Mnesia支持对整张表加读锁
+d. 写表锁
+   如果事务对表写入大量数据，则可以对整张表设置写锁
+e. Sticky锁
+   位于一个节点上，直到事务结束
+   当事务执行时，Mnesia使用一个策略来动态获得必要的锁
+   Mnesia自动加锁和解锁，程序员不用在代码里考虑这些操作
+   当并发进程对同样的数据操作时会出现死锁的情况
+   Mnesia使用“等待死亡（wait-die）”策略来解决这种问题
+   当某个事务尝试加锁时，如果Mnesia怀疑它可能出现死锁，那么该事务就会被强制释放所有锁并休眠一会，然后事务将被再次执行.
+
+
+
+
+

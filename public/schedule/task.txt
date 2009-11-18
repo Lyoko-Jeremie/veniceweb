@@ -1,0 +1,146 @@
+记录自己的工作任务, 完成状况:
+
+
+--------------------------
+ID#1
+Date#2009/11/11 - 2009/11/13
+State#Closed
+Description:
+总结mnesia相关的所有知识, 完成文档erlang_mnesia_20091110.txt.
+--------------------------
+
+
+--------------------------
+ID#2
+Date#2009/11/13 - 2009/11/13
+State#Closed
+Description:
+总结ETS和DETS的相关只是，完成文档erlang_dets_20091113.txt
+--------------------------
+
+--------------------------
+ID#3
+Date#2009/11/13 - 2009/11/14
+State#Closed
+Description:
+总结Erlang中的错误处理，总结文档, erlang_errorhandle_20091113.txt
+--------------------------
+
+--------------------------
+ID#4
+Date#2009/11/13 - 2009/11/15
+State#Closed
+Description:
+总结Erlang OTP中关于gen_server的主要内容
+总结文档erlang_genserver_20091113.txt
+--------------------------
+
+--------------------------
+ID#5
+Date#2009/11/15 - 2009/11/16
+State#Closed
+Description:
+总结Erlang OTP中关于gen_event的主要内容
+总结文档erlang_genevent_20091115.txt
+--------------------------
+
+--------------------------
+ID#6
+Date#2009/11/15 - 2009/11/16
+State#Closed
+Description:
+总结Erlang OTP中关于supervisor的主要内容
+总结文档erlang_supervisor_20091115.txt
+--------------------------
+
+--------------------------
+ID#7
+Date#2009/11/16
+State#Active
+Description:
+总结Erlang OTP中的error_logger的主要内容
+总结文档erlang_error_logger_config_20091116.txt
+--------------------------
+
+--------------------------
+ID#8
+Date#2009/11/16
+State#Active
+Description:
+总结Erlang OTP中的application的主要内容
+总结文档erlang_application_20091116.txt
+--------------------------
+
+--------------------------
+ID#9
+Date#2009/11/16
+State#Active
+Description:
+完成mochiweb_comet_20091106项目, 这是一个web im的雏形
+--------------------------
+
+--------------------------
+ID#10
+Date#2009/11/17
+State#Active
+Description:
+总结Erlang OTP中的gen_fsm的主要内容
+总结文档erlang_gen_fsm_20091117.txt
+--------------------------
+
+--------------------------
+ID#11
+Date#2009/11/18
+State#Active
+Description:
+完成一个基于mochiweb的文件上传的例子
+完成文档mochiweb_fileupload_20091118.txt
+--------------------------
+
+--------------------------
+ID#12
+Date#
+State#Active
+Description:
+
+--------------------------
+
+--------------------------
+ID#13
+Date#
+State#Active
+Description:
+
+--------------------------
+
+--------------------------
+ID#14
+Date#
+State#Active
+Description:
+
+--------------------------
+
+--------------------------
+ID#15
+Date#
+State#Active
+Description:
+
+--------------------------
+
+--------------------------
+ID#16
+Date#
+State#Active
+Description:
+
+--------------------------
+
+--------------------------
+ID#17
+Date#
+State#Active
+Description:
+
+--------------------------

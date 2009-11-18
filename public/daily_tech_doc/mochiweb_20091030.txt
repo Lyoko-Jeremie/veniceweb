@@ -1,0 +1,64 @@
+MochiWeb项目主页:
+http://code.google.com/p/mochiweb/
+
+
+1. 网络资源
+1.1 实战Mochiweb
+http://erlang-china.org/start/mochiweb_intro.html
+
+1.2 (译)用Mochiweb打造百万级Comet应用，第一二三部分
+http://idisc.javaeye.com/blog/267028
+http://idisc.javaeye.com/blog/270076
+http://idisc.javaeye.com/blog/273074
+(原文)
+http://www.metabrew.com/article/a-million-user-comet-application-with-mochiweb-part-1
+http://www.metabrew.com/article/a-million-user-comet-application-with-mochiweb-part-2
+http://www.metabrew.com/article/a-million-user-comet-application-with-mochiweb-part-3
+
+1.3 MochiWeb的设计
+http://www.javaeye.com/topic/348379
+
+1.4 Comet web chat(with MochiWeb)
+一个老外使用MochiWeb构造webchat的例子
+http://yoan.dosimple.ch/blog/2008/05/15/
+这篇文章的中文介绍
+http://erlang-china.org/misc/facebook_comet_in_mochiweb.html
+
+2. 安装 & Example:
+2.1 svn checkout http://mochiweb.googlecode.com/svn/trunk/ mochiweb-read-only
+2.2 进入到mochiweb的目录, 直接make.
+2.3 escript scripts/new_mochiweb.erl basicweb  (生成的新项目在当前目录的basicweb目录下)
+    escript scripts/new_mochiweb.erl basicweb /home/woomsgadmin/web (指定新项目的存放路径)
+    new_mochiweb.erl是一个escript脚本, 负责从mochiweb中拷贝使用mochiweb所必需的文件和目录，
+    形成新的项目的骨架，上面的命令生成了basicweb项目.
+
+    项目的目录结构:
+    ./basicweb/ 项目目录
+                Makefile              Make文件
+                start.sh              启动脚本
+                start-dev.sh          开发模式下的启动脚本（开启代码重载机制）
+    ./basicweb/ebin/                  编译目录
+    ./basicweb/support/               Make支持文件目录
+                   include.mk         Make包含脚本
+    ./basicweb/deps/                  依赖目录，包含mochiweb自身
+    ./basicweb/src/                   代码目录
+                   basicweb.app       OTP规范的应用定义文件
+                   Makefile           Make文件
+                   basicweb_web.erl   应用的web服务器代码
+                   basicweb_deps.erl  负责加载deps目录的代码
+                   basicweb_sup.erl   OTP规范的监控树
+                   basicweb.hrl       应用的头文件
+                   basicweb_app.erl   OTP规范的应用启动文件
+                   basicweb.erl       应用的API定义文件
+    ./basicweb/doc/                   文档目录
+    ./basicweb/include/               包含文件目录
+    ./basicweb/priv/                  项目附加目录
+    ./basicweb/priv/www/              项目附加的www目录
+                   index.html         默认的项目首页
+ 
+2.4 在新的项目中, 直接make
+2.5 ./start-dev.sh启动新的项目.      
+    
+
+
+

@@ -1,0 +1,41 @@
+1. Centos上如何启动和关闭MySQL服务？
+sudo /etc/init.d/mysqld start
+sudo /etc/init.d/mysqld stop
+
+
+2. 如何设置/修改root的密码?
+(刚安装完成后root没有密码)
+<1> mysql -u root
+    Enter password: //第一次输入密码
+<2> mysql> use mysql;
+<3> mysql> update user set password = PASSWORD('newpwd') where user = 'root';
+<4> flush privileges; // 刷新MySQL的系统权限相关表
+<5> exit
+
+3. 关与mysql.user表中的Host字段: 
+表示主机的限制, 可以限制远程用户的访问.
+如果Host = localhost, 只有本机的用户可以访问.
+    Host = %, 通配符，任意客户机的IP都可以匹配.
+
+4. 如何创建新的用户?
+以root权限进入mysql
+<1> mysql>create user user1; (会在user表中增加一条记录, 默认Host='%')
+<2> mysql>update user set Password=Password('newpwd') where User = 'user1' and Host='%'
+<3> grant all on test.* to 'user1'@'%' identified by 'pwd' (给用户赋予操作test数据库的所有权限)
+    grant [权限] on [数据库名].[表名] to ['用户名']@['服务器地址'] identified by ['密码']
+    例如:
+    grant all on *.* to 'user1'@'%' identified by 'pwd'
+    grant all on test.* to 'user1'@'localhost' identified by 'pwd'
+<4> flush privileges;
+
+5. 如何删除用户?
+以root权限进入mysql
+<1> mysql>delete from user where user = 'user1' and host = '%';
+<2> flush privileges;
+(delete删除用户记录后，需要调用flush告诉服务器重载权限表,使用grant和revoke语句的时候表会自动重载,
+ 而直接修改的时候不是，需要手动flush)
+
+6. 另外注意观察, 在权限分配的时候下面几张表的变化:
+db
+tables_priv
+columns_priv

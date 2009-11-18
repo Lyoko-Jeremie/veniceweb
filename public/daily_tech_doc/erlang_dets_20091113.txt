@@ -1,0 +1,66 @@
+对ETS和DETS的总结:
+
+1.ETS和DETS的概述:
+<1> ETS非常高效，无论你要存储多少数据，查询速度都与之无关(在某些情况下，与对数个数相关).
+<2> ETS和DETS可以被多个进程共享，这意味着可以通过这两个模块实现高效的进程间数据交换.
+<3> 表的类型有四种:set, ordered_set, bag, duplicate_bag,
+    向set表插入数据的时间是常量，而向ordered_set插入数据的时间与表的数据量的对数相关.
+    相比之下,bag比duplicate_bag使用的代价高，因为每次插入数据的时候，都要比较是否存在同样的键值.
+<4> 一个ETS表与正常的进程存储空间是分开的，它的存储区域与进程无关，但是它隶属于创建它的进程，如果
+    创建它的进程死掉了，或者调用了ets:delete(TableId), 则这个表就被删除了，ETS表不会进行垃圾回收，所以
+    不用担心大量数据的时候垃圾回收的影响.
+<5> 我们向ETS表插入数据的时候，数据会从进程栈复制到ETS表，对ETS表查询的时候，数据会从ETS表
+    复制到进程栈.
+
+2. 操作ETS和DETS表:  (创建/插入/删除/查询/关闭)
+注意:
+在操作dets表的时候使用TableName, 在操作ets表的时候使用Tid(Tid也就是创建ets表的时候产生的表格的id).
+
+创建ets:new, dets:open_file
+插入:insert(Table, Object)
+删除:delete(Table, Key)或者delete_object(Table, Object)
+查询:lookup(Table, Key)
+关闭: ets:delete(Table), dets:close(Table)
+
+<1> 操作ETS表: (创建/插入/删除/查询/关闭)
+Tid = ets:new(user, [set]).                 %% 创建一个新表，返回一个Tid.
+16397
+ets:insert(Tid, {1, liqiang, 29}).
+true
+ets:insert(Tid, {2, huangwei, 29}).
+true
+ets:lookup(Tid, 1).
+[{1,liqiang,29}]
+ets:delete(Tid, 1).                         %% 通过key删除
+true
+ets:lookup(Tid, 1).
+[]
+ets:delete_object(Tid, {2, huangwei, 29}).  %% 通过object删除
+true
+ets:lookup(Tid, 2).                       
+[]
+ets:delete(Tid).
+true
+
+<2> 操作DETS表: (创建/插入/删除/查询/关闭)
+dets:open_file(user, [{file, "c:/home/dets.data"},  %% 没有这个文件会创建一个新的文件，如果存在则直接打开.
+                      {type, set}]).
+{ok,user}
+dets:insert(user, {1, liqiang, 23}).
+ok
+dets:insert(user, {2, huangwei, 29}).
+ok
+dets:lookup(user, 1).
+[{1,liqiang,23}]
+dets:lookup(user, 2).
+[{2,huangwei,29}]
+dets:delete(user, 1).                              %% 根据key删除
+ok
+dets:delete_object(user, {2, huangwei, 29}).       %% 根据object删除.
+ok
+dets:lookup(user, 1).                       
+[]
+dets:lookup(user, 2).                       
+[]
+dets:close(user).
+ok

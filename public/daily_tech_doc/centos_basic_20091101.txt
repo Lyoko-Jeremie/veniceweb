@@ -1,0 +1,59 @@
+1. centos如何创建新用户?
+
+useradd -d /home/liqiang liqiang  (其中李强为新用户名)
+passwd liqiang                    (显式的设置密码)
+
+2. 使用sudo的时候出错:
+Username is not in the sudoers file, this incident will be reported.
+解决方式:
+<1> 进入超级用户模式
+    su - (会提示你输入密码)
+<2> 添加写文件的权限
+    chmod u+w /etc/sudoers
+<3> 编辑文件/etc/sudoers
+    找到       root      ALL=(ALL)     ALL
+    增加一行   Username  ALL=(ALL)     ALL
+<4> 撤销文件的写权限
+    chmod u-w /etc/sudoers
+<5> 切换回原来的用户
+    su - Username
+
+3. 使用sudo的时候出错:
+sudo: /etc/sudoers is mode 0640, should be 0440 
+解决方式:
+su - 进入超级用户模式
+chmod 0440 /etc/sudoers
+su - Username 切换回当前的用户
+
+4. su和sudo的区别:
+
+
+5. Centos如何开启和关闭防火墙?
+sudo /etc/rc.d/init.d/iptables stop
+sudo /etc/rc.d/init.d/iptables start
+
+6. Centos如何开启和关闭MySQL服务?
+sudo /etc/init.d/mysqld start
+sudo /etc/init.d/mysqld stop
+
+7.  如何修改linux内核使其支持更多的TCP连接?
+把下面的内容写到/etc/sysctl.conf中然后运行 /sbin/sysctl -p 使其生效。
+不需要重启，现在你的内核能够处理大量的连接了
+
+# General gigabit tuning:
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+net.ipv4.tcp_syncookies = 1
+# this gives the kernel more memory for tcp
+# which you need with many (100k+) open socket connections
+net.ipv4.tcp_mem = 50576   64768   98152
+net.core.netdev_max_backlog = 2500
+# I was also masquerading the port comet was on, you might not need this
+net.ipv4.netfilter.ip_conntrack_max = 1048576
+
+
+问题: 上面的修改只有在防火墙打开的时候会成功, 也就是 /etc/rc.d/init.d/iptables start
+的时候才成功，当我们把防火墙关掉，会产生如下错误:
+net.ipv4.netfilter.ip_conntrack_max is a unknown key

@@ -1,0 +1,2 @@
+1. 一个mochiweb文件上传的例子:
+http://jimmyg.org/blog/2007/multipart-post-with-erlang-and-mochiweb.html

@@ -1,0 +1,52 @@
+1. MYSQL的联合查询
+(SELECT A.username, B.username FROM A INNER JOIN B ON A.id = B.id)
+(SELECT A.username, B.username FROM A LEFT  JOIN B ON A.id = B.id)
+(SELECT A.username, B.username FROM A RIGHT JOIN B ON A.id = B.id)
+
+测试数据:
+tbl_a
+id username
+1, 'liqiang'
+2, 'huangwei'
+3, 'sunchen'
+4, 'wuyuehan'
+tbl_b
+id username
+3, 'user3'
+4, 'user4'
+5, 'user5'
+
+<1> 内联结
+首先可以使用(SELECT A.username, B.username FROM A, B WHERE A.id = B.id), 这个是隐式的内联结，
+例如下面语句:
+select tbl_a.id, tbl_a.username, tbl_b.username from tbl_a, tbl_b where tbl_a.id = tbl_b.id 
+实质上和下面语句作用是一样的:
+(SELECT A.username, B.username FROM A INNER JOIN B ON A.id = B.id)
+select tbl_a.id, tbl_a.username, tbl_b.username from tbl_a inner join tbl_b on tbl_a.id = tbl_b.id 
+
+结果是:
+id    username    username
+3,    'sunchen',  'user3'
+4,    'wuyuehan', 'user4'
+
+<2> 左联合
+查询得到的结果将会是保留所有tbl_a表中联结字段的记录，若无与其相对应的tbl_b表中的字段记录则留空
+select tbl_a.id, tbl_a.username, tbl_b.username from tbl_a left join tbl_b on tbl_a.id = tbl_b.id 
+
+
+结果是:
+id    username    username
+1,    'liqiang',  'NULL'
+2,    'huangwei', 'NULL'
+3,    'sunchen',  'user3'
+4,    'wuyuehan', 'user4'
+
+<3> 右联合
+查询得到的结果将会是保留所有tbl_b表中联结字段的记录，若无与其相对应的tbl_a表中的字段记录则留空
+select tbl_a.id, tbl_a.username, tbl_b.username from tbl_a right join tbl_b on tbl_a.id = tbl_b.id 
+
+结果是:
+id    username     username
+3,    'sunchen',   'user3'
+4,    'wuyuehan',  'user4'
+NULL, 'NULL',      'user5'

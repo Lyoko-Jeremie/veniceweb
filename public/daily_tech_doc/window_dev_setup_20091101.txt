@@ -1,0 +1,64 @@
+erlang
+yaws
+emacs
+mysql
+mysql-gui-tool
+svn
+
+
+<1> erlang
+http://www.erlang.org/
+下载windows binaries后直接安装
+安装完成后把erlang的bin目录添加到$PATH中.
+
+C:\Program Files\erl5.7.2\bin
+<2> yaws
+http://yaws.hyber.org/
+下载windows binaries后直接安装
+
+<3> emacs
+主页: http://www.gnu.org/software/emacs/
+下载地址: http://ftp.gnu.org/pub/gnu/emacs/windows/
+在$HOME下建立一个.emacs的文件, 使用如下的配置, 可以激活erlang mode
+(如果是administrator用户登录, 可以设置$HOME为C:\Documents and Settings\Administrator)
+(如果不能直接建立.emacs文件, 可以在console下使用copy a.txt .emacs)
+;; Erlang mode
+(setq load-path (cons "C:/Program Files/erl5.7.2/lib/tools-2.6.4/emacs" load-path))
+(setq erlang-root-dir "C:/Program Files/erl5.7.2")
+(setq exec-path (cons "C:/Program Files/erl5.7.2/bin" exec-path))
+(require 'erlang-start)
+
+(set-background-color "DarkSlateGray")
+(set-foreground-color "Wheat")
+
+(set-cursor-color "white")
+(set-mouse-color "white")
+;;(set-foreground-color "#FDFF00")
+;;(set-background-color "#343434") 
+;; Emacs client
+
+
+(server-start)
+<4> mysql
+http://www.mysql.com
+username: woomsgdev@gmail.com
+password: ysong@1984
+下载windows binaries后直接安装
+
+<5> mysql-gui-tool
+http://www.mysql.com
+username: woomsgdev@gmail.com
+password: ysong@1984
+下载windows binaries后直接安装
+
+<6> svn
+下载地址: http://tortoisesvn.tigris.org/
+下载windows binaries后直接安装
+
+<7> IE插件
+debugbar + compain.JS + httpwatch + iedevtoolbar
+
+<8> Firefox插件
+firebug + yslow + httpfox + web developer
+
+

@@ -1,0 +1,119 @@
+重点介绍erlang的global模块.
+
+
+1. 介绍:
+这个全局服务是通过一个global_name_server的process来提供的，这个进程存在于每一个erlang node, 这个全局名字
+服务在每个节点启动的时候自动启动.
+
+这个模块在所有的链接的erlang节点的集群中实现了register_name/2和whereis_name/1的功能.一个注册名是一个pid的别名，
+这个名字服务进程管理这些注册的pid,如果一个process终止，名字将自动被注销unregistered.
+
+这些注册名储存在name table中，这个name table在每一个节点上都存在，因此名字服务的调用是快速的，当一个操作改变了
+name table, 所有的节点的name table都会自动被更新. 
+
+2. 单个节点的例子:
+-module(test).
+-export([start/1, rpc_call/2, handle_msg/1]).
+
+start(Name) ->
+    Pid = spawn(?MODULE, handle_msg, [Name]),
+    register(Name, Pid).          %% 在本地node注册process的名字
+
+rpc_call(Name, Msg) ->
+    Name ! {Msg, self()},         %% 向本地node的process发消息
+    receive
+	{Reply, Name} ->
+	    Reply
+    end.
+
+handle_msg(Name) ->
+    receive
+	{stop, Pid} ->
+	    Pid ! {stop, Name};
+	{Msg, Pid} ->	    
+	    Pid ! {"received your msg: " ++ Msg, Name},
+	    handle_msg(Name)
+    end.
+
+测试: 
+启动一个本地的process, 并注册一个名字pid1, 调用whereis/1测试,返回Pid,
+测试通过名字pid1对进程发消息,
+之后停止process, 再次调用whereis/1测试，返回undefined
+test:start(pid1).               
+true
+whereis(pid1).   
+<0.64.0>
+test:rpc_call(pid1, "test - 1").
+"received your msg: test - 1"
+test:rpc_call(pid1, "test - 2").
+"received your msg: test - 2"
+test:rpc_call(pid1, stop).      
+stop
+whereis(pid1).
+undefined
+
+
+
+3. Erlang Nodes集群的例子:
+-module(test).
+-export([start/2, rpc_call/2, handle_msg/1]).
+
+start(Name, Node) ->
+    Pid = spawn(Node, ?MODULE, handle_msg, [Name]),
+    global:register_name(Name, Pid).    %% 注册global的process的名字
+
+rpc_call(Name, Msg) ->
+    global:send(Name, {Msg, self()}),   %% 向global的name消息发送方式
+    receive
+	{Reply, Name} ->
+	    Reply
+    end.
+
+handle_msg(Name) ->
+    receive
+	{stop, Pid} ->
+	    Pid ! {stop, Name};
+	{Msg, Pid} ->	    
+	    Pid ! {"received your msg: " ++ Msg, Name},
+	    handle_msg(Name)
+    end.
+
+测试:
+在同一台机器上启动三个节点的erlang集群: 
+erl -sname node1 -setcookie testcookie
+erl -sname node2 -setcookie testcookie
+erl -sname node3 -setcookie testcookie
+在node1上启动服务:
+(node1@dev-pc)> test:start(pid1, node()).
+yes
+(node1@dev-pc)> test:rpc_call(pid1, "msg - 1").
+"received your msg: msg - 1"
+在node2和node3上测试效果:
+(node3@dev-pc)> test:rpc_call(pid1, "msg - 3").
+"received your msg: msg - 3"
+
+(node2@dev-pc)> test:rpc_call(pid1, "msg - 2").
+"received your msg: msg - 2"
+
+
+4. 分布式的知识补充:
+<1> 如何在调用远程node上的方法?
+rpc:call(Node, Mod, Func, [Arg1, ... ArgN]).
+会在Node上进行一次Mod:Func(Arg1, ... ArgN)调用.
+
+节点名的形式是: NodeName@Host, NodeName和Host都是atom(), 其实整个节点名就是一个atom().
+
+<2> 在不需要DNS的情况下使用erl -sname node1, 
+     需要DNS的情况下使用erl -name node2
+
+<3> 设置cookie:
+    erl -setcookie testcookie
+    或者erlang:set_cookie(Node, testcookie)
+
+<4> 如何保持两个node上的代码版本一致?
+    可以使用nl(Mod), 这个操作会使所有互联的节点上加载Mod.
+
+<5> 判断节点的连通性: net_adm:ping(Node)
+
+<6> node() -> Node 返回本地节点的名字
+    nodes() -> [Node] 返回网络上与当前节点连接的所有其它节点列表

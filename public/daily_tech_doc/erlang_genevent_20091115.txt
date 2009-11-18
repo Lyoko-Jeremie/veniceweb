@@ -1,0 +1,222 @@
+介绍Erlang OTP的基本知识 - gen_event
+
+1. 自己模拟实现一个gen_event框架
+gen_event的核心思想是一个"事件管理器", 可以添加多个"事件处理器"到这个事件管理器中处理事件.
+
+我们模拟的框架略有不同, 模拟的框架也是一个"事件管理器", 多默认的时间不做任何操作, 但是可以
+注册一个函数到这个框架中来处理我们收到的事件。基本思想和gen_event类似.
+[my_gen_event.erl]
+-module(my_gen_event).
+-export([start/1, add_handle/2, remove_handle/1, notify/2]).
+
+start(Name) ->
+    register(Name, 
+             spawn(fun() ->
+                       default_handle(fun default_fun/1) 
+                   end)
+             ).
+
+add_handle(Name, Fun) ->
+    Name ! {add, Fun}.
+
+remove_handle(Name) ->
+    Name ! {remove}.
+
+notify(Name, Msg) ->
+    Name ! {event, Msg}.
+
+default_handle(Fun) ->
+    receive
+	{add, NewFun} ->
+	    default_handle(NewFun);
+	{remove} ->
+	    default_handle(fun default_fun/1);
+	{event, Any} ->
+	    (catch Fun(Any)),
+	    default_handle(Fun)
+    end.
+
+%% 默认的事件callback
+default_fun(_) ->
+    void.
+
+[terminal_logger.erl]
+-module(terminal_logger).
+-export([add_handle/1]).
+
+add_handle(Name) ->
+    my_gen_event:add_handle(Name, fun terminal_logger_handle/1).
+
+terminal_logger_handle(Msg) ->
+    io:format("terminal_logger: ~p~n", [Msg]).
+
+测试:
+my_gen_event:start(test_logger).                %% 启动一个my_gen_event, 使用默认函数处理事件
+true
+my_gen_event:notify(test_logger, "test msg").
+{event,"test msg"}
+terminal_logger:add_handle(test_logger).        %% 注册我们自己的callback函数处理事件     
+{add,#Fun<terminal_logger.0.23313918>}
+my_gen_event:notify(test_logger, "test msg").   %% 测试使用自定义的callback处理事件的效果
+terminal_logger: "test msg"
+{event,"test msg"}
+my_gen_event:remove_handle(test_logger).         %% 删除自定义的事件处理callback
+{remove}
+my_gen_event:notify(test_logger, "test msg").    %% 测试删除自定义的事件处理callback后的效果.
+{event,"test msg"}
+
+
+
+2. 用一个实例说明gen_event的威力:)
+实现gen_event的两个handler来测试效果"模拟日志"的效果.
+
+[terminal_logger1.erl]
+-module(terminal_logger1).
+-behaviour(gen_event).
+-export([init/1, handle_event/2, handle_call/2, handle_info/2, terminate/2, code_change/3]).
+
+init(_Arg) ->
+    {ok, []}.
+
+handle_event(Msg, State) ->
+    io:format("terminal_logger1: ~p~n", [Msg]),
+    {ok, State}.
+
+handle_call(_Request, State) ->
+    {ok, undefined, State}.
+
+handle_info(_Info, State) ->
+    {ok, State}.
+
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+
+terminate(_Args, _State) ->
+    ok.
+
+
+[terminal_logger2.erl]
+-module(terminal_logger2).
+-behaviour(gen_event).
+-export([init/1, handle_event/2, handle_call/2, handle_info/2, terminate/2, code_change/3]).
+
+init(_Arg) ->
+    {ok, []}.
+
+handle_event(Msg, State) ->
+    io:format("terminal_logger2: ~p~n", [Msg]),
+    {ok, State}.
+
+handle_call(_Request, State) ->
+    {ok, undefined, State}.
+
+handle_info(_Info, State) ->
+    {ok, State}.
+
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+
+terminate(_Args, _State) ->
+    ok.
+
+测试:
+gen_event:start({local, test_logger}).    %% 启动一个gen_event server
+{ok,<0.50.0>}
+gen_event:sync_notify(test_logger, "test msg").      %% 测试没有handler的情况, 消息不会做任何处理.
+ok
+gen_event:add_handler(test_logger, terminal_logger1, []).   %% 添加handler
+ok
+gen_event:sync_notify(test_logger, "test msg").            
+terminal_logger1: "test msg"
+ok
+gen_event:swap_handler(test_logger, {terminal_logger1, []},{terminal_logger2, []}). %% 交换handler
+ok
+gen_event:sync_notify(test_logger, "test msg").           
+terminal_logger2: "test msg"
+ok
+gen_event:add_handler(test_logger, terminal_logger1, []).   %% 添加handler
+ok                       
+gen_event:sync_notify(test_logger, "test msg").             %% 测试多个handler的情况.
+terminal_logger1: "test msg"
+terminal_logger2: "test msg"
+ok
+gen_event:stop(test_logger).
+ok
+
+总结:
+<1> 两个概念: "事件管理器", "事件处理器"
+    事件管理器是一个命名对象，可以给其发送事件, 在事件管理器中，可以安装零个、一个或者多个 事件处理器。
+    当事件管理器被通知有一个事件时，所有安装了的事件处理器都会来处理该事件.
+
+    一个事件管理器实现为一个进程，而每个事件处理器则实现为一个回调模块。
+    事件管理器本质上是在维护一个 {Module, State} 对的列表，其中每个 Module 是一个事件处理器， 
+    State 是事件处理器的内部状态
+<2> 要注意gen_event:swan_handler(EventMgrRef, {Handler1, Arg1}, {Handler2, Arg2})调用的时候,
+    框架会调用Handler1:terminate(Arg1, ...); 然后会调用Handler2:init({Arg2, Term})其中Term就是
+    Handler1:terminate(Arg1, ...)的返回值.
+
+3. gen_event在OTP中的应用: 警报系统
+OTP中的警报系统即使一个遵循gen_event行为准则的回调模块:
+<1> 自定义的警报handler必须处理下面两类事件:
+    {set_alarm, {AlarmId, AlarmDes}}  - alarm_handler:set_alarm({AlarmId, AlarmDes})
+    {clear_alarm, AlarmId}            - alarm_handler:clear_alarm(AlarmId)
+
+    
+[my_alarm_handler.erl]
+-module(my_alarm_handler).
+-behavior(gen_event).
+-export([init/1, handle_event/2, handle_call/2, 
+         handle_info/2, terminate/2, code_change/3]).
+
+init(Args) ->
+    io:format("my_alarm_handler init:~p~n", [Args]),
+    {ok, 0}.
+
+handle_event({set_alarm, tooHot}, N) ->
+    io:format("my_alarm_handler set_alarm - tooHot: ~w~n", [N + 1]),
+    {ok, N + 1};
+handle_event({clear_alarm, tooHot}, N) ->
+    io:format("my_alarm_handler clear_alarm - tooHot: ~w~n", [N - 1]),
+    {ok, N - 1};
+handle_event(Event, N) ->
+    io:format("my_alarm_handler unmatch event: ~w~n", [Event]),
+    {ok, N}.
+
+handle_call(_Request, N) ->
+    {ok, N, N}.
+
+handle_info(_Info, N) ->
+    {ok, N}.
+
+terminate(_Arg, _N) ->
+    ok.
+
+code_change(_OldSvn, N, _Extra) ->
+    {ok, N}.
+
+测试:
+erl -boot start_sasl 
+(我们使用这个参数启动erlang shell的时候，会自动安装一个警报处理程序)
+
+alarm_handler:set_alarm(toohot).           %% 测试默认的警报处理效果
+
+=INFO REPORT==== 16-Nov-2009::21:42:23 ===
+    alarm_handler: {set,toohot}
+ok
+gen_event:swap_handler(alarm_handler, {alarm_handler, arg1},{my_alarm_handler, arg2}).  %% 安装使用自定义的警报handler模块
+my_alarm_handler init:{arg2,ok}
+ok
+alarm_handler:set_alarm(toohot).             %% 测试自定义模块的效果                                            
+my_alarm_handler unmatch event: {set_alarm,toohot}
+ok
+alarm_handler:set_alarm(tooHot).
+my_alarm_handler set_alarm - tooHot: 1
+ok
+alarm_handler:set_alarm(tooHot).
+my_alarm_handler set_alarm - tooHot: 2
+ok
+alarm_handler:clear_alarm(tooHot).
+my_alarm_handler clear_alarm - tooHot: 1
+ok
+
+     

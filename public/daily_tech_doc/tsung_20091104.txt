@@ -1,0 +1,89 @@
+1. 下载
+   tsung http://tsung.erlang-projects.org/
+2. 安装
+   tar -xzvf tsung.1.3.1.tar.gz
+   cd tsung-1.3.1
+   ./configure
+   make
+   make install
+
+   为了查看图形结果, 需要安装下面的组件.
+   yum install gnuplot.x86_64
+   yum install perl  (官方推荐perl5)
+
+3. 安装以后可以直接执行/usr/local/bin/tsung
+
+4. 录制
+   在录制的时候使用了proxy的方式来录制, 建立一个本地的http proxy, 默认使用8090端口, 在配置好了firefox使用localhost 8090
+   作为代理之后(推荐使用foxyproxy), 所有流经这个proxy的http动作都会被记录下来, 测试的时候可以回放这些步骤来产生请求.
+
+   tsung-recorder start
+   tsung-recorder stop   
+
+   之后会产生一个类似这样的记录文件: 
+   ~/.tsung/tsung_recorder20091025-08:53.xml
+
+5. 设置
+   <1> cp /usr/local/share/doc/tsung/examples/http_simple.xml ~/.tsung/tsung.xml
+   
+   <2> 增加刚才产生的记录文件到tsung.xml中.
+   <?xml version="1.0"?>
+   <!DOCTYPE tsung SYSTEM "/usr/local/share/tsung/tsung-1.0.dtd" [
+   <!ENTITY mysession1 SYSTEM "/root/.tsung/tsung_recorder20091025-08:53.xml">
+   ]>
+
+   <3> 一些个性化的设置
+   采用逐渐增压的方式, 时间为2分钟, 每2秒钟增加一个用户, 最高并发大约为60个用户
+   <monitoring>
+    <monitor host="localhost" type="erlang"></monitor>
+   </monitoring>
+  
+   <load>
+   <!-- several arrival phases can be set: for each phase, you can set
+   the mean inter-arrival time between new clients and the phase
+   duration -->
+    <arrivalphase phase="1" duration="2" unit="minute">
+      <users interarrival="2" unit="second"></users>
+    </arrivalphase>
+   </load>
+ 
+6. 执行测试
+   tsung start
+
+7. 查看结果
+   cd ~./tsung/log/xxxxxx
+   /usr/local/lib/tsung/bin/tsung_stats.pl
+
+   firefox report.xml
+
+问题:
+执行tsung_stats.pl的时候可能出现下面的错误, 由于perl模块安装不完全, 其实.pm就是perl的类库, 使用下面的workaround
+CPAN就是 - Comprehensive Perl Archive Network
+如果出现Can't locate Time:HiRes.pm in xxxx
+可以使用
+perl -MCPAN -e 'install Time::HiRes'
+
+
+workaround:
+perl -MCPAN -e 'install Template'
+
+或者使用:
+perf -MCPAN -e shell
+cpan>install Template
+cpan>force install Template (可以跳过测试错误, 强制安装模块)
+
+ERROR:
+creating subdirectory data
+creating subdirectory images
+creating subdirectory gnuplot_scripts
+warn, last interval (3) not equal to the first, use the first one (10)
+No data for Match
+No data for Event
+No data for Async
+No data for Errors
+Can't locate Template.pm in @INC (@INC contains: /usr/lib64/perl5/site_perl/5.8.8/x86_64-linux-thread-multi /usr/lib/perl5/site_perl/5.8.8 /usr/lib/perl5/site_perl/5.8.7 /usr/lib/perl5/site_perl/5.8.6 /usr/lib/perl5/site_perl/5.8.5 /usr/lib/perl5/site_perl /usr/lib64/perl5/vendor_perl/5.8.8/x86_64-linux-thread-multi /usr/lib/perl5/vendor_perl/5.8.8 /usr/lib/perl5/vendor_perl/5.8.7 /usr/lib/perl5/vendor_perl/5.8.6 /usr/lib/perl5/vendor_perl/5.8.5 /usr/lib/perl5/vendor_perl /usr/lib64/perl5/5.8.8/x86_64-linux-thread-multi /usr/lib/perl5/5.8.8 .) at /usr/local/lib/tsung/bin/tsung_stats.pl line 365.
+
+ 
+  
+
+

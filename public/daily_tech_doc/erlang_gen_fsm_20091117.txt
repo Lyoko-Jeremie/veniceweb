@@ -1,0 +1,46 @@
+总结Erlang OTP中的gen_fsm -> finite state machine
+
+1. 有限状态机的描述:
+State(S) x Event(E) -> Action(A), State(S')
+当我们处于状态S的时候，发生了事件E，我们需要执行动作A，并妆变为状态S'
+(要注意的是S和S'可能是同一状态)
+
+在gen_fsm中的状态规则转换约定是:
+StateName(Event, StateData) ->
+  ... 执行动作的代码 ...
+  {next_state, StateName', StateData'} %% 转换为新的状态.
+
+2. 一个密码锁的例子:
+[test.erl]
+
+-module(test).
+-export([start_link/1, button/1]).
+-export([init/1, locked/2, open/2]).
+
+start_link(Code) ->
+    gen_fsm:start_link({local, ?MODULE}, ?MODULE, Code, []).
+
+button(Digit) ->
+    gen_fsm:send_event(?MODULE, {button, Digit}).
+
+init(Code) ->
+    SoFar = [],
+    {ok, locked, {SoFar, Code}}.  %% {ok, StateName, StateData}
+
+locked({button, Digit}, {SoFar, Code}) ->
+    case [Digit|SoFar] of
+	Code ->
+            io:format("you have open the door, the door will close again after 30 seconds~n", []),
+	    {next_state, open, {[], Code}, 30000};  %% {next_state, StateName, StateData, Timeout}
+                                                    %% 30秒以后会触发 StateName(timeout, StateData)
+	Incomplete when length(Incomplete) < length(Code) ->
+	    {next_state, locked, {Incomplete, Code}};
+	_Wrong ->
+	    io:format("you inputed the wrong code, go to the init state again~n", []),
+	    {next_state, locked, {[], Code}} %% {next_state, StateName, StateData}
+    end.
+
+open(timeout, StateData) -> 
+    io:format("the door closed again~n.", []),
+    {next_state, locked, StateData}.
+ 
