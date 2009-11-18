@@ -1,0 +1,8 @@
+1. 如何安装VMWare Tool, 并设置虚拟系统的分辨率?
+   <1> 启动你的虚拟机
+   <2> 虚拟机->安装VMWare Tools
+   <3> 在桌面上回出现光盘, 里面有vmware-linux-tools.tar.gz
+   <4> copy 这个包到/tmp问价夹下面
+   <5> tar -xzvf vmware-linux-tools.tar.gz (会出现一个vmware-tools-distrib文件夹)
+   <6> 运行vmware-install.pl 文件，然后一路回车，成功了会有一个分辨率的列表出来，选一个分辨率
+   <7> 重启X-Windows

@@ -1,0 +1,34 @@
+
+1. 一个基本的escript的例子: test.erl 
+
+#!/usr/bin/env escript
+
+main([String]) ->
+    try 
+	N = list_to_binary(String),
+	F = fac(N),
+	io:format("fac ~w = ~w~n", [N, F])
+    catch
+	_:_ ->
+	    usage()
+    end;
+main(_) ->
+    usage().
+
+usage() ->
+    io:format("usage: foc integer\n"),
+    halt(1).
+
+fac(0) ->1;
+fac(N) -> N * fac(N - 1).
+
+<1> 要注意程序的第一行是interpreter line,是解释程序的行，负责调用escript.
+    如果你执行escript test 5, 则第一行的内容可以忽略，所以第一行不能包含erlang code, 
+    如果包含，也会被忽略.
+<2> 在linux平台上，test.erl必须设置执行位，否则不会执行. 
+<3> Erlang script必须包含main/1, 一个erlang script执行的时候会调用main/1
+<4> 关于script的返回值，如果main/1成功，返回状态码0, 如果产生异常，返回127,我们也可以使用halt(1)
+    来自定义我们的返回值.
+<5> 运行方式:
+    test 5
+    escript test 5

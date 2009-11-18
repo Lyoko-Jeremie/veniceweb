@@ -1,0 +1,216 @@
+RFC1945 - HTTP 1.0
+RFC2616 - HTTP 1.1
+
+1. HTTPf服务器不维护客户的状态信息, 所以HTTP是一个无状态的协议(stateless protocol)
+
+2. HTTP 1.0使用非持久连接(nonpersistent connection), HTTP 1.1默认使用持久连接(persistent connection)
+   
+   2.1 看一个非持久连接的例子, 假设我们要请求一个www.example.net上面的/somepath/page.html页面, 该页面
+       有1个基本的HTML和10个JPEG图像组成.
+   <1> HTTP客户初始化一个与主机www.example.net:80的TCP连接.
+   <2> HTTP客户经由与TCP连接的本地socket发送一个HTTP请求, 这个请求包含了要请求的路径名/somepath/page.html
+   <3> HTTP服务器经由于TCP连接的本地socket接收到这个请求, 再从服务器的硬盘中(或者动态生成)取出对象/somepath/page.html
+       经由同一个socket发送包含该对象的响应消息.
+   <4> HTTP服务器告知TCP关闭这个连接(要等到客户响应这个消息的时候才真正终止这个连接)
+   <5> HTTP客户经由同一个本地socket响应这个消息. TCP连接终止. 解析收到的消息，消息表明封装的对象是一个HTML文件,
+       客户进一步解析这个文件，发现其中10个JPEG的对象引用.
+   <5> 给每一个对象引用重复上面的<1>-<4>
+
+   补充:
+   a. web浏览器在收到页面的同时显示给用户, 不同的浏览器可能显示的策略略微不同，HTTP协议本身之定义了
+      客户端和服务器的通信协议，如何显示是由浏览器来决定的.
+   b. 上面这个例子一共产生了11个TCP连接.
+   c. 11个连接是串行还是并行呢？这个不同的浏览器可以进行不同的设置最大并行连接的数量，使用并行连接
+      理论上可以缩短响应时间.
+   d. 发送一个基本的HTML请求到接受到该文件所经历的时间，也就是RTT(round trip time)往返时间: 
+      它是一个小分组从客户机到服务器再到客户机的往返时间.
+      当浏览器发起一个与web服务器的TCP连接，首先要经历"三次握手"的过程(客户端向服务器发送一个小的冗余信息，
+      服务器确认并响应一个小的TCP消息，最后是客户向服务器回确认), 三次握手的前两次结束是，经历一个RTT,此时客户
+      把HTTP请求附加三次握手的最后一次确认消息一起发送给服务器，服务器收到该请求休息后，把相应的HTML以及发送给客户.
+      这个HTTP请求交互也花费了一个RTT，总的响应时间粗略算下来是2个RTT加上服务器发送这个HTML的文件时间.
+   e. 缓启动的机制, TCP使用一种拥塞控制的机制，该机制迫使每个新的TCP连接在一开始的时候以相对缓慢的速率传输数据，
+      只要网络不拥塞，每个连接可以迅速上升到相对较高的速率.称为缓启动(slow start).
+
+
+   2.2 分析持久连接的情况.
+   <1> 非持久连接的情况下，客户得为每个待请求的对象建立并维护一个新的连接。对于每个这样的连接，TCP得在客户端和
+       服务器端分配TCP缓冲区，并维持TCP变量。对于有可能同时为来自数百个不同客户的请求提供服务的web服务器来说，
+       这会严重增加其负担。其次，如前所述，每个对象都有2个RTT的响应延长——一个RTT用于建立TCP连接，另—个RTT用于
+       请求和接收对象。最后，每个对象都遭受TCP缓启动，因为每个TCP连接都起始于缓启动阶段。不过并行TCP连接的使
+       用能够部分减轻RTT延迟和缓启动延迟的影响。
+   <2> 在持久连接情况下，服务器在发出响应后让TCP连接继续打开着。同一对客户/服务器之间的后续请求和响应可以通过
+       这个连接发送。整个Web页面(上例中为包含一个基本HTMLL文件和10个图像的页面)自不用说可以通过单个持久TCP连接
+       发送:甚至存放在同一个服务器中的多个web页面也可以通过单个持久TCP连接发送。通常，HTTP服务器在某个连接闲置
+       一段特定时间后关闭它，而这段时间通常是可以配置的
+   <3> 持久连接的两个版本:
+       3.1 without pipelining不带流水线:
+       客户只在收到前一个请求的响应后才发出新的请求。这种情况下，web页面所引用的每个对象(上例中的10个图像)都
+       经历1个RTT的延迟，用于请求和接收该对象。与非持久连接2个RTT的延迟相比，不带流水线的持久连接已有所改善.
+       3.2 with pipelining流水线:
+       HTTP客户每碰到一个引用就立即发出一个请求，因而HTTP客户可以一个接一个紧挨着发出各个引用对象的请求。服务
+       器收到这些请求后，也可以一个接一个紧挨着发出各个对象。如果所有的请求和响应都是紧挨着发送的，那么所有引
+       用到的对象一共只经历1个RTT的延迟(而不是像不带流水线的版本那样，每个引用到的对象都各有1个RTT的延迟).
+
+3. 一个基本的HTTP请求的例子: HTTP消息分为两种 -> 请求消息和响应消息
+   3.1 请求消息
+   (Request-Line) GET /somepath/page.html HTTP/1.1
+   Host: www.example.net
+   Connection:close
+   User-agent:Mozilla/5.0
+   Accept-language:zh-cn
+   (额外的回车换行)
+
+   <1> 每行的后边都有回车换行，最后一行后面还有额外的回车换行.
+   <2> 第一行称为Request-Line, 其余各行都是头部行.
+   <3> Connection:close是在告知服务器本浏览器不想使用持久连接;服务器发出所请
+       求的对象后应关闭连接。尽管产生这个请求消息的浏览器实现的是HTTP/1.1版本
+   <4> Accept-languag:头部行指出要是所请求对象有简体中文版本，那么用户宁愿接
+       收这个版本;如果没有这个语言版本，那么服务器应该发送其默认版本
+
+   3.2 响应消息
+   (Status-Line) HTTP/1.1 200 OK
+   Connection:close
+   Date:Thu, 05 Nov 2009 02:05:24 GMT
+   Server:Yaws/1.85 Yet Another Web Server
+   Last-Modified:Thu, 05 Nov 2009 02:05:24 GMT
+   Content-Length:407
+   Content-Type:text/html
+   [数据 数据......]
+
+   <1> 第一行称为Status-Line
+   <2> Content—Type:头部行指出包含在附属体中的对象是HTML文本。对象的类型是由Content—Type:
+       头部而不是由文件扩展名正式指出的
+   <3> Last—Nodified:头部对于对象的高速缓存至关重要
+
+4. 常用的响应码
+   200 OK
+   301 Moved Permanently
+   304 Not Modified
+   400 Bad Request 服务器无法理解请求
+   404 Not Found 请求的文档不存在
+
+
+   <1> 分析200和304, 深入理解静态文件HTML,JPEG等的缓存，和动态网页的'缓存'.
+       304 Not Modified客户端有缓冲的文档并发出了一个条件性的请求(一般是提供If-Modified-Since头表示客户只想比指定日期更新的文档).
+       服务器告诉客户，原来缓冲的文档还可以继续使用。
+       如果客户端在请求一个文件的时候，发现自己缓存的文件有Last Modified，那么在请求中会包含If Modified Since，这个时间就是缓存
+       文件的Last Modified。因此，如果请求中包含If Modified Since，就说明已经有缓存在客户端。只要判断这个时间和当前请求的文件的
+       修改时间就可以确定是返回304还是200。对于静态文件，例如：CSS、图片，服务器会自动完成Last Modified 和If Modified Since 的比较，
+       完成缓存或者更新。但是对于动态页面，就是动态产生的页面，往往没有包含Last Modified信息，这样浏览器、网关等都不会做缓存，也就是
+       在每次请求的时候都完成一个200的请求。
+
+       因此，对于动态页面做缓存加速，首先要在Response的HTTP Header中增加Last Modified定义，其次根据Request中的If Modified Since和被请求内容
+       的更新时间来返回200或者304。虽然在返回304的时候已经做了一次数据库查询，但是可以避免接下来更多的数据库查询，并且没有返回页面内容而只
+       是一个HTTP Header，从而大大的降低带宽的消耗，对于用户的感觉也是提高。
+
+       实验:
+       当这些缓存有效的时候，通过HttpWatch查看一个请求会得到这样的结果：
+       第一次访问 200
+       鼠标点击二次访问 (Cache)
+       按F5刷新304
+       按Ctrl+F5强制刷新 200
+       如果是这样的就说明缓存真正有效了。
+
+5. 分析Last-Modified和ETag(Entity Tag Cache Validators)
+   这两个标签用于对象的缓存, 看下面一个例子:
+
+   请求:
+   (Request-Line)	GET /www/background.gif HTTP/1.1
+Host	
+   localhost:8081
+
+   User-Agent:Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.4) Gecko/20091016 Firefox/3.5.4
+   
+Accept:image/png,image/*;q=0.8,*/*;q=0.5
+   Accept-Language:en-us,en;q=0.5
+
+   Accept-Encoding:gzip,deflate
+   
+Accept-Charset:ISO-8859-1,utf-8;q=0.7,*;q=0.7
+   
+Keep-Alive:300
+   
+Connection:keep-alive
+   
+Referer:http://localhost:8081/www/test.css
+   
+Cookie:session_val=Rk2M2LblO4Eot79RwbCn; session_key=liqiang
+
+   If-Modified-Since:Fri, 30 Oct 2009 03:11:50 GMT
+   
+If-None-Match:"2a8svIAAAAA"
+   
+Cache-Control:max-age=0
+
+   响应:
+   (Status-Line)	HTTP/1.1 304 Not Modified
+
+   Server:Yaws/1.85 Yet Another Web Server
+   
+Date:Thu, 05 Nov 2009 06:57:41 GMT
+
+   Last-Modified:Fri, 30 Oct 2009 03:11:50 GMT
+
+   Etag:"2a8svIAAAAA"
+
+   Content-Length:0
+
+   <1> Last-Modifed实体头域值经常被用作一个缓存验证器。简而言之，缓存项被认为是有效的如果实体自从Last-Modifed值之后没有改变。
+   <2> ETag响应头域值是实体标签，它提供了一个“不透明（opaque）的缓存验证器。这能得到更可靠的验证当在不方便存放修改日期的情况下，
+       当在HTTP日期值的一秒精度不能满足需要的情况下，或当在源服务器希望避免使用修改日期产生的冲突的情况下. 
+
+6. chunked编码(Transfer-Encoding:chunked)
+   Chunked编码使用若干个Chunk串连而成，由一个标明长度为0的chunk标示结束。
+   每个Chunk分为头部和正文两部分，头部内容指定下一段正文的字符总数（十六进制的数字）和数量单位（一般不写），
+   正文部分就是指定长度的实际内容，两部分之间用回车换行(CRLF)隔开。
+   在最后一个长度为0的Chunk中的内容是称为footer的内容，是一些附加的Header信息（通常可以直接忽略）。
+
+   具体的Chunk编码格式如下：
+   (一系列chuck块的总的编码结构)
+   Chunked-Body = *chunk    (连续的chunk块)
+                  "0" CRLF  (最后一个长度为0的chunk)
+                  footer    (附加的Header信息)
+                  CRLF      (回车换行结束)
+
+   (单独一个chunk块的编码结构: 包括chunk-head和chunk-data)
+   chunk = chunk-size [ chunk-ext ] CRLF   (长度信息用16进制ASCII编码)
+           chunk-data CRLF
+
+　　       hex-no-zero = <HEX excluding "0">
+　　       chunk-size = hex-no-zero *HEX
+        
+           chunk-ext = *( ";" chunk-ext-name [ "=" chunk-ext-value ] )
+           chunk-ext-name = token
+           chunk-ext-val = token | quoted-string
+           chunk-data = chunk-size(OCTET)
+
+　　       footer = *entity-header
+
+   RFC文档中的Chunked解码过程如下：
+　 length := 0
+   read chunk-size, chunk-ext (if any) and CRLF
+   while (chunk-size > 0) {
+     read chunk-data and CRLF
+     append chunk-data to entity-body
+     length := length + chunk-size
+      read chunk-size and CRLF
+   }
+
+   read entity-header
+   while (entity-header not empty) {
+     append entity-header to existing header fields
+     read entity-header
+   }
+   Content-Length := length
+   Remove "chunked" from Transfer-Encoding
+
+
+   我们来模拟一下数据结构：
+   [Chunk大小][回车][Chunk数据体][回车][Chunk大小][回车][Chunk数据体][回车][0][回车][Footer中的内容][回车]
+
+7. Content-Type的text/html和text/plain:
+   text/html是指以html网页形式发送的，而text/plain是以纯文本格式发送的, text/plain时，浏览器将直接显示而不关心
+   它的什么字体，颜色之类的参数
+    
+
+

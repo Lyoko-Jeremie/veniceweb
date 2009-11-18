@@ -1,0 +1,208 @@
+讲述Erlang的错误处理机制, 理解Erlang的远程错误处理的哲学.
+
+1. 三种异常类型:
+exit(Why) - 想要终止当前的process可以调用这个函数, 它会向当前进程链接的
+            所有进程广播{'EXIT', Pid, Why}消息.
+throw(Why) - 抛出一个调用者可能捕获的异常.
+erlang:error(Why) - 崩溃的错误, 致命的系统错误.
+
+测试:
+其实启动一个Erlang Shell本身就是一个process, 我们可以调用self()来查看这个process
+的Pid, 当我们在Erlang Shell中调用exit/1, throw/1, erlang:error/1, 之后, 再调用self(),
+会发现返回的Pid改变了, 也就是说这三种任意一种异常都会导致当前的process退出.
+
+2. 处理异常的两种方式:
+<1> 新的方式(Expression是可能抛出异常的表达式):
+try Expression of
+    Val -> ...
+catch
+    Type:Val -> ....   %%Type分为throw, exit, error
+end
+<2> 老的方式(Expression是可能抛出异常的表达式):
+case catch Expression of
+    Val -> ...;
+    {'EXIT', Why} -> ...
+end
+注意catch throw(msg) -> msg           和catch msg           结果一样
+    catch error(msg) - {'EXIT', msg}  和catch {'EXIT', msg} 结果一样
+
+例子:
+a. 1,2是两条正常的消息语句; 3,4,5是异常，如果不补货处理，会导致当前process崩溃.
+b. 老的异常捕获方式:处理catch throw(msg), 会直接返回msg, 处理catch error(msg), 会直接返回{'EXIT',msg}
+   也就是1和3, 2和4在老的处理方式中返回值是一样的, 所以说使用老的异常捕获方式, 会丧失掉一些信息.
+-module(test).
+-export([demo_catcher/0, demo_catcher_old/0]).
+
+demo_catcher() ->
+    [catcher(I) || I <- [1, 2, 3, 4, 5]].
+
+demo_catcher_old() ->
+    [catcher_old(I) || I <- [1, 2, 3, 4, 5]].
+
+gen_exception(1) -> msg;
+gen_exception(2) -> {'EXIT', msg};
+gen_exception(3) -> throw(msg);
+gen_exception(4) -> exit(msg);
+gen_exception(5) -> erlang:error(msg).
+
+catcher(I) ->
+	try gen_exception(I) of
+	    Val ->
+		{I, normal, Val}
+        catch
+	    throw:X -> {I, caught, throw, X};
+	    exit:X ->  {I, caught, exit, X};
+	    error:X -> {I, caught, error, X}
+        end.
+
+catcher_old(I) ->
+    catch gen_exception(I).
+结果:
+test:demo_catcher().       %% 测试最新的异常处理方式
+[{1,normal,msg},
+ {2,normal,{'EXIT',msg}},
+ {3,caught,throw,msg},
+ {4,caught,exit,msg},
+ {5,caught,error,msg}]
+test:demo_catcher_old().   %% 测试老的异常处理方式
+[msg,
+ {'EXIT',msg},
+ msg,
+ {'EXIT',msg},
+ {'EXIT',{msg,[{test,gen_exception,1},
+               {test,catcher_old,1},
+               {test,'-demo_catcher_old/0-lc$^0/1-0-',1},
+               {test,'-demo_catcher_old/0-lc$^0/1-0-',1},
+               {erl_eval,do_apply,5},
+               {shell,exprs,6},
+               {shell,eval_exprs,6},
+               {shell,eval_loop,3}]}}]
+
+3. 远程错误处理:
+<1> 三个概念:
+链接: 当一个进程A中调用了link(Pid), 其中Pid是进程B的进程ID, 则进程A和B就建立了链接, 当A退出的时候, 
+      系统会发一个退出信号给B, 反之当进程B退出的时候，会发一个退出信号给A.
+退出信号: 当进程退出的时候，会给链接到它的所有进程发退出信号, 退出信号分两种, 正常退出和非正常退出,
+          如果是正常退出，链接的进程收到信号，默认不做任何处理，如果是非正常退出，则默认的处理方式
+          是让链接进程一并退出.
+系统进程: 我们可以让当前进程捕获退出信号，调用process_flag(trap_exit, true), 设置了捕获状态的进程称为
+          系统进程, 系统进程收到链接进程发来的退出信号后不会自动消亡.
+
+<2> 例子 - 
+代码:
+创建一个工作者process, 负责转换list为integer, 如果不能转换，则抛出异常，进程崩溃.
+-module(test).
+-export([rpc_call/2, start/1]).
+
+rpc_call(Name, Msg) ->
+    Name!{Msg, self()},
+    receive
+	{Name, Reply} ->
+	    Reply;
+	{'EXIT', Pid, Why} ->   %% 捕获工作者process的退出消息, 只有当前进程为系统进程的时候才有效.
+	    io:format("process exit: ~w, ~w~n", [Pid, Why])
+    after 5000 ->
+	    io:format("can't receive the msg from worker process~n", [])  %% 过了5秒没有等待回应, 直接返回.                                                                         
+    end.
+
+start(Name) ->
+    Pid = spawn(fun() -> 
+			loop(Name)
+                end),
+    register(Name, Pid),
+    Pid.
+
+loop(Name) ->
+    receive
+	{Msg, Pid} ->
+	    Pid!{Name, list_to_integer(Msg)},
+            loop(Name)
+    end.
+
+测试:
+a. 不链接的例子: 创建一个工作者process, 崩溃与否与创建者无关.
+(当前进程Pid:<0.33.0>, 工作者进程Pid:<0.41.0>)
+self().         %% 记录下当前process的Pid
+<0.33.0>
+Pid = test:start(myproc). %% 创建一个新的工作进程, 负责转换list到integer, 如果不能转换，则process崩溃, 抛出异常
+<0.41.0>
+test:rpc_call(myproc, "123").
+123
+test:rpc_call(myproc, "123abc").  %% 工作进程崩溃
+
+=ERROR REPORT==== 14-Nov-2009::15:26:37 ===
+Error in process <0.41.0> with exit value: {badarg,[{erlang,list_to_integer,["123abc"]},{test,loop,1}]}
+
+can't receive the msg from worker process  %% 当前process在等待了5秒后, 没有收到rpc_call的消息后, 返回, 继续正常工作.
+ok
+self().                 %% 测试当前process的Pid, 正常工作.
+<0.33.0>
+
+b.  一般的链接的例子: 当链接的进程退出后，当前进程也一并退出.
+(当前进程Pid:<0.33.0>, 工作者进程Pid:<0.40.0>)
+
+self().                    %% 记录下当前process的Pid                 
+<0.33.0>
+Pid = test:start(myproc).  %% 创建一个新的工作进程, 负责转换list到integer, 如果不能转换，则process崩溃, 抛出异常.
+<0.40.0>
+link(Pid).                 %% 将当前process链接到工作process
+true
+test:rpc_call(myproc, "123").
+123
+test:rpc_call(myproc, "123abc").  %% 工作进程崩溃
+
+=ERROR REPORT==== 14-Nov-2009::15:11:34 ===
+Error in process <0.40.0> with exit value: {badarg,[{erlang,list_to_integer,["123abc"]},{test,loop,1}]}
+
+** exception exit: badarg
+     in function  list_to_integer/1
+        called as list_to_integer("123abc")
+     in call from test:loop/1
+self().                   %% 测试当前process的Pid, 由于当前process链接到了工作process, 所以一并退出了.                    
+<0.46.0>
+
+c. 系统进程的例子: 当链接的进程退出后，系统进程捕获退出消息，正常工作.
+(当前进程Pid:<0.45.0>, 工作者进程Pid:<0.50.0>)
+self().                     %% 记录下当前process的Pid
+<0.45.0>
+Pid = test:start(myproc).   %% 创建一个新的工作进程, 负责转换list到integer, 如果不能转换，则process崩溃, 抛出异常.
+<0.50.0>
+link(Pid).                  %% 将当前process链接到工作process
+true
+process_flag(trap_exit, true). %% 设置当前process为系统process.
+false
+test:rpc_call(myproc, "123").
+123
+test:rpc_call(myproc, "123abc").  %% 工作进程崩溃
+
+=ERROR REPORT==== 14-Nov-2009::15:18:00 ===
+Error in process <0.50.0> with exit value: {badarg,[{erlang,list_to_integer,["123abc"]},{test,loop,1}]}
+
+process exit: <0.50.0>, {badarg,[{erlang,list_to_integer,[[49,50,51,97,98,99]]},{test,loop,1}]}
+ok
+self().                       %% 测试当前process的Pid, 由于当前process为系统进程, 所以只是捕获了{'EXIT', Pid, Why}消息，并没有退出.
+<0.45.0>
+
+总结:
+上面三个测试的例子体现了远程错误处理的三种模式:
+i.   我不在乎创建的process是否崩溃.
+     Pid = spawn(fun() -> ... end)
+ii.  我创建的process崩溃, 我也一并退出.
+     Pid = spawn_link(fun() -> ... end)
+iii. 我创建的process崩溃, 我要处理错误.
+     process_flag(trap_exit, true),
+     Pid = spawn_link(fun() -> ... end)
+     loop(...).
+
+     loop(State) ->
+     receive
+         {'EXIT', Pid, Why}
+             loop(NewState);
+         ....
+     end.
+
+
+
+
+
+

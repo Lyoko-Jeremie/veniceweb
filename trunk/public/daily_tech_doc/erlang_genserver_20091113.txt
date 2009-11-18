@@ -1,0 +1,315 @@
+介绍Erlang OTP的基本知识 - gen_server
+
+1. 模拟gen_server结构:
+目标:
+a. 模拟一个最基本的gen_server服务器结构, 并编写一个使用它的例子, 提供key & val存储服务.
+b. 添加支持事务的特性
+c. 同时支持事务和热代码替换, 实现一个可以热代码替换的例子.
+
+具体实现:
+a.
+test.erl是一个类似gen_server的服务器框架,
+impl.erl是利用这个服务器框架实现一个具体的应用.
+具体实现这个服务器框架的时候，需要实现:
+<1>test:rpc(Name, Request)来发送请求，这些发送的请求会被Mod:handle(Request, State)来处理.
+<2>Mod:init() -> InitState 来返回一个初始状态.
+<3>Mod:handle(Request, State) -> {Response, NewState} 来返回结果和一个新的状态.
+
+[test.erl]
+-module(test).
+-export([start/2, rpc/2]).
+
+start(Name, Mod) ->
+    register(Name, spawn(fun() -> loop(Name, Mod, Mod:init()) end)). %% 调用Mod:init/0返回一个InitState
+
+rpc(Name, Request) ->
+    Name ! {self(), Request},
+    receive
+	{Name, Response} ->
+	    Response
+    end.
+
+loop(Name, Mod, State) ->
+    receive
+	{From, Request} ->
+	    {Response, NewState} = Mod:handle(Request, State),     %% 调用Mod:handle(Request, State)来处理请求, 返回{Response, NewState}
+	    From ! {Name, Response},
+	    loop(Name, Mod, NewState)
+    end.
+
+[impl.erl]
+-module(impl).
+-export([init/0, handle/2]).
+-export([insert/3, lookup/2]).
+
+insert(Name, Key, Val) ->
+    test:rpc(Name, {insert, Key, Val}).
+
+lookup(Name, Key) ->
+    test:rpc(Name, {lookup, Key}).
+
+init() ->                         %% init/0返回InitState, 这个State就是新建ets的tid.
+    ets:new(?MODULE, [set]).
+
+handle({insert, Key, Val}, State) ->
+    {ets:insert(State, {Key, Val}), State};
+handle({lookup, Key}, State) ->
+    {ets:lookup(State, Key), State}.
+
+测试:
+test:start(proc, impl).
+true
+impl:insert(proc, key1, val1).
+true
+impl:lookup(proc, key1).
+[{key1,val1}]
+impl:lookup(proc, key2).
+[] 
+
+b. 
+
+[test.erl]
+-module(test).
+-export([start/2, rpc/2]).
+
+start(Name, Mod) ->
+    register(Name, spawn(fun() -> loop(Name, Mod, Mod:init()) end)).
+
+rpc(Name, Request) ->
+    Name ! {self(), Request},
+    receive
+	{Name, error, crashed} -> exit(rpc);  %% 服务器发生异常后, 客户端异常退出.
+	{Name, ok, Response} ->
+	    Response
+    end.
+
+loop(Name, Mod, State) ->
+    receive
+	{From, Request} ->
+	    try Mod:handle(Request, State) of
+                {Response, NewState} ->
+		    From ! {Name, ok, Response},
+		    loop(Name, Mod, NewState)
+            catch
+		_:_ ->
+		    From ! {Name, error, crashed},
+		    loop(Name, Mod, State)           %% 服务器捕获异常后, 使用原来的状态继续运行.
+            end
+    end.
+
+[impl.erl]
+-module(impl).
+-export([init/0, handle/2]).
+-export([insert/3, lookup/2, crash/1]).
+
+insert(Name, Key, Val) ->
+    test:rpc(Name, {insert, Key, Val}).
+
+lookup(Name, Key) ->
+    test:rpc(Name, {lookup, Key}).
+
+crash(Name) ->
+    test:rpc(Name, crashed).         %% 发送一条Mod:handle(Request, State)不能处理的消息, 导致服务器异常.
+
+init() ->
+    ets:new(?MODULE, [set]).
+
+handle({insert, Key, Val}, State) ->
+    {ets:insert(State, {Key, Val}), State};
+handle({lookup, Key}, State) ->
+    {ets:lookup(State, Key), State}.
+
+测试:
+self().
+<0.33.0>
+test:start(proc, impl).
+true
+impl:insert(proc, key1, val1).
+true
+impl:lookup(proc, key1).
+[{key1,val1}]
+impl:lookup(proc, key2).
+[]
+impl:crash(proc).     %% 发送一条导致服务器crash的消息, 服务器会使用事务机制继续运行, 客户端异常退出.      
+** exception exit: rpc
+     in function  test:rpc/2
+self().               %% 测试客户端, 发现原来的process已经退出.
+<0.51.0>
+impl:lookup(proc, key1).  %% 测试服务器, 服务器继续正常运行
+[{key1,val1}]
+
+c.
+实现了两个模块:
+impl    -> 提供key & val对的存储服务.
+newimpl -> 提供字符串转换成整数的服务.
+服务器启动之后, 可以调用test:swap_code(Name, NewMod)来在两钟服务之间切换
+(注意: 我们没有实现gen_server中的terminate(Reason, State)的功能, 
+       也即是服务器在代码切换后, 或者停止后, 应该做一些清理的工作)
+[test.erl]
+-module(test).
+-export([start/2, rpc/2, swap_code/2]).
+
+start(Name, Mod) ->
+    register(Name, spawn(fun() -> loop(Name, Mod, Mod:init()) end)).
+
+swap_code(Name, NewMod) ->
+    rpc(Name, {swap_code, NewMod}).
+
+rpc(Name, Request) ->
+    Name ! {self(), Request},
+    receive
+	{Name, error, crashed} -> exit(rpc);
+	{Name, ok, Response} ->
+	    Response
+    end.
+
+loop(Name, Mod, State) ->
+    receive
+	{From, {swap_code, NewMod}} ->
+	    From ! {Name, ok, swap_code_ok},
+	    loop(Name, NewMod, NewMod:init());  %% 热代码替换后使用新Mod的init返回初始状态.
+	{From, Request} ->
+	    try Mod:handle(Request, State) of
+                {Response, NewState} ->
+		    From ! {Name, ok, Response},
+		    loop(Name, Mod, NewState)
+            catch
+		_:_ ->
+		    From ! {Name, error, crashed},
+		    loop(Name, Mod, State)
+            end
+    end.
+
+
+[impl.erl]
+-module(impl).
+-export([init/0, handle/2]).
+-export([insert/3, lookup/2, crash/1]).
+
+insert(Name, Key, Val) ->
+    test:rpc(Name, {insert, Key, Val}).
+
+lookup(Name, Key) ->
+    test:rpc(Name, {lookup, Key}).
+
+crash(Name) ->
+    test:rpc(Name, crashed).
+
+init() ->
+    ets:new(?MODULE, [set]).
+
+handle({insert, Key, Val}, State) ->
+    {ets:insert(State, {Key, Val}), State};
+handle({lookup, Key}, State) ->
+    {ets:lookup(State, Key), State}.
+
+
+[newimpl.erl]
+-module(newimpl).
+-export([init/0, handle/2]).
+-export([convert/2]).
+
+convert(Name, Msg) ->
+    test:rpc(Name, Msg).
+
+init() ->
+    0.
+
+handle(Msg, Count) ->
+    {list_to_integer(Msg), Count + 1}.
+
+测试:
+self().
+<0.33.0>
+test:start(proc, impl).      %% 首先启动key & val存储服务
+true
+impl:insert(proc, key1, val1).
+true
+impl:lookup(proc, key1).
+[{key1,val1}]
+test:swap_code(proc, newimpl). %% 动态切换成字符串转换成整数的服务
+swap_code_ok
+newimpl:convert(proc, "123").
+123
+newimpl:convert(proc, "123abc").  %% 服务器异常, 服务器端使用事务继续运行, 客户端异常退出.
+** exception exit: rpc
+     in function  test:rpc/2
+self().                           %% 验证客户端的异常退出.
+<0.65.0>
+newimpl:convert(proc, "123456").
+123456
+test:swap_code(proc, impl).    %% 再次动态切换成key & val存储服务.
+swap_code_ok
+impl:lookup(proc, key1).       %% 因为服务器切换回来, 调用了Mod:init()初始了最新的状态, 所以以前ets表中的数据'丢失'了
+[]
+impl:insert(proc, key1, val1).
+true
+impl:lookup(proc, key1).      
+[{key1,val1}]
+
+2. 编写一个gen_server的基本演示程序:
+实现1.a中的key & val存储的功能.
+三个步骤:
+<1> 确定回调模块的名称
+<2> 编写接口函数, 调用gen_server:call(ServerRef, Request)
+<3> 编写回调函数, handle_call/3 (handle_info/2, handle_cast/2等等)
+
+几个注意点:
+a. 服务器启动的时候, 会调用Mod:init/1来返回初始状态InitState.
+b. 对于handle_call(Request, From, State)的返回值
+   如果返回{reply, Reply, NewState}, 框架负责向客户端发消息
+   如果返回{noreply, NewState}, 需要回调模块自己负责向客户端发消息(可以利用From参数)
+   如果返回{stop, Reason, Reply, NewState}或者{stop, Reason, NewState}会导致服务器停止, 
+   这都会导致调用terminate(Reason, NewState)函数来做一些清理工作.
+c. handle_cast/2和handle_info/2都不会返回给客户端返回值, handle_info/2处理一些'原生消息'
+[impl.erl]
+
+-module(impl).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+         terminate/2, code_change/3]).
+
+-export([start_link/0, insert/2, lookup/1]).
+
+-define(SERVER, store_server).
+
+start_link() ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).  %% 确定回调模块的名称(以及服务器的名字)
+
+insert(Key, Val) ->
+    gen_server:call(?SERVER, {insert, Key, Val}).
+
+lookup(Key) ->
+    gen_server:call(?SERVER, {lookup, Key}).
+
+init([]) ->
+    {ok, ets:new(?MODULE, [set])}.
+
+handle_call({insert, Key, Val}, _From, State) ->
+    Reply = ets:insert(State, {Key, Val}), 
+    {reply, Reply, State};
+handle_call({lookup, Key}, _From, State) ->
+    Reply = ets:lookup(State, Key), 
+    {reply, Reply, State}.
+
+handle_cast(_Msg, State) ->
+    {noreply, State}.
+
+handle_info(_Info, State) ->
+    {noreply, State}.
+
+terminate(_Reason, State) ->    %% 服务器停止, 做一些清理工作.
+    ets:delete(State),
+    ok.
+
+code_change(_OldVersion, State, _Extra) ->
+    {ok, State}.
+
+测试:
+impl:start_link().
+{ok,<0.59.0>}
+impl:insert(key1, val1).
+true
+impl:lookup(key1).
+[{key1,val1}]
+impl:lookup(key2).
+[]

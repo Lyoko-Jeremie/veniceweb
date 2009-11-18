@@ -1,0 +1,57 @@
+erlang
+yaws
+emacs
+mysql
+svn
+
+
+<1> erlang
+首先安装erlang依赖的包
+sudo yum install ncurses-devel (或者是libncurses-devel)
+sudo yum install glibc
+sudo yum install openssl
+sudo yun install openssl-devel
+sudo yum install krb5-devel
+sudo yum install unixODBC
+sudo yum install unixODBC-devel
+sudo yum install java-1.6.0
+sudo yum install m4
+sudo yum install gcc
+sudo yum install gcc-c++
+sudo yum install emacs-nox (没有X的支持)
+sudo yum install emacs
+
+下载erlang的源代码: http://www.erlang.org
+tar -xzvf otp_src_R13B01.tar.gz
+cd otp_src_R13B01
+./configure
+make
+sudo make install
+
+<2> yaws
+可能需要安装
+sudo yum install pam-devel
+下载yaws源代码: http://yaws.hyber.org/
+tar -xzvf yaws-1.85.tar.gz
+cd yaws-1.85
+./configure
+make
+sudo make install
+
+<3> emacs
+(在第一步#1已经安装)
+sudo yum install emacs-nox
+sudo yum install emacs
+
+<4> mysql
+sudo yum install mysql        (仅仅是客户端)
+sudo yum install mysql-server
+
+启动mysql sudo /etc/init.d/mysqld start
+关闭mysql sudo /etc/init.d/mysqld stop
+
+<5> svn
+sudo yum install subversion
+
+<6> netcat
+主页: http://netcat.sourceforge.net/

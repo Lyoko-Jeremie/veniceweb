@@ -1,0 +1,254 @@
+介绍Erlang OTP的基本知识 - supervisor
+
+1. 例子:
+一个最基本的例子:
+基于gen_server实现一个key & val的存储系统, 实现一个supervisor来监控这个存储系统,
+当存储系统异常退出的时候，自动重启存储服务.
+
+[test.erl] - 实现supervisor
+-module(test).
+-behavior(supervisor).
+-export([start_link/0, start_in_shell/0, init/1]).
+
+-define(SERVER, supervisor_server).
+
+%% Erlang Shell的任何crash都会导致supervisor exit.
+start_link() ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+start_in_shell() ->
+    {ok, Pid} = supervisor:start_link({local, ?SERVER}, ?MODULE, []),
+    unlink(Pid).                    %% 防止shell中的crash导致supervisor server crash
+
+
+init([]) ->
+    {ok, {{one_for_one, 10, 1000},  %% 
+          [{tag_store_server,       %% Id
+           {impl, start_link, []},  %% StartFunc: {M, F, A}, 决定了如何启动这个worker process.
+           permanent,               %% Restart = permanent | transient | temporary
+           brutal_kill,             %% Shutdown
+           worker,                  %% worker | supervisor
+           [impl]}]}}.              %% [Module] 
+
+[impl.erl] - 实现一个key & val存储的gen_server
+-module(impl).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+         terminate/2, code_change/3]).
+
+-export([start_link/0, insert/2, lookup/1, crash/0]).
+
+-define(SERVER, store_server).
+
+start_link() ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).  %% 回调模块的名称(以及服务器的名字)
+
+insert(Key, Val) ->
+    gen_server:call(?SERVER, {insert, Key, Val}).
+
+lookup(Key) ->
+    gen_server:call(?SERVER, {lookup, Key}).
+
+crash() ->
+    gen_server:call(?SERVER, {crashed}).   %% 发送crashed消息, 这个消息handle_call/3没有处理, 所以crashed掉.
+
+init([]) ->
+    {ok, ets:new(?MODULE, [set])}.
+
+handle_call({insert, Key, Val}, _From, State) ->
+    Reply = ets:insert(State, {Key, Val}), 
+    {reply, Reply, State};
+handle_call({lookup, Key}, _From, State) ->
+    Reply = ets:lookup(State, Key), 
+    {reply, Reply, State}.
+
+handle_cast(_Msg, State) ->
+    {noreply, State}.
+
+handle_info(_Info, State) ->
+    {noreply, State}.
+
+terminate(_Reason, State) ->    %% 服务器停止, 做一些清理工作.
+    ets:delete(State),
+    ok.
+
+code_change(_OldVersion, State, _Extra) ->
+    {ok, State}.
+
+
+测试1:
+test:start_in_shell().   %% 避免了由于shell的crash导致supervisor exit的问题.
+true
+impl:insert(key1, val1).
+true
+impl:lookup(key1).      
+[{key1,val1}]
+impl:crash().     
+
+=ERROR REPORT==== 16-Nov-2009::14:54:36 ===
+** Generic server store_server terminating 
+** Last message in was {crashed}
+** When Server state == 20498
+** Reason for termination == 
+** {function_clause,[{impl,handle_call,
+                           [{crashed},{<0.37.0>,#Ref<0.0.0.135>},20498]},
+                     {gen_server,handle_msg,5},
+                     {proc_lib,init_p_do_apply,3}]}
+** exception exit: {{function_clause,
+                        [{impl,handle_call,
+                             [{crashed},{<0.37.0>,#Ref<0.0.0.135>},20498]},
+                         {gen_server,handle_msg,5},
+                         {proc_lib,init_p_do_apply,3}]},
+                    {gen_server,call,[store_server,{crashed}]}}
+     in function  gen_server:call/2
+impl:lookup(key1).       %% 为什么这里的数据为空呢? 因为服务器被重启，创建了一个新的ets表，以前的数据丢失.
+[]
+impl:insert(key1, val1).
+true
+impl:lookup(key1).      
+[{key1,val1}]
+
+测试2:
+test:start_link().
+{ok,<0.50.0>}
+module1:test().            %% 随便调用一个不存在的方法导致erlang shell crash, 由于supervisor link到了
+                              Erlang Shell的process, 所以shell的crash导致了supervisor的exit.
+
+                              在测试1中，由于我们使用了test:start_in_shell/0来启动，该函数中调用了unlink(Pid)
+                              所以shell的crash不会导致上述问题.
+** exception error: undefined function module1:test/0
+(node1@liqiang-tfs)6> 
+=ERROR REPORT==== 16-Nov-2009::14:58:48 ===
+** Generic server supervisor_server terminating 
+** Last message in was {'EXIT',<0.37.0>,
+                               {undef,[{module1,test,[]},
+                                       {erl_eval,do_apply,5},
+                                       {shell,exprs,6},
+                                       {shell,eval_exprs,6},
+                                       {shell,eval_loop,3}]}}
+** When Server state == {state,
+                            {local,supervisor_server},
+                            one_for_one,
+                            [{child,<0.51.0>,tag_store_server,
+                                 {impl,start_link,[]},
+                                 permanent,brutal_kill,worker,
+                                 [impl]}],
+                            {dict,0,16,16,8,80,48,
+                                {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                                 []},
+                                {{[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                                  [],[]}}},
+                            10,1000,[],test,[]}
+** Reason for termination == 
+** {'module could not be loaded',[{module1,test,[]},
+                                  {erl_eval,do_apply,5},
+                                  {shell,exprs,6},
+                                  {shell,eval_exprs,6},
+                                  {shell,eval_loop,3}]}
+
+注意:
+<1> 通常worker进程是通过gen_server, gen_event, gen_fsm来实现的.
+<2> StartFunc的约定, 这个函数必须创建并且link到子进程, 并且返回{ok, Child}或者{ok, Child, Info}
+
+
+
+2.
+编写一个自己的框架my_gen_server, 模拟gen_server的行为
+基于这个框架，编写一个提供字符串转换成整数的服务器
+实现一个supervisor来监控这个服务器，当服务器崩溃的时候，负责重启.
+
+这个例子的目的是只要符合supervisor的规则, 不单单是gen_server, gen_fsm, gen_event的程序，自己编写的程序也可以被监控.
+
+
+[my_gen_server.erl]
+-module(my_gen_server).
+-export([start_link/2, rpc/2, swap_code/2]).
+
+start_link(Server, Module) ->
+    Pid = spawn_link(fun() -> loop(Server, Module, Module:init()) end),
+    register(Server, Pid),
+    {ok, Pid}.
+
+swap_code(Name, NewMod) ->
+    rpc(Name, {swap_code, NewMod}).
+
+rpc(Name, Request) ->
+    Name ! {self(), Request},
+    receive
+	{Name, error, crashed} -> exit(rpc);
+	{Name, ok, Response} ->
+	    Response
+    end.
+
+loop(Name, Mod, State) ->
+    receive
+	{From, {swap_code, NewMod}} ->
+	    From ! {Name, ok, swap_code_ok},
+	    loop(Name, NewMod, NewMod:init());  %% 热代码替换后使用新Mod的init返回初始状态.
+	{From, Request} ->
+	    try Mod:handle(Request, State) of
+                {Response, NewState} ->
+		    From ! {Name, ok, Response},
+		    loop(Name, Mod, NewState)
+            catch
+		_:_ ->
+		    From ! {Name, error, crashed},
+		    loop(Name, Mod, State)
+            end
+    end.
+
+[impl.erl]
+-module(impl).
+-export([init/0, handle/2]).
+-export([start_link/0, convert/1]).
+
+-define(SERVER, my_gen_server_impl).
+
+%% 返回{ok, Pid}, 符合supervisor的监控callback约束规则, 返回{ok, ChildPid}
+start_link() ->
+    my_gen_server:start_link(?SERVER, ?MODULE).
+
+convert(Msg) ->
+    my_gen_server:rpc(?SERVER, Msg).
+
+init() ->
+    0.
+
+handle(Msg, Count) ->
+    {list_to_integer(Msg), Count + 1}.
+
+[test.erl]
+-module(test).
+-behavior(supervisor).
+-export([start_link/0, start_in_shell/0, init/1]).
+
+-define(SERVER, supervisor_server).
+
+%% Erlang Shell的任何crash都会导致supervisor exit.
+start_link() ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+start_in_shell() ->
+    {ok, Pid} = supervisor:start_link({local, ?SERVER}, ?MODULE, []),
+    unlink(Pid).                    %% 防止shell中的crash导致supervisor server crash
+
+
+init([]) ->
+    {ok, {{one_for_one, 10, 1000},  %% 
+          [{tag_my_gen_server,      %% Id
+           {impl, start_link, []},  %% {M, F, A}
+           permanent,               %% Restart = permanent | transient | temporary
+           brutal_kill,             %% Shutdown
+           worker,                  %% worker | supervisor
+           [impl]}]}}.              %% [Module] 
+
+
+测试:
+test:start_in_shell().
+true
+impl:convert("1223").
+1223
+impl:convert("1223abc").             %% 提供字符串转换成整数的服务器发生错误
+** exception exit: rpc
+     in function  my_gen_server:rpc/2
+impl:convert("122324334").           %% 服务仍然可以使用，证明服务器被supervisor服务器重启.
+122324334

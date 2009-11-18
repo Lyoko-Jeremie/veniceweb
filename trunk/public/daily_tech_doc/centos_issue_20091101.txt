@@ -1,0 +1,36 @@
+1. 使用sudo yum安装包的时候遇到如下错误:
+Error: No Package Matching glibc.i686
+
+这个错误通常出现在64位系统上, 
+解决方式:
+<1> sudo cp /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS32-Base.repo
+<2> sudo yum install glibc
+
+2. 使用sudo command的时候出错:
+Username is not in the sudoers file, this incident will be reported.
+解决方式:
+<1> 进入超级用户模式
+    su - (会提示你输入密码)
+<2> 添加写文件的权限
+    chmod u+w /etc/sudoers
+<3> 编辑文件/etc/sudoers
+    找到       root      ALL=(ALL)     ALL
+    增加一行   Username  ALL=(ALL)     ALL
+<4> 撤销文件的写权限
+    chmod u-w /etc/sudoers
+<5> 切换回原来的用户
+    su - Username
+
+3. 使用sudo的时候出错:
+sudo: /etc/sudoers is mode 0640, should be 0440 
+解决方式:
+su - 进入超级用户模式
+chmod 0440 /etc/sudoers
+su - Username 切换回当前的用户
+
+4. Windows宿主机无法访问VMWare虚拟机上的服务(虚拟机使用桥连接)，比如MYSQL和HTTP等服务:
+解决方案:
+关闭宿主机系统centos的防火墙:
+sudo /etc/rc.d/init.d/iptables stop
+(sudo /etc/rc.d/init.d/iptables start启动防火墙)
+
