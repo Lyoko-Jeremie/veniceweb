@@ -48,4 +48,25 @@
 <3> ErlTL编译器在编译文件的时候，会自动在最顶部添加一个
     render(Data)的函数来渲染, 这个函数的功能是渲染整个页面.
     这个函数的详细结构可以查看编译后生成的.erl文件.
+
+3. 有待解决的问题:
+<1> 编译生成的*.erl文件中，包含了两次module和export的声明, 其中第一次是无用的。
+    这个问题不影响我们对erltl的使用。
+
+    例如编译: 
+    test_view.erltl的时候, 生成的test_view.erl结构结构是:
+    -module(test_view).       %% 应该删除
+    -export([]).
+
+              %% 应该删除
+
+    
+
+-module(test_view).
+
+    
+-file("test_view", 1).
+    
+
+-compile(export_all)
    
