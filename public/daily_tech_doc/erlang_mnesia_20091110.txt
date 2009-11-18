@@ -48,6 +48,24 @@ mnesia:create_table(shop, [{type, set},
 delete_table/1会永久删除这个表格的所有备份.
 clear_table/1删除这个表格所有备份中的所有数据.
 
+补充:
+<1> 创建表的时候使用AtomList和record_info(fields, Record)在返回查询结果的区别:
+-record(employee, {id, name, salary, phone})
+创建两张表:
+mensia:create_table(employee1, [{attributes, record_info(fields, employee)}]).
+mensia:create_table(employee2, [{attributes, [id, name, salary, phone]}]).
+
+在两张表中分别插入一条记录:
+mnesia:dirty_write({employee1, 1, "liqiang", 100, 1234567}).
+mnesia:dirty_write({employee2, 1, "liqiang", 100, 1234567}).
+测试结果:
+mnesia:dirty_read({employee1, 1})
+[#employee{id = 1,name = "liqiang",salary = 100,phone = 1234567}]  %% 返回记录
+mnesia:dirty_read({employee2, 1})
+[{employee2, 1, "liqiang", 100, 1234567}]                          %% 返回AtomList
+
+
+
 4. mnesia:wait_for_table(TableList, Timeout)
 等待所有的表格都确认可以访问.
 
@@ -114,10 +132,10 @@ SELECT * FROM user
 Query = qlc:q([X || X <- mnesia:table(user)]).
 <2> 条件查询: 
 SELECT id, username FROM user
-Query = qlc:q([X#user.id, X#user.username || X <- mnesia:table(user)]).
+Query = qlc:q([{X#user.id, X#user.username} || X <- mnesia:table(user)]).
 SELECT id, username FROM user WHERE id < 30
-Query = qlc:q([X#user.id, X#user.username || X <- mnesia:table(user), 
-                                             X#user.id < 30]).
+Query = qlc:q([{X#user.id, X#user.username} || X <- mnesia:table(user), 
+                                               X#user.id < 30]).
 <3> 关联查询:
 -record(shop, {item, quantity, cost})
 -record(cost, {name, price})
@@ -126,11 +144,11 @@ SELECT shop.item, shop.quantity, cost.name, cost.price
   WHERE shop.item = cost.name
     AND cost.price < 2
     AND shop.quantity < 250
-Query = qlc:q([X#shop.item, X#shop.quantity, Y#cost.name, Y#cost.price || X <- mnesia:table(shop),
-                                                                          Y <- mnesia:table(cost),
-                                                                          X#shop.item =:= Y#cost.name,
-                                                                          Y#cost.price < 2,
-                                                                          X#shop.quantity < 250 ]).
+Query = qlc:q([{X#shop.item, X#shop.quantity, Y#cost.name, Y#cost.price} || X <- mnesia:table(shop),
+                                                                            Y <- mnesia:table(cost),
+                                                                            X#shop.item =:= Y#cost.name,
+                                                                            Y#cost.price < 2,
+                                                                            X#shop.quantity < 250 ]).
 
 9. 使用mnesia:select来代替QLC的查询.
 这个通常带来比QLC更快的响应速度, 但是查询语法没有QLC简洁, 详细的语法参考: ERTS User's Guide

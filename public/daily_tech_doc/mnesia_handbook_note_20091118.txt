@@ -1,0 +1,178 @@
+mnesia用户手册的阅读总结:
+
+1. Mnesia数据库被组织为一个表的集合, 每个表又实例(Erlang record)构成, 表也有一些属性，
+   如位置(location)和持久性(persistence)等.
+
+2. 一个基本的例子:
+   <1> 有如下的数据模型:
+   三个实体:
+   雇员employee，项目project，部门department
+   三个实体的关系式:
+   a. 一个部门由一个雇员管理，因此有管理者manager的关系
+   b. 一个雇员在一个部门工作，因此有在此部门in_department的关系
+   c. 每个雇员都在做一些项目，因此有在项目中in_project的关系
+
+   <2> 分析数据模型，创建表格
+   根据上面的数据模型，定义了六张表:
+   -record(employee, {id, name, salary, phone})
+   -record(project, {id, name, number})
+   -record(department, {id, name})
+   -record(manager, {employee_id, department_id})
+   -record(in_department, {employee_id, department_id})
+   -record(in_project, {employee_id, project_id})
+
+   注意:
+   对于存在一对一关系的表，可以使用{type, set}来限定；
+   对于存在一对多关系的表，可以使用{type, bag}来限定。
+
+   在使用上述记录创建table的时候, manager和in_project应该使用{type, bag}类型,
+   因为同一个雇员可能管理多个部门, 同一个雇员可能同时在多个项目中.
+   in_department使用默认的{type, set}因为一个员工只能属于一个部门.
+
+
+   使用下面代码来创建表格:
+   erl -mnesia dir '"/home/woomsgadmin/tmp/mnesia.company"'
+   mnesia:create_schema([node()]).
+   mnesia:start().
+   company:init()  %% 创建六张表格
+   mnesia:info().  %% 查看结果
+
+-module(company).
+-include_lib("/usr/local/lib/erlang/lib/stdlib-1.16.2/include/qlc.hrl").
+-include("company.hrl").
+
+-export([init/0]).
+
+init() ->
+    mnesia:create_table(employee, 
+                        [{attributes, record_info(fields, employee)}]),
+    mnesia:create_table(project, 
+                        [{attributes, record_info(fields, project)}]),
+    mnesia:create_table(department, 
+                        [{attributes, record_info(fields, department)}]),
+    mnesia:create_table(manager, 
+                        [{type, bag},                  %% 反映一对多的关系
+                         {attributes, record_info(fields, manager)}]),
+    mnesia:create_table(in_department, 
+                        [{attributes, record_info(fields, in_department)}]),
+    mnesia:create_table(in_project, 
+                        [{type, bag},                  %% 反映一对多的关系
+                         {attributes, record_info(fields, in_project)}]).
+
+   <3> 如何插入一条员工(employee)记录?
+       需要做以下三步操作:
+       a. 在employee表中插入一条记录
+       b. 在in_department表中插入一条记录
+       c. 在in_project表中插入0条或者多条记录
+
+   使用下面的代码来插入一条员工记录:
+   注意Mnesia的下面两个特性:
+   a. 事务F要么完全成功，要么完全失败
+   b. 操作同样的记录代码可以在不同的process中执行而不会相互干扰.
+insert_employee(Employee, DepartmentId, ProjectIdList) ->
+    EId = Employee#employee.id,
+    F = fun() ->
+		mnesia:write(Employee),
+		In_Department = #in_department{employee_id=EId, department_id=DepartmentId},
+		mnesia:write(In_Department),
+		handle_projects(EId, ProjectIdList)
+	end,
+    mnesia:transaction(F).
+
+handle_projects(EId, [ProjectId|Tail]) ->
+    In_Project = #in_project{employee_id=EId, project_id=ProjectId},
+    mnesia:write(In_Project),
+    handle_projects(EId, Tail);
+handle_projects(_, []) ->
+    ok.
+
+测试:
+rr("company.hrl").    %% 在Erlang Shell中引用*.hrl
+[department,employee,in_department,in_project,manager,project]
+Employee = #employee{id=1, name="liqiang", salary=29, phone=1234567}.
+#employee{id = 1,name = "liqiang",salary = 29,
+          phone = 1234567}   
+company:insert_employee(Employee, 100, [1001,1002,1003,1004]).  %% 插入数据
+{atomic,ok}
+mnesia:dirty_read({employee, 1}). 
+[#employee{id = 1,name = "liqiang",salary = 29, phone = 1234567}]  %% 在employee表中插入了一条记录
+mnesia:dirty_read({in_department, 1}).
+[#in_department{employee_id = 1,department_id = 100}]  %% 在in_department表中插入了一条记录
+mnesia:dirty_read({in_project, 1}).                    
+[#in_project{employee_id = 1,project_id = 1001},       %% 在in_project表中插入了四条记录
+ #in_project{employee_id = 1,project_id = 1002},
+ #in_project{employee_id = 1,project_id = 1003},
+ #in_project{employee_id = 1,project_id = 1004}]
+
+    <4> Oid (Object identifier)
+    由一个二元组组成{Tab, Key}, 第一个元素是表名，第二个元素是Key，我们可以用这个Oid来查询数据.
+
+    例如:
+    Oid = {employee, 1},  %% {employee, id}
+    mnesia:dirty_read(Oid).
+
+    <5> 员工记录的读取:
+    Mnesia读取数据有有三种方式, 这三种当中第一种是最快的, 第三种语法最好，但是开销最大.
+    a. 直接使用mnesia:read({Tab, Key})
+    b. 使用mnesia的模式匹配语句
+    c. 使用QLC
+
+    (用三种方式分别实现根据员工的ID涨工资的功能)
+    需要的查询语句是: SELECT * FROM employee WHERE id = EmployeeId
+
+    a-impl:
+代码:
+raise_salary(EmployeeId, Raise) ->
+    F = fun() ->
+		[Employee] = mnesia:read({employee, EmployeeId}),  %% 根据Oid读取数据
+		Salary = Employee#employee.salary + Raise,
+		NewEmployee = Employee#employee{salary=Salary},    
+		mnesia:write(NewEmployee)
+	end,
+    mnesia:transaction(F).
+
+    b-impl:
+
+代码:
+raise_salary(EmployeeId, Raise) ->
+    F = fun() ->
+		MatchHead = #employee{id = EmployeeId, _='_'},
+		Guard = [],
+		Result = ['$_'],        %% 返回整个记录
+		[Employee] = mnesia:select(employee, [{MatchHead, Guard, Result}]), 
+		Salary = Employee#employee.salary + Raise,
+		NewEmployee = Employee#employee{salary=Salary},
+		mnesia:write(NewEmployee)
+	end,
+    mnesia:transaction(F).   
+
+    c-impl:
+    QLC的使用分为三步:
+    Query = qlc:q(XXXX),
+    F = fun() ->
+	       qlc:e(Query)
+        end,
+    mnesia:transaction(F).
+
+代码:
+raise_salary(EmployeeId, Raise) ->
+    Query = qlc:q([X || X <- mnesia:table(employee),     %% 第一步
+                        X#employee.id == EmployeeId]),
+    F = fun() ->
+		[Employee] = qlc:e(Query),               %% 第二步
+		Salary = Employee#employee.salary + Raise,
+		NewEmployee = Employee#employee{salary=Salary},
+		mnesia:write(NewEmployee)
+	end,
+    mnesia:transaction(F).                               %% 第三步
+
+测试: a-impl, b-impl, c-impl:
+假设employee表中已经有这样一条记录
+#employee{id = 1,name = "liqiang",salary = 50,phone = 1234567}
+
+company:raise_salary(1, 40).
+{atomic,ok}
+mnesia:dirty_read({employee, 1}). 
+[#employee{id = 1,name = "liqiang",salary = 90,phone = 1234567}] %% 查看salary的变化
+
+2. 
