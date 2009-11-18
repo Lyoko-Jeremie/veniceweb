@@ -1,0 +1,333 @@
+介绍Erlang 的模板语言ErlTL
+
+资源
+absform - http://erlang.org/doc/apps/erts/absform.html
+
+1. Abstract Form
+<1> Erlang语言把解析数称为Abstract Form, 要获得一个模块的Abstract Form有两种方法
+    a. 从已经编译的beam文件中获取Abstract Form
+    b. 直接从源代码解析出Abstract Form
+(下面我们会逐个分析这两种方式)
+
+<2> 如何从beam文件中获取Abstract From?
+
+(背景知识: beam_lib提供了操作beam文件所需要的接口. Erlang的beam文件格式是 "EA IFF 1985"标准
+的一个变种，它把数据分为多个 chunks. Chunk数据可以是二进制或者复合的term。如果通过名字
+(erlang的atom)去引用chunk，那么将返回复合term，当然这是我们需要的)
+    
+我么可以使用:
+beam_lib:chunks(Beam, [abstract_code]), 将返回Beam文件中包含的abstract_code,也就是
+我们需要的Abstract Form.
+
+使用上述方法有个前提，就是Erlang compile的时候使用debug_info选项,如果使用了这个
+选项，那么编译得到的beam文件内部将以abstract code的形式保存调试信息，但是使用这种选项，
+其它人也可以从这些信息中重建出源代码.
+
+现在我们看一个例子:
+建立test.erl
+-module(test).
+
+测试效果(不使用debug_info选项编译,这样编译出来的beam文件中不包含abstract_code):
+c("test").                            
+{ok,test}
+beam_lib:chunks(test,[abstract_code]).
+{ok,{test,[{abstract_code,no_abstract_code}]}}
+
+我们使用debug_info进行编译,这样编译出来的beam文件中包含abstract_code:
+c("test",[debug_info]).               
+{ok,test}
+beam_lib:chunks(test,[abstract_code]).
+{ok,{test,
+        [{abstract_code,
+             {raw_abstract_v1,
+                 [{attribute,1,file,{"./test.erl",1}},
+                  {attribute,1,module,test},
+                  {eof,4}]}}]}}
+
+我们就分析上面两个测试的返回值:
+beam:chunks返回的abstract code定义如下:
+[ChunkName, DataT] 
+DataT = {abstract_code, AbstractCode}
+AbstractCode = {AbstVersion, Forms} | no_abstract_code
+AbstVersion = atom()
+
+所以我们在不使用debug_info的时候返回no_abstract_code, 在使用的时候返回
+一个tuple, 
+第一项raw_abstract_v1是版本，
+后边是Forms:
+[{attribute,1,file,{"./test.erl",1}},
+ {attribute,1,module,test},
+ {eof,4}]
+
+看下面一段文档中的定义:
+----------------------------------------------
+用函数Rep表示从Erlang源代码C到abstract form形式R的映射。简单地说，如果源代码C解析成为Abstract Form R，那么写成R = Rep(C)
+If D is a module declaration consisting of the forms F_1, ..., F_k, then Rep(D) = [Rep(F_1), ..., Rep(F_k)]. 
+If F is an attribute -module(Mod), then Rep(F) = {attribute,LINE,module,Mod}. 
+If F is an attribute -export([Fun_1/A_1, ..., Fun_k/A_k]), then Rep(F) = {attribute,LINE,export,[{Fun_1,A_1}, ..., {Fun_k,A_k}]}. 
+If F is an attribute -import(Mod,[Fun_1/A_1, ..., Fun_k/A_k]), then Rep(F) = {attribute,LINE,import,{Mod,[{Fun_1,A_1}, ..., {Fun_k,A_k}]}}. 
+If F is an attribute -compile(Options), then Rep(F) = {attribute,LINE,compile,Options}. 
+If F is an attribute -file(File,Line), then Rep(F) = {attribute,LINE,file,{File,Line}}. 
+If F is a record declaration -record(Name,{V_1, ..., V_k}), then Rep(F) = {attribute,LINE,record,{Name,[Rep(V_1), ..., Rep(V_k)]}}. For Rep(V), see below. 
+If F is a wild attribute -A(T), then Rep(F) = {attribute,LINE,A,T}.
+If F is a function declaration Name Fc_1 ; ... ; Name Fc_k, where each Fc_i is a function clause with a pattern sequence of the same length Arity, then Rep(F) = {function,LINE,Name,Arity,[Rep(Fc_1), ...,Rep(Fc_k)]}.
+------------------------------------------------
+
+继续分析上面生成的Forms:
+If D is a module declaration consisting of the forms F_1, ..., F_k, then Rep(D) = [Rep(F_1), ..., Rep(F_k)]. 
+从这一句可以看出为什么返回的Forms是一个列表了.
+
+If F is an attribute -file(File,Line), then Rep(F) = {attribute,LINE,file,{File,Line}}. 
+{attribute,1,file,{"./test.erl",1}}
+虽然我们没有添加-file属性,但是编译器会自动为我们在abstract code中添加这个属性.
+
+If F is an attribute -module(Mod), then Rep(F) = {attribute,LINE,module,Mod}. 
+上面这个可以解释我们在第一行生命的-module属性.
+{attribute,1,module,test},
+
+最后表示文件在第四行结束.
+{eof,4}
+
+
+我们对上述文件进行修改，增加一些东西，并重新编译输出结果:
+-module(test).
+-export([helloworld/0]).
+helloworld() ->
+    ok.
+
+
+c("test",[debug_info]).               
+{ok,test}
+beam_lib:chunks(test,[abstract_code]).
+{ok,{test,
+        [{abstract_code,
+             {raw_abstract_v1,
+                 [{attribute,1,file,{"./test.erl",1}},
+                  {attribute,1,module,test},
+                  {attribute,2,export,[{helloworld,0}]},
+                  {function,3,helloworld,0,[{clause,3,[],[],[{atom,4,ok}]}]},
+                  {eof,4}]}}]}}
+
+可以看到我们新增的export属性:
+{attribute,2,export,[{helloworld,0}]},
+
+新增的函数:
+{function,3,helloworld,0,[{clause,3,[],[],[{atom,4,ok}]}
+If F is a function declaration Name Fc_1 ; ... ; Name Fc_k, where each Fc_i is a function clause with a pattern sequence of the same length Arity, then Rep(F) = {function,LINE,Name,Arity,[Rep(Fc_1), ...,Rep(Fc_k)]}.
+function的Form共有5项，第一项是function这个atom，第二项是行号，第3项是函数的名字，第4项
+是函数参数的个数。最后一项是一个列表，包含每个子句的Rep.
+
+
+<3> 如何从源代码获取Abstract Form我们通常借助erl_scan和erl_parse这两个模块, 步骤是：
+a. 首先使用erl_scan:string来解析出Tokens
+b. 然后使用erl_parse:parse_form把Tokens生成absform
+
+erl_scan:string("test() -> ok.").
+{ok,[{atom,1,test},
+     {'(',1},
+     {')',1},
+     {'->',1},
+     {atom,1,ok},
+     {dot,1}],
+    1}
+分析返回5个tokens,分别是:
+分别是atom类型的函数名test、左括号、右括号、函数头的结束->、atom类型的atom ok，以及最后结束的dot
+
+
+{ok, Tokens, Endline} = erl_scan:string("test() -> ok.").
+{ok,[{atom,1,test},
+     {'(',1},
+     {')',1},
+     {'->',1},
+     {atom,1,ok},
+     {dot,1}],
+    1}
+erl_parse:parse_form(Tokens).
+{ok,{function,1,test,0,[{clause,1,[],[],[{atom,1,ok}]}]}}
+
+
+<4> 如何编译Abstract Form?
+compile:forms这个函数取要编译的Forms作为参数，把它编译成可以被虚拟机执行的二进制对象码数据.
+并且要编译Abstract Form,我们必须提供整个module完成的Form, 因此我们需要提供module属性，export
+属性等等.
+
+看下面的例子(在这个例子中我们会自动添加module和export属性):
+c("test.erl",[debug_info]).
+{ok,test}
+{ok, Tokens, EndLine} = erl_scan:string("helloworld1()->myok.").
+{ok,[{atom,1,helloworld1},
+     {'(',1},
+     {')',1},
+     {'->',1},
+     {atom,1,myok},
+     {dot,1}],
+    1}
+{ok, Forms} = erl_parse:parse_form(Tokens).
+{ok,{function,1,helloworld1,0,
+              [{clause,1,[],[],[{atom,1,myok}]}]}}
+NewForms = [{attribute, 1, module, test},{attribute, 2, export, [{helloworld1, 0}]},Forms].
+[{attribute,1,module,test},
+ {attribute,2,export,[{helloworld1,0}]},
+ {function,1,helloworld1,0,
+           [{clause,1,[],[],[{atom,1,myok}]}]}]
+compile:forms(NewForms).
+{ok,test,
+    <<70,79,82,49,0,0,1,156,66,69,65,77,65,116,111,109,0,0,0,
+      61,0,0,0,6,4,116,...>>}
+
+
+<5> 我们会描述一个综合的例子:
+补充知识:
+c调用compile的file方法编译.erl文件，然后从内存中移去(purge)原先存在的代码，然后加载(load)新的代码。
+
+purge(Module) -> true | false
+purge函数把现有的代码移去并标记为老版本，如果有任何process在使用旧代码，那么这些process将被杀死。
+注意尽管purge总是成功的，但是它的返回值只有在任何process需要被杀死的情况下才会返回true
+
+
+
+load_binary(Module, Filename, Binary) -> {module, Module} | {error, What}
+Module = atom()
+Filename = string()
+What = sticky_directory | badarg | term()
+load_binary加载编译好的对象码，从而使得Module可以被程序使用。如果对象代码存在于sticky目录下的话，可能无法成功替换。sticky目录是erlang自己的运行时系统，包括kernel、stdlib和compiler，为了保证erlang的运行正常，缺省情况下这些目录是受保护的，被认为是sticky的
+
+
+开始:
+编写一个test.erl
+-module(test).
+-export([hello/0]).
+hello() ->
+    io:format("hello~n").
+
+c("test",[debug_info]).
+{ok,test}
+test:hello().          
+hello
+ok
+test:hello1().         
+** exception error: undefined function test:hello1/0
+{ok, Tokens, Endline} = erl_scan:string("hello1() -> io:format(\"this is hello1~n\").").
+{ok,[{atom,1,hello1},
+     {'(',1},
+     {')',1},
+     {'->',1},
+     {atom,1,io},
+     {':',1},
+     {atom,1,format},
+     {'(',1},
+     {string,1,"this is hello1~n"},
+     {')',1},
+     {dot,1}],
+    1}
+{ok, Forms} = erl_parse:parse_form(Tokens).                                  
+{ok,{function,1,hello1,0,
+              [{clause,1,[],[],
+                       [{call,1,
+                              {remote,1,{atom,1,io},{atom,1,format}},
+                              [{string,1,"this is hello1~n"}]}]}]}}
+NewForms = [{attribute, 1, module, test},{attribute, 2, export, [{hello1,0}]},Forms].
+[{attribute,1,module,test},
+ {attribute,2,export,[{hello1,0}]},
+ {function,1,hello1,0,
+           [{clause,1,[],[],
+                    [{call,1,
+                           {remote,1,{atom,1,io},{atom,1,format}},
+                           [{string,1,"this is hello1~n"}]}]}]}]
+{ok, test, Binary} = compile:forms(NewForms).
+{ok,test,
+    <<70,79,82,49,0,0,1,220,66,69,65,77,65,116,111,109,0,0,0,
+      61,0,0,0,7,4,116,...>>}
+code:purge(test).
+false
+code:load_binary(test, "test.erl", Binary).
+{module,test}
+test:hello().
+** exception error: undefined function test:hello/0
+test:hello1().
+this is hello1
+
+上面这个例子展示了我们首先编译一个模块,test,然后调用test:hello函数，之后我们修改
+模块test,去掉hello函数，增加一个新的函数test:hello1.
+
+(上面我们生成的Binary数据，把它保存到一个模块中*.beam，就形成一个可执行文件了, 写一个简单的逻辑
+就可以实现)
+
+
+
+2. Erltl的时间应用:
+issue(need to fix):
+有一个问题，如果我们使用windows风格的回车/换行来保存文件，在编译模板文件的时候会出现类似以下的错误:
+引发错误的原因是<%? [top-level expression] %>的声明.
+
+erltl:compile("demo.et").
+{error,{misplaced_top_exprs,{{line,15},
+                             {chunk," {Number, Name} = SongArg %>\r"},
+                             {msg,"top expressions must appear before all other expressions in a function"}}}}
+一个workaround是所有的模板文件必须保存成UNIX格式的回车换行.
+
+<1> 5种模板语法:
+<%! [Comment] %> 注释
+
+<%? [top-level expression] %> 这部分表达式不会被包含在函数的output中，
+作用主要用来绑定变量和参数. 在函数中必须是在其它所有表达式之前使用.
+
+<%@ [function declaration] %> 函数声明，告诉编译器在这个声明之后的所有的code
+都属于这个新的function.这对重用template snippet是有用的。
+
+函数声明有两种形式:
+简单形式 <%@ myfunc %>等价于<%@ myfunc(Data) %>
+获知完全形式：定义到'->'符号之前,例如: <%@ myfunc([{tag, {one, A} = Z1, B}]) when is_ingeter(A) %>
+
+所有的模板函数都是export的，所以我们可以重用别的模板的函数.
+<% [Erlang code block] %> 一系列的erlang表达式，这些表达式的结果是函数的输出.
+<%~ [TopForm] %> 用来声明module attributes, compiler directives, and even complete functions等等
+
+<2> 模板编译器会自动为每一个模块生成一个render/1函数,这个函数只接收一个参数Data.
+
+
+<3> 一个最基本的Erltl的例子:
+demo.et
+<%?[Id, Name, Age] = Data%>
+<%! this is a basic demo %>
+Id = <% Id %>,Name = <% Name %>, Age = <% Age %>.
+
+
+erltl:compile("demo.et").
+ok
+demo:render(["id","name","age"]).
+[<<"\r\n\r\nId = ">>,"id",<<",Name = ">>,"name",
+ <<", Age = ">>,"age",<<".\n">>]
+demo:render([<<"id">>,<<"name">>,<<"age">>]).
+[<<"\r\n\r\nId = ">>,<<"id">>,<<",Name = ">>,<<"name">>,
+ <<", Age = ">>,<<"age">>,<<".\n">>]
+
+可以观察输出的结果，ErlTL出于效率的考虑，并没有试图连接左右的结果，如果我们想连接所有的结果，可以自己
+使用iolist_to_binary/来操作.
+
+
+<4> 一个稍微复杂的例子
+demo.et
+<%? {Title, Artist, Songs} = Data %>
+<%! this is another basic demo %>
+<html>
+  <body>
+  Title: <b><% Title %></b><br>
+  Artist:<b><% Artist %></b><br>
+  Songs: <br>
+  <table>
+    <% [song(Song) || Song <- Songs] %>
+  </table>
+  </body>
+</html>
+
+<%@ song(SongArg) %>
+<%? {Number, Name} = SongArg %>
+<tr>
+  <td><% integer_to_list(Number) %></td>
+  <td><% Name %></td>
+</tr>
+
+
+
+ 
