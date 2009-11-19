@@ -1,9 +1,14 @@
 mnesia用户手册的阅读总结:
 
+
+遗留的问题:
+a. 3最后部分的问题 - 未解决
+
+
 1. Mnesia数据库被组织为一个表的集合, 每个表又实例(Erlang record)构成, 表也有一些属性，
    如位置(location)和持久性(persistence)等.
 
-2. 一个基本的例子:
+2. 通过一个基本的例子介绍Mnesia数据库的使用:
    <1> 有如下的数据模型:
    三个实体:
    雇员employee，项目project，部门department
@@ -14,6 +19,11 @@ mnesia用户手册的阅读总结:
 
    <2> 分析数据模型，创建表格
    根据上面的数据模型，定义了六张表:
+   这种设计体现了Mnesia的数据模型的组织方式:
+   a. 数据按照表的结合来组织
+   b. 不同记录之间的关系通过描述实际关系的附加表来建模
+   c. 每个表包含了数据的实例.
+
    -record(employee, {id, name, salary, phone})
    -record(project, {id, name, number})
    -record(department, {id, name})
@@ -175,4 +185,167 @@ company:raise_salary(1, 40).
 mnesia:dirty_read({employee, 1}). 
 [#employee{id = 1,name = "liqiang",salary = 90,phone = 1234567}] %% 查看salary的变化
 
-2. 
+
+3. Schema - 系统配置表
+<1>Mnesia系统的配置在模式（schema）里描述。模式是一种特殊的表，它包含了诸如表名、每个
+表的存储类型（例如，表应该存储到RAM、硬盘或者可能是两者以及表的位置）等信息。
+不像数据表，模式表里包含的信息只能通过与模式相关的函数来访问和修改。
+Mnesia提供多种方法来定义数据库模式，可以移动、删除表或者重新配置表的布局。
+这些方法的一个重要特性是当表在重配置的过程中可以被访问。
+
+例如，可以在移动一个表的同时执行写操作。该特性对需要连续服务的应用非常好
+
+<2>测试mnesia:move_table_copy(Tab, From, To).
+       mnesia:add_table_copy(Tab, Node, Type)
+       mnesia:del_table_copy(Tab, Node)
+   a. 第一个函数是将Tab的副本从From节点移动到To节点, 表的{type}属性被保留, 
+      移动之后From节点上将不存在这个表的副本.
+   b. 第二个函数是在Node节点上创建Tab的备份, 并且可以指定新的{type}类型, 
+      这里的type必须是ram_copies, disc_copies, disc_only_copies.
+   c. 第三个函数在节点Node上删除表的副本，如果表的最后一个副本被删除，则表被删除.
+
+   结论:
+   a. 如果表在本地没有副本，是一个remote类型的表也是可以访问的.
+
+测试mnesia:move_table_copy(Tab, From, To):
+启动两个Erlang Shell:
+erl -sname node1 -setcookie testcookie -mnesia dir '"c:/home/mnesia/node1"'
+erl -sname node2 -setcookie testcookie -mnesia dir '"c:/home/mnesia/node2"'
+在任意一个Shell中执行:
+mnesia:create_schema([node() | nodes()]).
+在两个节点上都执行:
+mnesia:start()
+在node2上创建一个表格user, 并插入数据:
+mnesia:create_table(user, [{disc_copies, [node()]},{attributes, [id, username, age]}]).
+mnesia:dirty_write({user, 1, liqiang, 23}).
+然后在两个节点上都执行dirty_ready/1, 发现虽然我们只在node2上创建了user表, 但是两个节点上都能查询到数据:
+mnesia:dirty_read({user, 1}).
+[{user,1,liqiang,23}]
+
+我们在node2上执行mnesia:info()
+---> Active tables <---                %% node2上当前两张表
+user           : with 1        records occupying 296      words of mem
+schema         : with 2        records occupying 508      words of mem
+===> System info in version "4.4.11", debug level = none <===
+opt_disc. Directory "c:/home/mnesia/node2" is used.
+use fallback at restart = false
+running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema,user]    %% node2上当前两张表
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',disc_copies}] = [schema]
+[{'node2@liqiang-tfs',disc_copies}] = [user]
+
+我们在node1上执行mnesia:info()         
+---> Active tables <---                %% node1上当前一张表
+schema         : with 2        records occupying 508      words of mem
+===> System info in version "4.4.11", debug level = none <===
+opt_disc. Directory "c:/home/mnesia/node1" is used.
+use fallback at restart = false
+running db nodes   = ['node2@liqiang-tfs','node1@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = [user]           %% node1上当前有一张remote表在node2上
+ram_copies         = []
+disc_copies        = [schema]         %% node1上当前一张表
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',disc_copies}] = [schema]
+[{'node2@liqiang-tfs',disc_copies}] = [user]
+
+我们把user表从node2移动到node1, 在调用mnesia:info()查看结果
+在node2上执行:
+mnesia:move_table_copy(user, node(), 'node1@liqiang-tfs').
+
+我们在node2上执行mnesia:info() 
+---> Active tables <---           %% 移动之后, node2上当前一张表
+schema         : with 2        records occupying 515      words of mem
+===> System info in version "4.4.11", debug level = none <===
+opt_disc. Directory "c:/home/mnesia/node2" is used.
+use fallback at restart = false
+running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = [user]      %% 因为我们移动了user表，所以node2上当前有一张remote表在node1上
+ram_copies         = []
+disc_copies        = [schema]    %% 移动之后, node2上当前一张表
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies}] = [user]
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',disc_copies}] = [schema]
+
+
+我们在node1上执行mnesia:info() 
+---> Active tables <---        %% 移动之后, node1上当前两张表
+user           : with 1        records occupying 296      words of mem
+schema         : with 2        records occupying 515      words of mem
+===> System info in version "4.4.11", debug level = none <===
+opt_disc. Directory "c:/home/mnesia/node1" is used.
+use fallback at restart = false
+running db nodes   = ['node2@liqiang-tfs','node1@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema,user]   %% 移动之后, node1上当前两张表
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies}] = [user]
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',disc_copies}] = [schema]
+
+
+测试mnesia:add_table_copy(Tab, Node, Type)
+在node2上创建表user的一个ram_copies的副本:
+mnesia:add_table_copy(user, node(), ram_copies).
+
+我们在node2上执行mnesia:info() 
+---> Active tables <--- 
+user           : with 1        records occupying 296      words of mem
+schema         : with 2        records occupying 517      words of mem
+===> System info in version "4.4.11", debug level = none <===
+opt_disc. Directory "c:/home/mnesia/node2" is used.
+use fallback at restart = false
+running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = [user]         %% 我们最新在node2上创建的表user的ram副本
+disc_copies        = [schema]
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',disc_copies}] = [schema]
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',ram_copies}] = [user]
+
+
+我们在node1上执行mnesia:info() 
+---> Active tables <--- 
+user           : with 1        records occupying 296      words of mem
+schema         : with 2        records occupying 517      words of mem
+===> System info in version "4.4.11", debug level = none <===
+opt_disc. Directory "c:/home/mnesia/node1" is used.
+use fallback at restart = false
+running db nodes   = ['node2@liqiang-tfs','node1@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema,user]
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',disc_copies}] = [schema]
+[{'node1@liqiang-tfs',disc_copies},{'node2@liqiang-tfs',ram_copies}] = [user]
+
+<3> Mnesia表的加载:
+如果Mnesia推断另一个节点（远程）的拷贝比本地节点的拷贝更新时，初始化时在节点上复制
+表可能会导致问题，初始化进程无法处理。在这种情况下，对mnesia:wait_for_tables/2的调用将暂
+停调用进程，直到远程节点从其本地磁盘初始化表后通过网络将表复制到本地节点上。这个过程可能相当耗时.
+
+<4> 特殊的本地表: {local_content, true}
+当应用需要一个其内容对每个节点来说在本地都是唯一的表时，可使用local_content表。
+表名对所有Mnesia节点可见，但是内容对每个节点都是唯一的。这种类型的表只能在本地进行存取.
+
+
+遗留的问题?
+如果添加一个新启动的戒掉到db nodes的集合中？
+4.
+
+5.
+ 
