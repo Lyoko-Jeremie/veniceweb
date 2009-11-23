@@ -145,6 +145,10 @@ raise_salary(EmployeeId, Raise) ->
     b-impl:
 
 代码:
+'_'匹配任意的Erlang数据结构
+'$<number>'可以作为Erlang变量使用
+'$_'整个记录
+
 raise_salary(EmployeeId, Raise) ->
     F = fun() ->
 		MatchHead = #employee{id = EmployeeId, _='_'},
@@ -393,9 +397,34 @@ disc_only_copies   = []
 执行对脏操作的写操作，这个表的所有副本都会被更新.
 
 <9> 如何来通过key来遍历表呢?    
-    
-    
-    
+APIs:
+mnesia:dirty_first(Tab) 返回Tab中第一个Key, 如果表中没有记录，返回'$end_of_table'
+mnesia:dirty_next(Tab, Key) 返回Tab中的下一个Key, 如果表中没有下一个key，返回'$end_of_table'
+mnesia:dirty_last(Tab) 和mnesia:dirty_first(Tab)工作方式一样，只有当type是ordered_set的时候
+                       返回Erlang排序中的最后一项，其它类型的和mnesia:dirty_first(Tab)完全一样.
+mnesia:dirty_prev(Tab, Key) 和mnesia:dirty_next(Tab, Key)工作方式一样，只有当type是ordered_set的时候
+                       返回Erlang排序中的前一项，其它类型的和mnesia:dirty_next(Tab, Key)完全一样
+   
+下面的代码可以遍历类型type=set的tables, 显示tables的所有内容:
+display_table(Tab) ->
+    case mnesia:dirty_first(Tab) of
+	'$end_of_table' ->
+	    ok;
+	Key ->
+	    [Data] = mnesia:dirty_read({Tab, Key}), %% 如果是bag类型的table,匹配会出错!
+	    io:format("~w~n", [Data]),
+	    display_table(Tab, Key)
+    end.
+
+display_table(Tab, Key) ->
+    case mnesia:dirty_next(Tab, Key) of
+	'$end_of_table' ->
+	    ok;
+	NewKey ->
+	    [Data] = mnesia:dirty_read({Tab, NewKey}),
+	    io:format("~w~n", [Data]),
+	    display_table(Tab, NewKey)
+    end.    
 
 
 5.
