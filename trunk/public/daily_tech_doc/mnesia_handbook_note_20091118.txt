@@ -427,5 +427,37 @@ display_table(Tab, Key) ->
     end.    
 
 
-5.
+5. activity?
+<1> 区别异步事务和同步事务:
+    我们使用的mnesia:transaction(Fun [, Args])是异步事务, mnesia:sync_transaction(Fun [, Args])是同步事务.
+    我的理解是:
+    mnesia:sync_transaction调用返回前，同步事务一直等待，直到全部激活的副本提交事务(写到磁盘), mnesia:transaction
+    不能保证这一点.
+    同步事务对需要发消息给远端进程前确实节点更新已经被执行的应用，以及组合了事务写和脏读的时候特别有用。
+    
+    同步事务对于频繁的执行大量更新操作草成其它节点的Mnesia过载overload也很有用:
+    分析:
+    同步操作是一种放慢写操作的方式，因为函数在记录被提交到事务(写到transaction log)之前是不会返回的；而异步操作
+    可能非常快速的提交事务(写道transaction log)，这个速度超出了dumped的速度，会引起overload的错误.
+    也就是如果你在用disc_copies的表，在异步事务中一次写入很多数据，就可能遇到下面的错误:
+   
+    =ERROR REPORT==== 10-Dec-2008::18:07:19 ===
+    Mnesia(node@host): ** WARNING ** Mnesia is overloaded: {dump_log, write_threshold} 
+
+<2> 同步脏操作和异步脏操作:
+    mnesia:dirty(Fun [, Args])是异步脏操作, mnesia:sync_dirty(Fun [, Args])是同步脏操作
+    异步脏操作的更新是异步的，即在一个节点上等待操作被执行而不管其它节点.
+    同步脏操作调用者会的呢古代全部的激活副本更新完成.
+
+    同步脏操作对需要发消息给远端进程前确实节点更新已经被执行的应用，或者防止其它节点的Mnesia过载的应用有用.
+
+<3> mnesia:dirty_*类的函数总是以异步脏（async_dirty）的语法执行而不管作业存取上下文
+    是如何请求的。其甚至可以不需要封装到任何作业存取上下文中即可调用.
+
+
+
+--------
+tmp:
+http://www.ejabberd.im/node/985
+    
  
