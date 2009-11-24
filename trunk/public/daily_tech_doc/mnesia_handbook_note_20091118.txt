@@ -459,5 +459,6 @@ display_table(Tab, Key) ->
 --------
 tmp:
 http://www.ejabberd.im/node/985
+http://blog.socklabs.com/2008/02/06/dynamically_sizing_a_fragmente.html
     
  
