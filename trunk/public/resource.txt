@@ -61,3 +61,6 @@ http://beebole.com/erlang/en/
 
 21: Erlang课程源代码下载
 http://www.pragprog.com/screencasts/v-kserl/source_code
+
+22. 封装了mnesia的一个项目, 可以动态的添加，删除节点在mnesia cluster中
+http://code.google.com/p/fragmentron/

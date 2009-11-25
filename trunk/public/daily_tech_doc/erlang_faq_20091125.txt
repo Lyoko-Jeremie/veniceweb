@@ -1,3 +1,13 @@
+FAQ List:
+1. 如果动态的添加一个节点到Mnesia cluster中
+2. 如何动态的从mnesia cluster中删除一个节点
+3. 总结mnesia表格分片fragment的技术:
+
+
+
+
+----------------------
+----------------------
 
 1. 如果动态的添加一个节点到Mnesia cluster中?
 用到的Mnesia APIs:
@@ -99,6 +109,59 @@ disc_only_copies   = []
 原先node1上所有的数据都可以在node2上读取.
 
 
-2.
+2. 如何动态的从mnesia cluster中删除一个节点?
+用到的Mnesia APIs:
+mnesia:info()
+mnesia:del_table_copy(Tab, Node)
+(这个函数在Node上删除Tab表格的备份，如果这个表格的最后一个备份被删除，这个表也就被删除了，
+ 这个函数还可以用来删除schema, 如果删除schema, 这个node将在mnesia cluster中被移除，调用之前
+ 需要在这个node上停掉mnesia)
+mnesia:stop()
+mnesia:delete_schema(DiscNodes)
+(彻底的在这些node上删除mnesia的数据)
+
+如果一个集群运行在三个节点上: node1, node2, node3, 这三个节点上都有user1和user2表格的disc_copies备份:
+<1> 在node3上运行mnesia:info()查看信息.
+踀running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs','node3@liqiang-tfs']  %% mnesia cluster
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema,user1,user2]
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies},
+ {'node2@liqiang-tfs',disc_copies},
+ {'node3@liqiang-tfs',disc_copies}] = [schema,user1,user2]
+
+<2> 停止node2节点, 在node2节点上运行:
+mnesia:stop()
+
+<3> 在node3上运行:
+mnesia:del_table_copy(schema, 'node2@liqiang-tfs').
+(注意: 在删除某个节点上的schema表的时候，该节点上的mnesia必须停止, 否则出错)
+
+<4> 在node3上调用mnesia:info()查看信息:
+running db nodes   = ['node1@liqiang-tfs','node3@liqiang-tfs']       %% node2已经从mnesia cluster中移除
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema,user1,user2]
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies},{'node3@liqiang-tfs',disc_copies}] = [schema,
+                                                                         user2,
+                                                                         user1]
+
+<5> 在node2上运行下面命令，彻底删除node2的mnesia dir下面的数据.
+mnesia:delete_schema([node()]).
+
+
+3.
+http://blog.socklabs.com/2008/02/06/dynamically_sizing_a_fragmente.html
+
+
+
+
+
 
 
