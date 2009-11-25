@@ -1,0 +1,60 @@
+1. 印度的一个微博客网站，主要是短信服务
+http://www.smsgupshup.com/
+
+2.  一个不错的任务管理的网站(ysong.lee@gmail.com, ysong@1984)
+http://www.task.fm/
+
+3. 一个web聊天系统
+http://www.cometchat.com/
+
+4. 一个gmail/facebook风格的聊天系统，开源的JQuery实现
+http://anantgarg.com/2009/05/13/gmail-facebook-style-jquery-chat/
+
+5. 一个使用erlyweb(erltl)和mochiweb的例子
+http://weblog.miceda.org/2008/05/05/using-erlyweb-templates-with-mochiweb/
+
+6. 同时安装多个IE6, IE7, IE8的测试工具, 可以测试页面的兼容性.
+http://www.my-debugbar.com/wiki/
+
+
+7. 微软官方的工具- SuperPreview for Internet Explorer 
+http://expression.microsoft.com/en-us/dd565874.aspx
+
+8. 一个在线的cool wiki, doc, group chat. etc 网站
+http://www.zoho.com/
+
+9. 貌似做sina微博的家伙
+http://www.caozenghui.cn/
+
+10. 苹果的fans网站
+http://apple4.us/
+
+11. HTTP协议详解
+http://blog.csdn.net/zjl_1026_2001/archive/2008/03/22/2206714.aspx
+
+12. HTTP协议中文版
+http://www.cnpaf.net/Class/HTTP/200811/23277.html
+
+13. cool的网站
+http://www.donevii.com/
+
+14. 一个关于介绍web2.0的不错的网站
+http://www.showeb20.com/
+
+15. 一个年轻的团队，
+http://www.fanqieshu.com
+
+16. 易趣创始人的blog
+http://shaoblog.com/
+
+17. web开发练习的网站
+http://www.sawmac.com/
+
+18. Erlang OTP设计原理中文翻译文档
+http://erlang.shiningray.cn/otp-design-principles/index.html
+
+19. Erlang并发编程的中文在线翻译
+http://svn.liancheng.info/cpie-cn/trunk/.build/html/index.html
+
+20. 一个不错的Erlang开发web应用的站点
+http://beebole.com/erlang/en/
