@@ -2,7 +2,7 @@ mnesia用户手册的阅读总结:
 
 
 遗留的问题:
-a. 3最后部分的问题 - 未解决
+a. 3最后部分的问题 - 已经解决
 b. 4部分<6>关于Mnesia中sticky lock的理解 - 未解决
 
 
@@ -349,7 +349,8 @@ disc_only_copies   = []
 
 
 遗留的问题?
-如果添加一个新启动的戒掉到db nodes的集合中？
+如果添加一个新启动的节点到db nodes的集合中？
+在Erlang FAQ - erlang_faq_20091125.txt中已经解决了这个问题.
 
 4. 事务的细节
 <1> 原子性，事务要么完全成功，要么完全失败，如果事务成功，将在所有节点上复制这个动作，失败
@@ -454,28 +455,5 @@ display_table(Tab, Key) ->
 <3> mnesia:dirty_*类的函数总是以异步脏（async_dirty）的语法执行而不管作业存取上下文
     是如何请求的。其甚至可以不需要封装到任何作业存取上下文中即可调用.
 
-
-
---------
-tmp:
-http://www.ejabberd.im/node/985
-http://blog.socklabs.com/2008/02/06/dynamically_sizing_a_fragmente.html
-
-http://stackoverflow.com/questions/787755/how-to-add-a-node-to-an-mnesia-cluster
-Start your new node (b@node)  erl -sname b -mnesia dir '"/path/to/storage"' -s mnesia. This starts a new ram_copes node called b@node.
-
-On your original node (a@node), at the erlang prompt execute mnesia:change_config(extra_db_nodes, ['b@node']). This will cause the original node to connect b to the mnesia cluster. At this point, b@node has joined the cluster but only has a copy of the schema.
-
-To make new the node b@node capable of storing disc copies, we need to change the schema table type on b@node from ram_copies to disc_copies. Run mnesia:change_table_copy_type(schema, 'b@node', disc_copies). on any node.
-
-b@node only has a copy of the schema at this point. To copy all the tables from a@node to b@node and maintain table types, you can run:
-
-[{Tb, mnesia:add_table_copy(Tb, node(), Type)}
- || {Tb, [{'a@node', Type}]} <- [{T, mnesia:table_info(T, where_to_commit)}
-                               || T <- mnesia:system_info(tables)]].
-
-This command may take a while to execute as it will copy the contents of each table over the network.
-
-b@node is now an exact replica of a@node. You could modify that statement - replace the Type variable with disc_only_copies in the call to mnesia:add_table_copy/3 in order to copy the tables but ensure they're on disc only.
     
  
