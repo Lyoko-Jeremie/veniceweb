@@ -1,0 +1,104 @@
+
+1. 如果动态的添加一个节点到Mnesia cluster中?
+用到的Mnesia APIs:
+mnesia:info()
+mnesia:create_schema(DiscNodes).  
+(参数是一个节点列表, 很多文件会在每一个节点的mnesia directory中创建，并且每个node的directory必须唯一)
+mnesia:start()
+mnesia:create_table(Name, TabDef).
+mnesia:change_config(extra_db_nodes, NodeList)
+(参数是新的node的节点, 如果成功，返回{ok, ResNodeList}, 其中ResNodeList是已经加到mnesia cluster中的节点)
+mnesia:change_table_copy_type(Table, Node, Type)
+(这个函数也可以用于schema表，schema表的type只能是ram_copies或者disc_copies, 如果schema的类型是ram_copies,
+这个节点上的别的表都不能存储在磁盘上)
+mnesia:add_table_copy(Tab, Node, Type)
+
+<1> 启动两个Erlang节点:
+werl.exe -setcookie testcookie -sname node1 -mnesia dir '"c:/home/mnesia/node1"'
+werl.exe -setcookie testcookie -sname node2 -mnesia dir '"c:/home/mnesia/node2"'
+
+<2> 在node1上创建schema, 启动mnesia, 创建两个测试表格: user1, user2
+mnesia:create_schema([node()]).
+mnesia:start().
+mnesia:create_table(user1, [{disc_copies, [node()]}]).
+mnesia:create_table(user2, [{disc_copies, [node()]}]).
+
+在node1上调用mnesia:info()查看信息
+running db nodes   = ['node1@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema,user1,user2]  %%本地的三张磁盘表
+disc_only_copies   = []
+
+<2> 在node2上启动mnesia
+mnesia:start()       
+
+在node2上调用mnesia:info()查看信息
+running db nodes   = ['node2@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = [schema]   %% 注意这个在ram中的schema
+disc_copies        = []
+disc_only_copies   = []
+
+
+<3> 在node1上调用
+mnesia:change_config(extra_db_nodes, ['node2@liqiang-tfs']).
+{ok,['node2@liqiang-tfs']}
+
+在node2上调用mnesia:info()查看信息
+running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs']  %% 已经连接到mnesia cluster
+stopped db nodes   = [] 
+master node tables = []
+remote             = [user1,user2]    %% 两张远程的表格
+ram_copies         = [schema]         %% 本地ram的schema表
+disc_copies        = []
+disc_only_copies   = []
+
+
+注意: 
+这个操作会让node1尝试连接node2到mnesia cluster.
+参数是尝试连接的node的列表, 结果是已经连接上的node列表.
+这个操作完成后node2已经连接到了mnesia cluster, 但是只有一个schema表的ram copy.
+(可以查看node2的存放路径，里面没有任何数据内容)
+
+<4> 让node2具备存储磁盘表的能力, 在node2上运行:
+mnesia:change_table_copy_type(schema, node(), disc_copies).
+
+在node2上调用mnesia:info()查看信息
+running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = [user1,user2]
+ram_copies         = []
+disc_copies        = [schema]   %% 本地disc的schema表
+disc_only_copies   = []
+
+此刻node2上只包含了一个在磁盘上存储的schema表，没有其它任何内容.
+(可以查看node2的存放路径，里面包含了schema表的信息)
+
+<5> 尝试把node1上的表格(user1, user2)以及内容复制到node2上, 在node2上运行:
+mnesia:add_table_copy(user1, node(), disc_copies).
+mnesia:add_table_copy(user2, node(), disc_copies).
+
+
+在node2上调用mnesia:info()查看信息
+running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema,user1,user2]  %% user1和user2都复制到了node2上
+disc_only_copies   = []
+
+
+此刻node2在mnesia cluster中是node1的一个备份了，即使node1失效，
+原先node1上所有的数据都可以在node2上读取.
+
+
+2.
+
+

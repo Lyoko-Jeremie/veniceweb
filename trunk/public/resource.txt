@@ -58,3 +58,6 @@ http://svn.liancheng.info/cpie-cn/trunk/.build/html/index.html
 
 20. 一个不错的Erlang开发web应用的站点
 http://beebole.com/erlang/en/
+
+21: Erlang课程源代码下载
+http://www.pragprog.com/screencasts/v-kserl/source_code
