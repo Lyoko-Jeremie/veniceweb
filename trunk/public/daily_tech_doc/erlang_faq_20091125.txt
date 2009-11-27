@@ -1,8 +1,7 @@
 FAQ List:
 1. 如果动态的添加一个节点到Mnesia cluster中
 2. 如何动态的从mnesia cluster中删除一个节点
-3. 总结mnesia表格分片fragment的技术:
-
+3. 在一个节点上演示将当前已有的表格分片fragment存储, 增加删除分片的方法
 
 
 
@@ -156,8 +155,211 @@ disc_only_copies   = []
 mnesia:delete_schema([node()]).
 
 
-3.
-http://blog.socklabs.com/2008/02/06/dynamically_sizing_a_fragmente.html
+3. 在一个节点上演示将当前已有的表格分片fragment存储, 增加删除分片的方法:
+
+APIs:
+mnesia:table_info(Tab, InfoKey)
+a. frag_dist 一个按Count 增序排列的{Node, Count} 元组的有序列表。Count 是分片表副本所在
+             主机节点Node的总数。这个列表至少包含了节点池node_pool中的全部节点。 不属于
+             节点池node_pool的节点即使其Count值较低也将被放在列表的最后.
+             注意: 这个InfoKey只能在mnesia_frag的上下文中才可以使用
+b. frag_properties  这个可以在所有的上下文中使用.
+
+mnesia:change_table_flag(Tab, Change)
+Change的参数:
+a. {activate, FragProps} 激活一个表的分片属性, FragProps为空或者是{node_pool, Nodes}
+b. deactive 解除表的分片属性, 片断的数量必须是1，没有其它表在其外键中引用这个表。
+c. {add_frag, NodesOrDist} 增加一个片段到分片表, NodesOrDist可以是一个节点列表或者是
+                            mnesia:table_info(Tab, frag_dist)的返回结果
+d. del_frag 删除一个片断
+e. {add_node, Node} 增加一个新节点到节点池node_pool, 新的节点池将影响从函数mnesia:table_info(Tab, frag_dist)返回
+                    的列表
+f. {del_node, Node} 从节点池node_pool删除一个节点，新的节点池将影响从函数mnesia:table_info(Tab, frag_dist)返回
+                    的列表
+
+例子:
+mnesia:create_schema([node()]).
+ok
+mnesia:start().
+ok
+mnesia:create_table(user1, [{disc_copies, [node()]}]).
+{atomic,ok}
+WriteFun1 = fun(Keys) -> [mnesia:write({user1, K, -K}) || K <- Keys],ok end.
+#Fun<erl_eval.6.13229925>
+mnesia:activity(sync_dirty, WriteFun1, [lists:seq(1, 100)], mnesia_frag).      %% 写100条记录到user1表中
+ok
+mnesia:change_table_frag(user1, {activate, []}).        %% 激活user1的分片属性， 使用空默认表示mnesia:system_info(db_nodes)
+{atomic,ok}
+mnesia:table_info(user1, frag_properties).              %% 查看分片属性的信息，如果不激活表格的分片属性，这个调用返回空
+[{base_table,user1},
+ {foreign_key,undefined},
+ {hash_module,mnesia_frag_hash},
+ {hash_state,{hash_state,1,1,0,phash2}},
+ {n_fragments,1},
+ {node_pool,['node1@liqiang-tfs']}]
+InfoFun = fun(Item) -> mnesia:table_info(user1, Item) end.        %% mnesia:table_info/2可以在mnesia_frag的上下文中扩展一些KeyInfo供使用
+#Fun<erl_eval.6.13229925>
+Dist = mnesia:activity(sync_dirty, InfoFun, [frag_dist], mnesia_frag).
+[{'node1@liqiang-tfs',1}]
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 一个分片的时候, 100条记录都记录的分布: 100    
+[{user1,100}]
+mnesia:change_table_frag(user1, {add_frag, Dist}).                 %% 增加一个分片          
+{atomic,ok}
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 两个分片的时候, 100条记录都记录的分布: 47, 53     
+[{user1,47},{user1_frag2,53}]
+Dist1 = mnesia:activity(sync_dirty, InfoFun, [frag_dist], mnesia_frag). %% 获取当前的Dist
+[{'node1@liqiang-tfs',2}]
+mnesia:change_table_frag(user1, {add_frag, Dist1}).                %% 增加一个分片
+{atomic,ok}  
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 三个分片的时候, 100条记录都记录的分布: 19, 53, 28    
+[{user1,19},{user1_frag2,53},{user1_frag3,28}]
+mnesia:change_table_frag(user1, {add_frag, [node()]}).             %% 增加一个分片          
+{atomic,ok}
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 四个分片的时候, 100条记录都记录的分布: 19, 30, 28, 23
+[{user1,19},
+ {user1_frag2,30},
+ {user1_frag3,28},
+ {user1_frag4,23}]
+mnesia:change_table_frag(user1, {add_frag, [node()]}).             %% 增加一个分片   
+{atomic,ok}
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 五个分片的时候, 100条记录都记录的分布: 10, 30, 28, 23, 9
+[{user1,10},
+ {user1_frag2,30},
+ {user1_frag3,28},
+ {user1_frag4,23},
+ {user1_frag5,9}]
+mnesia:change_table_frag(user1, del_frag).                         %% 删除一个分片
+{atomic,ok}
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 四个分片的时候, 100条记录都记录的分布: 19, 30, 28, 23
+[{user1,19},
+ {user1_frag2,30},
+ {user1_frag3,28},
+ {user1_frag4,23}]
+mnesia:change_table_frag(user1, del_frag).                         %% 删除一个分片            
+{atomic,ok}
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 三个分片的时候, 100条记录都记录的分布: 19, 53, 28  
+[{user1,19},{user1_frag2,53},{user1_frag3,28}]
+mnesia:change_table_frag(user1, del_frag).                         %% 删除一个分片                  
+{atomic,ok}
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    两个分片的时候, 100条记录都记录的分布: 47, 53  
+[{user1,47},{user1_frag2,53}]
+mnesia:change_table_frag(user1, del_frag).                         %% 删除一个分片             
+{atomic,ok}
+mnesia:activity(sync_dirty, InfoFun, [frag_size], mnesia_frag).    %% 一个分片的时候, 100条记录都记录的分布: 100  
+[{user1,100}]
+mnesia:change_table_frag(user1, del_frag).                         %% 当没有分片的时候，删除出错!             
+{aborted,{no_exists,user1}}
+
+总结:
+a. 一次只能增加或删除一个分片，注意增加或删除分片时候数据的分布, 表明每次增加或删除
+   一个分片的时候，也只影响一个分片中的数据，要么切分，要么组合!
+100
+47, 53
+19, 53, 28 
+19, 30, 28, 23
+10, 30, 28, 23, 9
+19, 30, 28, 23
+19, 53, 28 
+47, 53
+100
+
+4. 多个节点的分片测试:
+有四个Mnesia节点:
+node1,node2,node3,node4, 在node1和node2上创建一个user1表格:
+
+mnesia:create_table(user1, [{disc_copies, ['node2@liqiang-tfs','node1@liqiang-tfs']}]). %% 在node1和node2上创建表格user1
+{atomic,ok}
+mnesia:change_table_frag(user1, {activate, []}).             %% 在所有的mnesia:system_info(db_nodes)上激活user1的分片属性      
+{atomic,ok}
+mnesia:table_info(user1, frag_properties).      
+[{base_table,user1},
+ {foreign_key,undefined},
+ {hash_module,mnesia_frag_hash},
+ {hash_state,{hash_state,1,1,0,phash2}},
+ {n_fragments,1},
+ {node_pool,['node1@liqiang-tfs','node2@liqiang-tfs',        %% 四个节点组成的node_pool
+             'node3@liqiang-tfs','node4@liqiang-tfs']}]
+(node1@liqiang-tfs)11> Info = fun(Item) -> mnesia:table_info(user1, Item) end.
+#Fun<erl_eval.6.13229925>
+(node1@liqiang-tfs)14> mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag). 
+[{'node3@liqiang-tfs',0},
+ {'node4@liqiang-tfs',0},
+ {'node1@liqiang-tfs',1},
+ {'node2@liqiang-tfs',1}]
+Write = fun(Keys) -> [mnesia:write({user1, K, -K}) || K<-Keys], ok end.
+#Fun<erl_eval.6.13229925>
+mnesia:activity(sync_dirty, Write, [lists:seq(1, 1000)], mnesia_frag).   %% 写1000条记录到user1中
+ok
+mnesia:activity(sync_dirty, Info, [frag_size], mnesia_frag).             %% 一个分片的时候，查看1000条记录的分布: 1000         
+[{user1,1000}]
+mnesia:change_table_frag(user1, {add_frag, ['node1@liqiang-tfs', 'node2@liqiang-tfs']}).  %%在node1和node2上增加fragment, 
+{atomic,ok}
+mnesia:activity(sync_dirty, Info, [frag_size], mnesia_frag).             %% 两个分片的时候，查看1000条记录的分布: 476, 524                    
+[{user1,476},{user1_frag2,524}]
+mnesia:change_table_frag(user1, {add_frag, ['node1@liqiang-tfs', 'node2@liqiang-tfs']}).  %%在node1和node2上增加fragment, 
+{atomic,ok}
+mnesia:activity(sync_dirty, Info, [frag_size], mnesia_frag).             %% 三个分片的时候，查看1000条记录的分布: 230, 524, 246
+[{user1,230},{user1_frag2,524},{user1_frag3,246}]
+mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).             %% 查看fragment的分布 (当前node3和node4上没有fragment)                   
+[{'node3@liqiang-tfs',0},
+ {'node4@liqiang-tfs',0},
+ {'node1@liqiang-tfs',3},
+ {'node2@liqiang-tfs',3}]
+mnesia:change_table_frag(user1, {add_frag, ['node1@liqiang-tfs', 'node2@liqiang-tfs',  %%在node1和node2, node3上增加fragment, 
+                                            'node3@liqiang-tfs']}).
+{atomic,ok}
+mnesia:change_table_frag(user1, {add_frag, ['node1@liqiang-tfs', 'node2@liqiang-tfs',  %%在node1和node2, node3上增加fragment, 
+                                            'node3@liqiang-tfs']}).
+{atomic,ok}
+mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).             
+%% 查看fragment的分布 (当前node3和node4上没有fragment)
+%% 初步得出一个规律: 
+%% 在add_frag的时候，参数NodesOrDist，如果我们为user1表增加
+%% 片段，则NodesOrDist至少要保证为每个副本分配单元，也就是如果user1
+%% 表有两个副本，则NodesOrDist至少要包含两个节点. 按照上面测试的
+%% 结果看下来，如果NodesOrDist中包含user1副本存储的节点，则优先在副本存储的
+%% 节点上显示，这就是为什么虽然我们包含了node3,但是它上面的fragment的数量仍然为0
+%%
+%% 并且新的片段将获得与第一个片段同样数量的副本.
+%% 可以通过mnesia_frag上下文中的: table_info(Tab, InfoKey) 
+%% n_ram_copies，n_disc_copies， n_disc_only_copies来确定
+[{'node3@liqiang-tfs',0},
+ {'node4@liqiang-tfs',0},
+ {'node1@liqiang-tfs',5},
+ {'node2@liqiang-tfs',5}]
+mnesia:change_table_frag(user1, {add_frag, ['node3@liqiang-tfs', 'node4@liqiang-tfs']}).   %%在node3和node4上增加fragment                 
+{atomic,ok}
+mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).           %% 查看fragment的分布                    
+[{'node3@liqiang-tfs',1},
+ {'node4@liqiang-tfs',1},
+ {'node1@liqiang-tfs',5},
+ {'node2@liqiang-tfs',5}]
+mnesia:change_table_frag(user1, {add_frag, ['node4@liqiang-tfs']}).    %% 如果NodeOrDist节点数量小于user1表格的副本书，出错                 
+{aborted,{combine_error,user1_frag7, "Too few nodes in node_pool"}}
+mnesia:change_table_frag(user1, {add_frag, ['node3@liqiang-tfs', 'node1@liqiang-tfs']}).   %%在node1和node3上增加fragment
+{atomic,ok}
+mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).           %% 查看fragment的分布                      
+[{'node4@liqiang-tfs',1},
+ {'node3@liqiang-tfs',2},
+ {'node2@liqiang-tfs',5},
+ {'node1@liqiang-tfs',6}]
+mnesia:change_table_frag(user1, del_frag).                               %% 删除一个fragment
+{atomic,ok}
+mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).
+[{'node3@liqiang-tfs',1},
+ {'node4@liqiang-tfs',1},
+ {'node2@liqiang-tfs',5},
+ {'node1@liqiang-tfs',5}]
+mnesia:change_table_frag(user1, del_frag).                                %% 删除一个fragment
+{atomic,ok}
+mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).              %% 测试删除结果，发现删除操作沿着'添加的逆轨迹'进行.
+[{'node3@liqiang-tfs',0},
+ {'node4@liqiang-tfs',0},
+ {'node2@liqiang-tfs',5},
+ {'node1@liqiang-tfs',5}]
+
+
+
 
 
 
