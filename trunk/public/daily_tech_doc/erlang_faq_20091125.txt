@@ -2,6 +2,8 @@ FAQ List:
 1. Èç¹û¶¯Ì¬µÄÌí¼ÓÒ»¸ö½Úµãµ½Mnesia clusterÖĞ
 2. ÈçºÎ¶¯Ì¬µÄ´Ómnesia clusterÖĞÉ¾³ıÒ»¸ö½Úµã
 3. ÔÚÒ»¸ö½ÚµãÉÏÑİÊ¾½«µ±Ç°ÒÑÓĞµÄ±í¸ñ·ÖÆ¬fragment´æ´¢, Ôö¼ÓÉ¾³ı·ÖÆ¬µÄ·½·¨
+4. ¶à¸ö½ÚµãµÄ·ÖÆ¬²âÊÔ
+5. ½Úµã³Ønode_poolÈçºÎ±£³Ö´æ´¢µÄfragmentÔÚ¸÷¸ö½ÚµãÖĞµÄÆ½ºâ?
 
 
 
@@ -170,14 +172,14 @@ ChangeµÄ²ÎÊı:
 a. {activate, FragProps} ¼¤»îÒ»¸ö±íµÄ·ÖÆ¬ÊôĞÔ, FragPropsÎª¿Õ»òÕßÊÇ{node_pool, Nodes}
 b. deactive ½â³ı±íµÄ·ÖÆ¬ÊôĞÔ, Æ¬¶ÏµÄÊıÁ¿±ØĞëÊÇ1£¬Ã»ÓĞÆäËü±íÔÚÆäÍâ¼üÖĞÒıÓÃÕâ¸ö±í¡£
 c. {add_frag, NodesOrDist} Ôö¼ÓÒ»¸öÆ¬¶Îµ½·ÖÆ¬±í, NodesOrDist¿ÉÒÔÊÇÒ»¸ö½ÚµãÁĞ±í»òÕßÊÇ
-                            mnesia:table_info(Tab, frag_dist)µÄ·µ»Ø½á¹û
+                            mnesia:table_info(Tab, frag_dist)ÔÚmnesia_fragÉÏÏÂÎÄµÄ·µ»Ø½á¹û
 d. del_frag É¾³ıÒ»¸öÆ¬¶Ï
 e. {add_node, Node} Ôö¼ÓÒ»¸öĞÂ½Úµãµ½½Úµã³Ønode_pool, ĞÂµÄ½Úµã³Ø½«Ó°Ïì´Óº¯Êımnesia:table_info(Tab, frag_dist)·µ»Ø
                     µÄÁĞ±í
 f. {del_node, Node} ´Ó½Úµã³Ønode_poolÉ¾³ıÒ»¸ö½Úµã£¬ĞÂµÄ½Úµã³Ø½«Ó°Ïì´Óº¯Êımnesia:table_info(Tab, frag_dist)·µ»Ø
                     µÄÁĞ±í
 
-Àı×Ó:
+Àı×Ó: £¨ÔÙµ¥¸ö½ÚµãÉÏÑİÊ¾£©
 mnesia:create_schema([node()]).
 ok
 mnesia:start().
@@ -197,7 +199,7 @@ mnesia:table_info(user1, frag_properties).              %% ²é¿´·ÖÆ¬ÊôĞÔµÄĞÅÏ¢£¬È
  {hash_state,{hash_state,1,1,0,phash2}},
  {n_fragments,1},
  {node_pool,['node1@liqiang-tfs']}]
-InfoFun = fun(Item) -> mnesia:table_info(user1, Item) end.        %% mnesia:table_info/2¿ÉÒÔÔÚmnesia_fragµÄÉÏÏÂÎÄÖĞÀ©Õ¹Ò»Ğ©KeyInfo¹©Ê¹ÓÃ
+InfoFun = fun(Item) -> mnesia:table_info(user1, Item) end.         %% mnesia:table_info/2¿ÉÒÔÔÚmnesia_fragµÄÉÏÏÂÎÄÖĞÀ©Õ¹Ò»Ğ©KeyInfo¹©Ê¹ÓÃ
 #Fun<erl_eval.6.13229925>
 Dist = mnesia:activity(sync_dirty, InfoFun, [frag_dist], mnesia_frag).
 [{'node1@liqiang-tfs',1}]
@@ -314,13 +316,15 @@ mnesia:change_table_frag(user1, {add_frag, ['node1@liqiang-tfs', 'node2@liqiang-
 mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).             
 %% ²é¿´fragmentµÄ·Ö²¼ (µ±Ç°node3ºÍnode4ÉÏÃ»ÓĞfragment)
 %% ³õ²½µÃ³öÒ»¸ö¹æÂÉ: 
-%% ÔÚadd_fragµÄÊ±ºò£¬²ÎÊıNodesOrDist£¬Èç¹ûÎÒÃÇÎªuser1±íÔö¼Ó
+%% ÔÚadd_fragµÄÊ±ºò£¬²ÎÊıÊ¹ÓÃNodesOrDistµÄÊ±ºò£¬Èç¹ûÎÒÃÇÎªuser1±íÔö¼Ó
 %% Æ¬¶Î£¬ÔòNodesOrDistÖÁÉÙÒª±£Ö¤ÎªÃ¿¸ö¸±±¾·ÖÅäµ¥Ôª£¬Ò²¾ÍÊÇÈç¹ûuser1
-%% ±íÓĞÁ½¸ö¸±±¾£¬ÔòNodesOrDistÖÁÉÙÒª°üº¬Á½¸ö½Úµã. °´ÕÕÉÏÃæ²âÊÔµÄ
-%% ½á¹û¿´ÏÂÀ´£¬Èç¹ûNodesOrDistÖĞ°üº¬user1¸±±¾´æ´¢µÄ½Úµã£¬ÔòÓÅÏÈÔÚ¸±±¾´æ´¢µÄ
-%% ½ÚµãÉÏÏÔÊ¾£¬Õâ¾ÍÊÇÎªÊ²Ã´ËäÈ»ÎÒÃÇ°üº¬ÁËnode3,µ«ÊÇËüÉÏÃæµÄfragmentµÄÊıÁ¿ÈÔÈ»Îª0
-%%
-%% ²¢ÇÒĞÂµÄÆ¬¶Î½«»ñµÃÓëµÚÒ»¸öÆ¬¶ÎÍ¬ÑùÊıÁ¿µÄ¸±±¾.
+%% ±íÓĞÁ½¸ö¸±±¾£¬ÔòNodesOrDistÖÁÉÙÒª°üº¬Á½¸ö½Úµã. 
+%% 
+%% °´ÕÕÉÏÃæ²âÊÔµÄ½á¹û¿´ÏÂÀ´£¬Èç¹ûuser1±íÓĞÁ½¸ö¸±±¾?¶øÎÒÃÇ´«ÁË3¸öNodes½Úµã×÷Îª²ÎÊı,
+%% »á¸ù¾İÄã´«µÄ½ÚµãµÄË³Ğò£¬ÈçÉÏÃæµÄÀı×Ó£¬ÎÒÃÇ°Ñnode1ºÍnode2·ÅÔÚÇ°Ãæ£¬ËùÒÔËäÈ»Ôö¼ÓÁËÁ½´Îfragment,
+%% µ«ÊÇnode3Ê¼ÖÕÃ»ÓĞ´æ´¢ÈÎºÎµÄfragment. Ô­Òò¾ÍÊÇËüÅÅÔÚ×îºó.
+%% 
+%% ĞÂµÄÆ¬¶Î½«»ñµÃÓëµÚÒ»¸öÆ¬¶ÎÍ¬ÑùÊıÁ¿µÄ¸±±¾.
 %% ¿ÉÒÔÍ¨¹ımnesia_fragÉÏÏÂÎÄÖĞµÄ: table_info(Tab, InfoKey) 
 %% n_ram_copies£¬n_disc_copies£¬ n_disc_only_copiesÀ´È·¶¨
 [{'node3@liqiang-tfs',0},
@@ -358,6 +362,29 @@ mnesia:activity(sync_dirty, Info, [frag_dist], mnesia_frag).              %% ²âÊ
  {'node2@liqiang-tfs',5},
  {'node1@liqiang-tfs',5}]
 
+5. ½Úµã³Ønode_poolÈçºÎ±£³Ö´æ´¢µÄfragmentÔÚ¸÷¸ö½ÚµãÖĞµÄÆ½ºâ?
+ÖØµãÊÇÀí½ânode_pool, ·Çnode_poolÉÏµÄ½ÚµãÒ²¿ÉÒÔ´æ´¢fragment. µ«ÊÇËüÃÇ»áÔÚmnesia:table_info(Tab, frag_dist)
+µÄ·µ»Ø½á¹ûÅÅÔÚºóÃæ.
+
+ÔÚÔö¼ÓfragmentµÄÊ±ºòÎÒÃÇÒªÊ¹ÓÃmnesia:table_info(Tab, frag_dist)¶ø²»ÊÇNodesÀ´±£Ö¤node_poolÖĞµÄ
+fragment´æ´¢Æ½ºâ.
+½áÂÛ: 
+²»ÔÚ½Úµã³ØÖĞµÄ½ÚµãÒ²¿ÉÒÔ´æ·Åfragment,µ«ÊÇÔÚmnesia:table_info(Tab, frag_dist)µÄ½á¹ûÖĞ
+¼´Ê¹count½ÏµÍ£¬Ò²»á³öÏÖÔÚ×îºó.
+
+Mnesia»á³¢ÊÔÈÃÃ¿¸öÆ¬¶ÎµÄ¸±±¾¾ùÔÈµÄ·Ö²¼ÔÚ½Úµã³ØµÄËùÓĞ½Úµã, ÆÚÍûËùÓĞ½Úµã¶¼ÓĞÍ¬ÑùÊıÁ¿µÄ¸±±¾½áÊø.
+ÒòÎªmnesia:table_info(Tab, frag_dist)½á¹ûµÄ·µ»ØË³ĞòÊÇÊ×ÏÈ°Ñnode_poolÖĞµÄ½Úµã°´ÕÕcount´ÓĞ¡
+µ½´óµÄË³Ğò·µ»Ø£¬×îºóÔÚ¼ÓÉÏ²»ÔÚnode_poolÖĞµÄ½Úµã£¬¶ømnesia:change_table_frag(Tab, {add_frag, NodesOrDist})
+ÊÇ¸ù¾İ´«ÈëµÄnodesµÄË³Ğò¿ªÊ¼´æ´¢fragmentµÄ£¬node_poolÖĞcountĞ¡µÄÔÚÇ°Ãæ£¬ËùÒÔ»áÓÅÏÈÔÚcountĞ¡µÄnodeÉÏ
+Ôö¼Ófragment,´Ó¶øÈ¡µÃÆ½ºâ.
+
+
+6. ×Ü½áMnesiaÊ¹ÓÃlinear hashingÏßĞÔ¹şÏ£µÄÌØµã?
+Ã¿´ÎÖ»Ôö¼Ó»òÕß¼õÉÙÒ»¸ö·ÖÆ¬
+Ã¿´ÎÖ»Ó°ÏìÔ­À´Ò»¸ö·ÖÆ¬ÖĞµÄ×¡»§
+À©³äµÄÊ±ºòÊÜÓ°ÏìµÄ·ÖÆ¬ÖĞÓĞ½«½üÒ»°ëµÄ×¡»§Ç¨áãµ½ĞÂµÄ·ÖÆ¬
+Ëõ¼õÊ±Ò»¸ö·ÖÆ¬ÖĞµÄÓÃ»§¶¼Ç¨áãµ½ÁíÒ»¸ö·ÖÆ¬
+´ó¶àÊıÇé¿öÏÂ£¬¸÷·ÖÆ¬ÖĞ×¡»§µÄÊıÁ¿²»¾ùºâ
 
 
 
