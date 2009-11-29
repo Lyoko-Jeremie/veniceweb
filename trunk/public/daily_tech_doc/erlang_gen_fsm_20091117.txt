@@ -12,7 +12,6 @@ StateName(Event, StateData) ->
 
 2. 一个密码锁的例子:
 [test.erl]
-
 -module(test).
 -export([start_link/1, button/1]).
 -export([init/1, locked/2, open/2]).
@@ -25,7 +24,7 @@ button(Digit) ->
 
 init(Code) ->
     SoFar = [],
-    {ok, locked, {SoFar, Code}}.  %% {ok, StateName, StateData}
+    {ok, locked, {SoFar, lists:reverse(Code)}}.  %% {ok, StateName, StateData}
 
 locked({button, Digit}, {SoFar, Code}) ->
     case [Digit|SoFar] of
@@ -44,3 +43,36 @@ open(timeout, StateData) ->
     io:format("the door closed again~n.", []),
     {next_state, locked, StateData}.
  
+ 
+
+测试:
+test:start_link("mycode"). %% 输入mycode作为安全门的初始密码
+{ok,<0.66.0>}
+test:button($m). %% 输入正确密码开锁: [$m, $y, $c, $o, $d, $e]作为密码开锁
+ok
+test:button($y).
+ok
+test:button($c).
+ok
+test:button($o).
+ok
+test:button($d).
+ok
+test:button($e).
+you have open the door, the door will close again after 30 seconds
+ok
+the door closed again  %% 门打开30秒后自动关闭
+test:button($m).       %% 输入错误密码开锁: [$m, $y, $c, $a, $d, $e]作为密码开锁
+ok
+test:button($y).
+ok
+test:button($c).
+ok
+test:button($a).
+ok
+test:button($d).
+ok
+test:button($e).
+you inputed the wrong code, go to the init state again
+ok
+

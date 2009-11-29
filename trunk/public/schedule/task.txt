@@ -81,8 +81,8 @@ Description:
 
 --------------------------
 ID#10
-Date#2009/11/17
-State#Active
+Date#2009/11/17 - 2009/11/29
+State#Closed
 Description:
 总结Erlang OTP中的gen_fsm的主要内容
 总结文档erlang_gen_fsm_20091117.txt
