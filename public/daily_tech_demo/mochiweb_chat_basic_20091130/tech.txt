@@ -1,0 +1,102 @@
+使用mochiweb逐步的构建一个chat系统
+
+1. 
+v1: Sending and Receiving Chat Messages
+构建了一个基本的msg_router模型，可以通过chat_client提供的API给这个router发消息.
+router只是简单的接收到消息就显示，并不能对消息进行分发.
+
+这个例子就是构建了一个基本的send/recv message的结构.
+
+测试v1:
+RouterPid = msg_router:start().    %% 启动msg_router                         
+<0.66.0>   
+chat_client:send_message(RouterPid, RouterPid, "this is a test msg"). %% 发送一条测试消息给msg_router
+Received: "this is a test msg"     %% router接收到来自chat_client的消息.
+{send_chat_msg,<0.66.0>,"this is a test msg"}
+msg_router:stop(RouterPid).        %% 关闭msg_router
+Shutting down
+shutdown
+
+
+2.
+v2: Messaging Clients By Nickname
+增加了注册/注销的接口， 使用dict来存储用户的信息，可以发消息给任意注册过的用户, router负责消息的分发.
+这个版本的client和router只能运行在一个node上(在下个版本中我们将client和router分布到多个node上).
+
+注意:
+这个版本引入了动态绑定消息显示函数的技术，消息显示函数可以动态的绑定，定制.
+
+测试v2:
+chat_client:start_router().                  %% 通过chat_client的接口启动msg_router
+true
+chat_client:register_nickname("liqiang").    %% 注册用户
+{register_nick,"liqiang",#Fun<chat_client.0.96029892>}
+chat_client:send_message("liqiang", "test msg"). %% 发消息给注册过的用户，用户收到消息
+"liqiang" received: "test msg"
+{send_chat_msg,"liqiang","test msg"}
+chat_client:send_message("huangwei", "test msg").  %% 发消息给没有注册过的用户，不能收到消息
+Unknown client
+{send_chat_msg,"huangwei","test msg"}
+chat_client:unregister_nickname("liqiang").    %% 注销一个用户
+{unregister_nick,"liqiang"}
+chat_client:send_message("liqiang", "test msg"). %% 发消息给注销过的用户，不能收到消息
+Unknown client
+{send_chat_msg,"liqiang","test msg"}
+
+
+3.
+v3: Distributing Clients In A Multi-node Environment
+引入分布是的结构，使router可以运行在单独的节点上, 多个client可以运行在不同的节点上.
+
+补充:
+全局锁: 
+Global locks have lock identities and are set on a specific resource. For instance, the specified resource 
+could be a pid. When a global lock is set, access to the locked resource is denied for all other resources 
+other than the lock requester.
+
+测试v3:
+(启动两个node, node1运行router,node2运行client)
+Node1
+chat_client:start_router().           %% 启动Router
+yes
+Error! Unknown client: "huangwei"     %% 服务器提示信息
+Error! Unknown client: "liqiang"      %% 服务器提示信息
+
+
+Node2
+chat_client:register_nickname("liqiang").   %% 注册用户
+<5536.49.0>
+chat_client:send_message("liqiang", "test msg"). %% 向已经注册的用户发消息
+<5536.49.0>
+"liqiang" received: "test msg"
+chat_client:send_message("huangwei", "test msg"). %% 向没有注册的用户发消息, node1服务器提示: Error! Unknown client: "huangwei"
+<5536.49.0>
+chat_client:unregister_nickname("liqiang").      %% 注销用户
+<5536.49.0>
+chat_client:send_message("liqiang", "test msg").  %% 向注销的用户发消息, node1服务器提示: Error! Unknown client: "liqiang"
+
+
+4.
+v4:
+
+测试v4:
+
+5.
+v5:
+
+测试v5:
+
+6.
+v6:
+
+测试v6:
+
+7.
+v7:
+
+测试v7:
+
+8.
+v8:
+
+测试v8:
