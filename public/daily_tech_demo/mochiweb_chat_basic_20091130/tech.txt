@@ -121,8 +121,7 @@ chat_client:send_message("liqiang", "msg - a").  %% Ïò×¢ÏúµÄÓÃ»§·¢ÏûÏ¢, node1·şÎ
 
 5.
 v5: Unit Testing with EUnit
-
-²âÊÔv5:
+ĞÂÔöÁËÒ»ÆªÎÄµµ: daily_tech_doc\eunit_20091130.txt, ¿ÉÒÔ²Î¿¼ÕâÆªÎÄµµ¶ÔÒÑÓĞµÄÄ£¿éÔö¼Óµ¥Ôª²âÊÔ.
 
 6.
 v6: Adding REST Support with MochiWeb
