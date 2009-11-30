@@ -57,10 +57,10 @@ other than the lock requester.
 测试v3:
 (启动两个node, node1运行router,node2运行client)
 Node1
-chat_client:start_router().           %% 启动Router
+chat_client:start_router().           %% 在node1上启动Router
 yes
-Error! Unknown client: "huangwei"     %% 服务器提示信息
-Error! Unknown client: "liqiang"      %% 服务器提示信息
+Error! Unknown client: "huangwei"     %% 服务器提示信息(此刻huangwei没有注册)
+Error! Unknown client: "liqiang"      %% 服务器提示信息(此刻liqiang已经注销)
 
 
 Node2
@@ -77,26 +77,64 @@ chat_client:send_message("liqiang", "test msg").  %% 向注销的用户发消息, node1服
 
 
 4.
-v4:
+v4: Storing Messages in the Mnesia Database
+新增了Mnesia来存储用户的消息，当前的逻辑是:
+如果用户注册，消息直接发送给用户
+如果用户没有注册，消息会存储在Mnesia中，等用户注册后一次性发给他
+
 
 测试v4:
+启动node1来作为router, 启动node2作为client
+werl.exe -setcookie testcookie -sname node1 -mnesia dir '"c:/home/mnesia/node1"'
+werl.exe -setcookie testcookie -sname node2 
+
+node1
+chat_client:start_router().  %% 在node1上启动Router
+yes
+Archived message for "huangwei"   %% 服务器提示信息(此刻huangwei没有注册)
+Archived message for "huangwei"   %% 服务器提示信息(此刻huangwei没有注册)
+Archived message for "liqiang"    %% 服务器提示信息(此刻liqiang已经注销)
+
+
+node2
+chat_client:register_nickname("liqiang"). %% 注册用户
+<8731.54.0>
+chat_client:send_message("liqiang", "msg - 1").  %% 向已经注册的用户发消息
+<8731.54.0>
+"liqiang" received: "msg - 1"
+chat_client:send_message("huangwei", "msg - 1"). %% 向没有注册的用户发消息, node1服务器提示: Archived message for "huangwei", 消息会存储在DB中
+<8731.54.0>
+chat_client:send_message("huangwei", "msg - 2"). %% 向没有注册的用户发消息, node1服务器提示: Archived message for "huangwei", 消息会存储在DB中
+<8731.54.0>
+chat_client:register_nickname("huangwei").    %% 注册用户，检测出注册以前DB中收到的两条消息.  
+<8731.54.0>
+"huangwei" received: "msg - 1"
+"huangwei" received: "msg - 2"
+chat_client:send_message("huangwei", "msg - 3"). %% 向已经注册的用户发消息
+<8731.54.0>
+"huangwei" received: "msg - 3"
+chat_client:unregister_nickname("liqiang").       %% 注销用户
+<8731.54.0>
+chat_client:send_message("liqiang", "msg - a").  %% 向注销的用户发消息, node1服务器提示: Archived message for "liqiang", 消息会存储在DB中
+<8731.54.0>
+
 
 5.
-v5:
+v5: Unit Testing with EUnit
 
 测试v5:
 
 6.
-v6:
+v6: Adding REST Support with MochiWeb
 
 测试v6:
 
 7.
-v7:
+v7: Writing Servers with gen_server
 
 测试v7:
 
 8.
-v8:
+v8: OTP Supervisor and Application Behaviors
 
 测试v8:
