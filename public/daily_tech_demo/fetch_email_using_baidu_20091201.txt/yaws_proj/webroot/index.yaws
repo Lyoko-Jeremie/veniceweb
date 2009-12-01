@@ -1,0 +1,21 @@
+<html>
+<head>
+  <title>Email Parse Service</title>
+</head>
+<body>
+  <form method="get" action="/index.yaws">
+    <input name="name" type="text"/>
+    <input type="submit"/>
+  </form>
+  <erl>
+    out(Arg) -> 
+        Data = case queryvar(Arg, "name") of
+                 {ok, Name} ->
+                     http_server:query_baidu(Name);
+                 undefined ->
+                     "didn't find email address"
+               end,
+      {html, io_lib:format("~p~n", [Data])}.
+  </erl>
+</body>
+</html>
