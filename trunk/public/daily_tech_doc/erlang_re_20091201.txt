@@ -32,6 +32,7 @@ re:run("abcdabd", "ab(c|d)", [{capture, first, list}, {offset, 3}]). %% 以list的
 3. 匹配邮件地址:
 一个可以匹配Subject中所有邮件地址的函数:
 匹配邮件使用的正则表达式是: \\w+@\\w+\\.\\w+
+(这个表达式并不完善,但是现在测试下来可以工作:)
 
 代码:
 -module(util).
@@ -42,11 +43,11 @@ parse_email(Subject) ->
 
 parse_email(Subject, Offset, Acc) ->
     RE = "\\w+@\\w+\\.\\w+", %% 匹配Email的正则表达式
-    case re:run(Subject, RE, [{capture, first, index}, {offset, Offset}]) of
+    case re:run(Subject, RE, [dotall, {capture, first, index}, {offset, Offset}]) of
 	nomatch ->
 	    Acc;
 	{match, [{Index, Len}]} ->
-	    case re:run(Subject, RE, [{capture, first, list}, {offset, Offset} ]) of
+	    case re:run(Subject, RE, [dotall, {capture, first, list}, {offset, Offset} ]) of
 		nomatch ->
 		    error;
 		{match, [Match]} ->
@@ -62,3 +63,29 @@ util:parse_email(Subject).
 ["tfs3@gmail.com","tfs@gmail.com","liqiang@gmail.com"]
 util:parse_email(SubjectBin).       
 ["tfs3@gmail.com","tfs@gmail.com","liqiang@gmail.com"]
+
+4. 删除HTML文档中的HTML标签:
+
+代码:
+-module(util).
+-compile(export_all).
+
+remove_html_tag(Data) ->
+    remove_html_tag(Data, 0).
+
+remove_html_tag(Data, Offset) ->
+    case re:run(Data, "<.*?>", [dotall, {capture, first, index}, {offset, Offset}]) of
+	nomatch ->
+	    Data;
+	{match, [{Index, _Len}]}->
+	    %% 注意: Offset = Index, 以为长度为Len的数据已经被替换成[]
+	    remove_html_tag(re:replace(Data, "<.*?>", "", [dotall, {return, list}]), Index) 
+    end.
+
+测试:
+Data = "<html><body>test<font>liqiang</font>@gmail.com</body></html>",
+util:remove_html_tag(Data).
+"testliqiang@gmail.com"      %%观察测试结果, 当前版本的解析函数存在问题(当tag去掉之后，文本内容可能连接到一起)                
+util:remove_html_tag(Data).
+"test liqiang@gmail.com"     %%观察测试结果
+
