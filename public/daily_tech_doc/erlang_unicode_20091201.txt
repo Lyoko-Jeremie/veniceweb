@@ -1,0 +1,173 @@
+介绍Erlang对Unicode的支持
+
+1. 从ASCII的局限性说起:
+ASCII编码用一个字节存储数据, 因此最多可以存储2的8次方个字符，也就是256个字符。
+这种编码方式无法存储中文等复杂的文字系统。所以unicode应运而生.
+Unicode编码系统分为: 编码方式和实现方式两个层次 
+
+2. Unicode编码方式:
+Unicode为每种语言每个字符设定了统一并且唯一的二进制编码, 它可以容纳世界上所有的文字和字符的编码方式.
+Unicode只定义了编码方式，没有定义具体的实现方式.
+
+Unicode使用0-0x10FFFF来映射这些字符, 但是大部分字符的范围都在 0 - 0xFFFF之间，也就是用两个字节来表示
+一个字符.(UNICODE只有一个字符集，中、日、韩的三种文字占用了Unicode中0x3000到0x9FFF的部分)
+我们可以理解为一个汉字有两个字节编码表示.
+
+
+3. Unicode实现方式:
+<1> UTF-8(兼容ASCII编码)
+UTF-8的特点是对不同范围的字符使用不同长度的编码。对于0x00-0x7F之间的字符，UTF-8编码与ASCII编码完全相同.
+
+以字节为单位对Unicode进行编码，从Unicode到UTF-8的编码方式如下:
+Unicode编码(16进制)　║　UTF-8 字节流(二进制)
+　　000000 - 00007F　║　0xxxxxxx
+　　000080 - 0007FF　║　110xxxxx 10xxxxxx
+　　000800 - 00FFFF　║　1110xxxx 10xxxxxx 10xxxxxx
+　　010000 - 10FFFF　║　11110xxx 10xxxxxx 10xxxxxx 10xxxxxx 
+
+
+4. Erlang中的Unicode
+<1> 通过Binary构建UTF8
+在构建UTF8的时候, 对应的integer(也就是字符的unicode编码)必须在下面的范围, 否则出错 'bad argument'
+16#0000  - 16#D7FF
+16#E000  - 16#FFFD
+16#10000 - 16#10FFFF
+
+对于UTF8, 每个integer会生成1到4个字符:
+例如(Unicode编码为1024的字符对应的UTF8的二进制编码):
+<<1024/utf8>>.
+<<208,128>>
+
+<2> 二进制匹配, 当进行Binary Match的时候，如果指定UTF类型, 变量成功匹配后将拥有一个位于下面三个区间的整数.
+16#0000  - 16#D7FF
+16#E000  - 16#FFFD
+16#10000 - 16#10FFFF
+
+例如:(U匹配了2个bytes)
+Bin = <<1024/utf8>>.
+<<208,128>>
+<<U/utf8>> = Bin.
+<<208,128>>
+U.
+1024
+
+<3> 补充: 
+a. file:consult(FileName)从文件中读取Erlang Term, 这些Erlang Term以'.'分割
+   返回{ok, Terms}或者{error, Reason}.
+
+   例如下面文件test.txt的内容是(一个term):
+   [
+    {desc, "this is a desc"}, 
+    {author, "liqiang"}
+   ].
+   file:consule("test.txt")的返回结果是:
+   {ok,[[{desc,"this is a desc"},{author,"liqiang"}]]}
+   
+
+   如果test.txt的内容是(多个term):
+   {desc, "this is a desc"}.
+   {author, "liqiang"}.
+   file:consule("test.txt")的返回结果是:
+   {ok,[{desc,"this is a desc"},{author,"liqiang"}]}
+
+b. proplists解析option.
+proplists:get_value(key1, [{key1, val1},{key2, val2},{key3, val3}]).  
+val1
+
+<4> 读取utf8保存的文件内容. 
+重点理解两个概念:
+unicode list:   unicode:characters_to_list/1 
+unicode binary: unicode:characters_to_binary/1 
+
+
+我们保存下面文件为utf8编码:
+test.txt
+[{desc, "这是一个测试文件"},
+ {author, "liqiang"}].
+
+使用如下代码测试:
+-module(test).
+-compile(export_all).
+
+demo1() ->
+    %% test.txt UTF8编码: 
+    %% Terms = [{desc, Desc}, {author, Author}]
+    {ok, [Terms]} = file:consult("test.txt"),
+    Desc = proplists:get_value(desc, Terms),
+    Author = proplists:get_value(author, Terms),
+    
+    DescUnicodeBin = iolist_to_binary(Desc),     %% 获取Desc对应的二进制内容, 这里本身就是Unicode Binary(UTF8 encoding), 
+                                                 %% 不需要调用unicode:characters_to_binary/1转换.
+    DescUnicodeList = unicode:characters_to_list(DescUnicodeBin),  %% unicode的list, 其中每个integer都是unicode编码的数值
+    AuthorUnicodeBin = iolist_to_binary(Author), 
+    AuthorUnicodeList = unicode:characters_to_list(AuthorUnicodeBin),
+    
+    %% ~s  :  以字符串的形式显示
+    %% ~ts :  以Unicode字符串的形式显示(If Unicode translation is in effect (~ts))
+    io:format("desc bin : ~ts~ndesc bin: ~p~n", [DescUnicodeBin, DescUnicodeBin]),
+    io:format("desc list: ~ts~ndesc list: ~p~n", [DescUnicodeList, DescUnicodeList]),
+    io:format("author bin : ~ts~nauthor bin: ~p~n", [AuthorUnicodeBin, AuthorUnicodeBin]),
+    io:format("author list: ~ts~nauthor list: ~p~n", [AuthorUnicodeList, AuthorUnicodeList]).
+
+测试:
+(node2@liqiang-tfs)59> test:demo1().
+desc bin : 这是一个测试文件                                     %%以~ts的形式显示
+desc bin: <<232,191,153,230,152,175,228,184,128,228,184,170,230,181,139,232,
+            175,149,230,150,135,228,187,182>>                   %%以~p的形式显示
+desc list: 这是一个测试文件                                     %%以~ts的形式显示
+desc list: [36825,26159,19968,20010,27979,35797,25991,20214]    %%以~p的形式显示, 这个是unicode的list, 每个ingeter都是一个unicode编码.
+%%UTF8在 0 ~ 16#007F的范围内兼容ASCII编码, 使用一个字节表示.
+author bin : liqiang
+author bin: <<"liqiang">>
+author list: liqiang
+author list: "liqiang"
+ok
+
+上面例子的逻辑是:
+首先将内容从iolist转换成个binary, DescUnicodeBinary是Desc对应的unicode binary(使用UTF8编码)，
+然后通过unicode:characters_to_list/1转换unicode binary到unicode list.
+unicode list中所有的element都是integer, 也就代表一个unicode编码.
+
+unicode:characters_to_list(Data)默认调用 unicode:characters_to_list(Data, unicode).
+
+
+<5> 保存一个文件为UTF8编码:
+demo2() ->
+    %% 对于一个中文字符串"这是一个测试文件", 转换成unicode binary(UTF8 encoding)的过程是:
+    %% <1> 使用iolist_to_binary("这是一个测试文件")或者<<"这是一个测试文件">>获得Binary.
+    %% <2> 使用unicode:characters_to_list/1获得Unicode List
+    %%     (使用unicode:characters_to_binary/1获得Unicode Binary)
+    DescUnicodeList = unicode:characters_to_list(iolist_to_binary("这是一个测试文件")), %% Unicode List
+    %% 或者:  DescUnicodeList = unicode:characters_to_list(<<"这是一个测试文件">>), %% Unicode List
+    List = lists:concat(["[{desc, \"", DescUnicodeList, "\"}, {author, \"liqiang\"}]."]),
+    Bin = unicode:characters_to_binary(List),                      %% Unicode Binary(UTF8 encoding)
+    file:write_file("test_out.txt", Bin).
+
+会生成一个test_out.txt文件, 内容是:
+[{desc, "这是一个测试文件"}, {author, "liqiang"}].
+
+生成的这个文件可以让上面<4>中的demo1/0来读取，返回正常的结果.
+
+总结:
+demo3() ->
+    DescUnicodeList = unicode:characters_to_list(<<"这是一个测试文件">>),
+    DescUnicodeList.
+返回 -> [36825,26159,19968,20010,27979,35797,25991,20214]
+
+demo4() ->
+    DescUnicodeBinary = unicode:characters_to_binary(<<"这是一个测试文件">>),
+    DescUnicodeBinary.
+返回 -> <<232,191,153,230,152,175,228,184,128,228,184,170,230,181,
+          139,232,175,149,230,150,135,228,187,182>>
+
+
+
+
+
+
+
+
+
+
+
+
