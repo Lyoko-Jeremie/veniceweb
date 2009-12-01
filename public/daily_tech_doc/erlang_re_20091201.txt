@@ -1,0 +1,64 @@
+介绍Erlang的正则表达式模块re
+
+1. 正则表达式的总结:
+\\ 转义字符
+.  除了换行符之外匹配任意字符(默认不匹配换行符，我们可以使用dotall option来让它匹配换行符)
+*  0个或者多个quantifier
++  1个或者多个quantifier.
+
+
+\\w 任意的'word'(范围是a-z,A-Z,_,0-9)
+
+
+2. 使用re来测试正则表达式的匹配:
+re:run(Subject,RE,Options)
+这个函数的缺点是一次只能匹配Subject中一个满足条件的，如果要匹配全部，需要自己代码完成.
+
+例如:
+re:run("abcdabc", "abc", []).  %% 匹配abc, 只匹配第一个, 默认offset为0
+{match,[{0,3}]}
+re:run("abcdabc", "abc", [{offset, 3}]).  %%%% 匹配abc, 从"abcdabc" -> 的子串"dabc"
+{match,[{4,3}]}
+re:run("abcdabc", "abc", [{capture, all, list}]). %% 以list的形式返回结果
+{match,["abc"]}
+re:run("abcdabd", "ab(c|d)", [{capture, all, list}]).  %% 以list的形式返回结果, 包含group
+{match,["abc","c"]}
+re:run("abcdabd", "ab(c|d)", [{capture, first, list}]). %% 以list的形式返回结果, 不包含group
+{match,["abc"]}
+re:run("abcdabd", "ab(c|d)", [{capture, first, list}, {offset, 3}]). %% 以list的形式返回结果, 不包含group, 子串匹配.
+{match,["abd"]}
+
+
+3. 匹配邮件地址:
+一个可以匹配Subject中所有邮件地址的函数:
+匹配邮件使用的正则表达式是: \\w+@\\w+\\.\\w+
+
+代码:
+-module(util).
+-compile(export_all).
+
+parse_email(Subject) ->
+    parse_email(Subject, 0, []).
+
+parse_email(Subject, Offset, Acc) ->
+    RE = "\\w+@\\w+\\.\\w+", %% 匹配Email的正则表达式
+    case re:run(Subject, RE, [{capture, first, index}, {offset, Offset}]) of
+	nomatch ->
+	    Acc;
+	{match, [{Index, Len}]} ->
+	    case re:run(Subject, RE, [{capture, first, list}, {offset, Offset} ]) of
+		nomatch ->
+		    error;
+		{match, [Match]} ->
+		    parse_email(Subject, Index + Len, [Match|Acc])
+            end
+	    
+    end.
+
+测试:
+Subject = "liqiang@gmail.com tfs@gmail.com adfa,dasfad tfs3@gmail.com adfasd",
+SubjectBin = <<"liqiang@gmail.com tfs@gmail.com adfa,dasfad tfs3@gmail.com adfasd">>,
+util:parse_email(Subject).       
+["tfs3@gmail.com","tfs@gmail.com","liqiang@gmail.com"]
+util:parse_email(SubjectBin).       
+["tfs3@gmail.com","tfs@gmail.com","liqiang@gmail.com"]
