@@ -4,9 +4,14 @@
 parse_email(Subject) ->
     parse_email(Subject, 0, []).
 
+%%
+%% Email format:
+%% liqiang@gmail.com         Support
+%% liqiang_123@gmail.com     Support
+%% liqiang_123@gmail.com.cn  (Not Support)
 parse_email(Subject, Offset, Acc) ->
-    RE = "[a-z|A-Z|1-9]\\w+@\\w+\\.\\w+[a-z|A-Z|1-9]", 
     %% RE = "\\h\\w+@\\w+\\.\\w+",
+    RE = "[a-z|A-Z|1-9]\\w+@\\w+\\.\\w+[a-z|A-Z|1-9]", 
     case re:run(Subject, RE, [dotall, {capture, first, index}, {offset, Offset}]) of
 	nomatch ->
 	    Acc;

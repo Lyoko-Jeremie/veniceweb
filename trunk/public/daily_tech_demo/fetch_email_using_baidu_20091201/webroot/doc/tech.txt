@@ -7,4 +7,47 @@ resource:
 http://glob.com.au/sendmail/
 http://www.indigostar.com/sendmail.htm
 
-1.
+1. 百度的请求'API':
+通过拼接URL，发送GET请求来实现模拟发送baidu搜索请求:
+
+<1> ASCII (Data=liqiang)
+http://www.baidu.com/s?wd=email                        一个搜索关键字email
+http://www.baidu.com/s?wd=email+liqiang                二个搜索关键字email liqiang
+http://www.baidu.com/s?wd=email+liqiang+keywork        三个搜索关键字email liqiang keyword
+
+<2> Unicode (Data=李强)
+http://www.baidu.com/s?wd=email                        一个搜索关键字email
+http://www.baidu.com/s?wd=email+%C0%EE%C7%BF           二个搜索关键字email 李强
+http://www.baidu.com/s?wd=email+%C0%EE%C7%BF+keyword   三个搜索关键字email 李强 keyword
+
+<3> GB2312和UTF-8对submit产生的URL的影响:
+页面的内容: (我们输入'李强'提交表单的时候)
+
+-------------------------------
+编码  GB     Unicode   UTF-8
+李    C0EE   674E      E69D8E
+强    C7BF   5F3A      E5BCBA
+-------------------------------   
+
+<form method="get" action="/index.yaws">
+  <input name="name" type="text"/>
+  <input type="submit"/>
+</form>
+
+使用GB2312对HTML页面编码
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+产生的URL: http://localhost/index.yaws?name=%E6%9D%8E%E5%BC%BA
+E69D8E  E5BCBA   -> UTF-8编码
+
+使用UTF-8对HTML页面编码
+<meta content="text/html; charset=gb2312" http-equiv="Content-Type"/>
+产生的URL: http://localhost/index.yaws?name=%C0%EE%C7%BF
+C0EE   C7BF      -> GB2312编码
+
+总结:
+页面使用不同的编码格式, 在提交表单的时候，返回给服务器的内容不同. 
+页面使用UTF-8,在提交'李强'的时候发送给Server的是:   E69D8EE5BCBA
+页面使用GB2312，在提交'李强'的时候发送给Server的是: C0EEC7BF 
+
+
+
