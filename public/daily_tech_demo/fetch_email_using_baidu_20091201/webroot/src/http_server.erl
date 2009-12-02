@@ -14,11 +14,23 @@ get_url(Url) ->
 	    Data
     end.
 
+%% URL: 
+%% <1> ASCII (Data=liqiang)
+%% http://www.baidu.com/s?wd=email
+%% http://www.baidu.com/s?wd=email+liqiang
+%% http://www.baidu.com/s?wd=email+liqiang+keywork
+%%
+%% <2> Unicode (Data=李强)
+%% http://www.baidu.com/s?wd=email
+%% http://www.baidu.com/s?wd=email+%C0%EE%C7%BF
+%% http://www.baidu.com/s?wd=email+%C0%EE%C7%BF+keyword
+%%
+%% Note:
+%%  Baidu using GB2312 encoding, not UTF8
 query_baidu(Data) ->
-    %% URL: 
-    %% "http://www.baidu.com/s?wd=email",
-    %% "http://www.baidu.com/s?wd=email+liqiang",
-    BaiduQuery = "http://www.baidu.com/s?wd=email+" ++ Data,
+    BaiduPrefix = "http://www.baidu.com/s?wd=",
+    UnicodeList = unicode:characters_to_binary(Data),
+    BaiduQuery = BaiduPrefix ++ "email+" ++ "%C0%EE%C7%BF",%% binary_to_list(UnicodeList),
     get_url(BaiduQuery).
     
 
@@ -40,7 +52,8 @@ recv(State, Pid) ->
 		[] ->
 		    recv(State, Pid);
 		Any ->
-		    recv([Any | State], Pid)
+		    NewState = lists:foldl(fun(X, Acc) -> [X | Acc] end, State, Any),
+		    recv(NewState, Pid)
             end;
         {http, {_Ref, stream_end, _Headers}} ->
 	    io:format("stream_end~n"),
