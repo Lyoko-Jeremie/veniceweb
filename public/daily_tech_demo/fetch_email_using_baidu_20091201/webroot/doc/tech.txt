@@ -34,12 +34,12 @@ http://www.baidu.com/s?wd=email+%C0%EE%C7%BF+keyword   三个搜索关键字email 李强 
   <input type="submit"/>
 </form>
 
-使用GB2312对HTML页面编码
+使用UTF-8对HTML页面编码
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
 产生的URL: http://localhost/index.yaws?name=%E6%9D%8E%E5%BC%BA
 E69D8E  E5BCBA   -> UTF-8编码
 
-使用UTF-8对HTML页面编码
+使用GB2312对HTML页面编码
 <meta content="text/html; charset=gb2312" http-equiv="Content-Type"/>
 产生的URL: http://localhost/index.yaws?name=%C0%EE%C7%BF
 C0EE   C7BF      -> GB2312编码
