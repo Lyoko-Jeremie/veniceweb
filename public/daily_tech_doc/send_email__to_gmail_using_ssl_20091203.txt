@@ -1,0 +1,4 @@
+介绍如何使用erlang发送email给gmail.
+
+Resource:
+http://www.planeterlang.org/en/planet/article/How_to_send_email_via_Gmail_using_Erlang/
