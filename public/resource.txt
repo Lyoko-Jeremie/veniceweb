@@ -77,6 +77,8 @@ IT业界博客
 Web前端技术:
 <1> 总结了IE & Firefox在CSS兼容性方面的问题
 http://www.cnblogs.com/jazzka702/archive/2009/06/20/1507166.html
+<2> 一个很不错的前端的demo网站，javascript & css效果的仓库
+http://www.dynamicdrive.com/
 
 Web后端技术
 <1>
