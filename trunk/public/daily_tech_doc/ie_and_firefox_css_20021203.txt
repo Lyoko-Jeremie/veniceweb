@@ -1,0 +1,22 @@
+总结IE和Firefox的兼容性问题
+
+
+1. div居中的问题:
+将下面的属性作用于一个div
+#container {
+  margin: 0 auto;
+  width: 600px;
+}
+
+在页面布局的时候，通常需要容器DIV来使内容居中，在firefox中这个div会水平居中显示，
+但是在IE下面不会.
+
+修正方式:
+给body增加一个text-align:center属性就可以了
+
+副作用:
+body下默认的所有的文本都居中了，需要自己调整.
+
+
+2. 
+

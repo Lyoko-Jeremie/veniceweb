@@ -14,7 +14,7 @@ body {
 a. 使用淡蓝色背景
 b. 在页面的顶部增加了一个图片gb.gif(背景色渐变), repeat-x属性水平重复平铺, 在顶部有背景色渐变的效果.
 
-2. 所有图片的默认属性
+2. 所有图片的默认属性(去除图片的边框)
 
 img {
   border: 0 none;    %% 第一个是border的宽度border-width，第二个是border的样式border-style.
@@ -23,20 +23,61 @@ img {
 所有的图片默认没有边框
 
 3.容器container
+(包含了div#header和div#main两个子块)
 
 #container {
-  margin: 0, auto;    %% 居中的方式: 上下为0, 左右自动
+  margin: 0 auto;    %% 居中的方式: 上下为0, 左右自动
   width; 960px;
 }
 
-页面的header和main的容器，宽度固定的div, 居中显示.
+只是个容器, div#header和div#main的容器，宽度固定的div, 居中显示.
 
-4. 标题部分header
+IE兼容性问题:
+单独使用margin: 0 auto;不能使div居中，需要给body
+增加一个text-align:center;属性.
+
+4. 标题左侧的Logo部分
 
 #logo {
   float: left;
   margin: 8px 0 0;    %% 第一个表示上, 第二个表示左右，第三个表示下
 }
 
-漂浮在header右侧的标题logo
+漂浮在header左侧的标题logo
+
+5. 标题右侧的导航登录部分
+<div id="header-nav">
+  <div id="nav-login">
+  </div>
+</div>
+
+#header-nav {
+  float: right;
+  text-align:left;  %% 消除body的text-align:center的影响
+}
+
+#nav-login {
+  background-image: url(/static/image/nav-login-bg.gif);
+  margin: 15px 0 0;
+  height: 62px;
+  width: 536px;
+}
+
+使用了两层div,最外层的div#header-nav漂浮在header的右侧, 只是一个容器.
+内层的div#nav-login使用了一个尺寸是536 X 82的的图片作为背景.
+
+6. 注意div#header最后部分的<div style="clear: both;"/>
+作用是:
+header包含两个部分:
+div#logo和div#header-nav,这两个部分都是float的，一个浮动在左边
+一个浮动在右边，都脱离了文档流.(可以认为div#header无内容)
+如果不加clear:both, 下面的的div#main中的内容会和div#header中的内容重合.
+
+简单说, 不需要一个div出现在另一个的同一行就用clear:both;
+
+7.
+
+
+
+
 

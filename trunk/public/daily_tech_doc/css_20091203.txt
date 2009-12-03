@@ -1,0 +1,23 @@
+总结CSS中遇到的问题
+
+
+1. div, 如何给div增加背景图片?
+
+#test_id {
+  background-image: url(/static/image/nav-login-bg.gif);  %% 图片尺寸是200*200
+  height:50px;
+  width: 100px;
+}
+
+当图片的尺寸大于div的尺寸的时候，图片超出div的部分默认不被显示（在IE和Firefox都兼容这种行为）.
+
+增加一个margin:
+margin: 12px 0 0;
+背景图片不会填充margin区域.
+
+增加一个:
+padding: 12px 0 0;
+背景图片会填充padding区域.
+
+
+2.
