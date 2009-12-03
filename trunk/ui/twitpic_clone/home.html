@@ -6,6 +6,35 @@
   <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
+  <script language="javascript" type="text/javascript">
+    function fixpng(o) {
+      var arVersion = navigator.appVersion.split("MSIE");
+      var version = parseFloat(arVersion[1]);
+      if((version >= 5.5) && (document.body.filters)) {
+        try {
+          var img = o;
+          var imgName = o.src.toUpperCase();
+          if (imgName.substring(imgName.length-3, imgName.length) == "PNG") {
+            var imgID = (img.id) ? "id='" + img.id + "' " : "";
+            var imgClass = (img.className) ? "class='" + img.className + "' " : "";
+            var imgTitle = (img.title) ? "title='" + img.title + "' " : "title='" + img.alt + "' ";
+            var imgStyle = "display:inline-block;" + img.style.cssText;
+            if (img.align == "left") 
+              imgStyle = "float:left;" + imgStyle;
+            if (img.align == "right") 
+              imgStyle = "float:right;" + imgStyle;
+            if (img.parentElement.href) 
+              imgStyle = "cursor:hand;" + imgStyle;   
+            
+            var strNewHTML = "<span " + imgID + imgClass + imgTitle
+                + " style=\"" + "width:" + img.width + "px; height:" + img.height + "px;" + imgStyle + ";" 
+                + "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader" 
+                + "(src=\'" + img.src + "\', sizingMethod='image');\"></span>"; img.outerHTML = strNewHTML;			
+            }
+          } catch (e){}
+        }
+    }
+  </script>
   <script type="text/javascript" href="/static/js/core.js"></script>
   <script type="text/javascript" href="/static/js/jquery-1.3.2.min.js"></script>
 </head>
@@ -15,9 +44,9 @@
   <div id="container">
 
     <div id="header">
-      <div id="logo">
+      <div id="header-logo">
         <a href="/">
-          <img src="/static/image/woomsg-logo.png"/>
+          <img src="/static/image/woomsg-logo.png" onload="fixpng(this)"/>
         </a>
       </div>
 
@@ -41,9 +70,79 @@
         </div>       
       </div>
 
+      <div style="clear:both;"></div>
+
     </div>
  
     <div id="main">
+
+      <div id="main-left">
+        <div style="height: 15px;"></div>
+        <div id="main-left-view">
+        </div>
+      </div>
+
+      <div id="main-right">
+      </div>
+
+      <div style="clear:both;"></div>
+      
+      <div id="main-recpic-top">
+        <b>最近的照片</b>
+      </div>
+
+      <div id="main-recpic">
+        <center>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+          <a href="">
+            <img class="photo-mini" height="75" width="75" src="/static/data/mini-pic.jpg"/>
+          </a>
+           
+          <div id="main-recpic-bottom">
+            关注<a class="nav" href="/">WooMsgDev</a>&nbsp;&
+            <a class="nav" href="/">KeXiao</a>获取WOOMSG的最新的消息和更新
+          </div>
+        </center>
+      </div>
+
+      <div id="main-footer">
+        <div id="footer-tag">©2009 Twitpic Inc, All Rights Reserved</div>
+        <div id="footer-nav">
+          <a class="nav">主页</a>
+          <a class="nav">博客</a>
+          <a class="nav">API</a>
+          <a class="nav">FAQ</a>
+          <a class="nav">服务条款</a>
+          <a class="nav">联系我们</a>
+        </div>
+      </div>
+
     </div>
 
   </div>

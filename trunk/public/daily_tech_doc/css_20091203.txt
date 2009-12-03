@@ -20,4 +20,67 @@ padding: 12px 0 0;
 背景图片会填充padding区域.
 
 
-2.
+2. CSS Hack
+什么是CSS hack(http://www.cssplay.org.cn/css-hack/index.html)
+由于不同的浏览器，IE6, IE7, IE8, Firefox，对CSS的解析认识不一样，因此会导致生成的页面效果不一样，
+我们就需要针对不同的浏览器去写不同的CSS，让它能够同时兼容不同的浏览器.
+这个针对不同的浏览器写不同的CSS code的过程，就叫CSS hack,也叫写CSS hack.
+
+原理:
+不同的浏览器对CSS的支持及解析结果不一样，还由于CSS中的优先级的关系。我们就可以根据这个
+来针对不同的浏览器来写不同的CSS.
+
+a. IE6能识别下划线"_"和星号" * "
+b. IE7能识别星号" * "，但不能识别下划线"_"
+c. 而firefox两个都不能认识
+
+例子:
+比如要分辨IE6和firefox两种浏览器，可以这样写：
+div{
+　background:green; /* for firefox */
+　*background:red;  /* for IE6 */
+}
+我在IE6中看到是红色的，在firefox中看到是绿色的.
+上面的css在firefox中，它是认识不了后面的那个带星号的东东是什么的，于是将它过滤掉，解析得到的结果是:div{background:green},于是理所当然这个div的背景是绿色的
+在IE6中呢，它两个background都能识别出来，它解析得到的结果是:div{background:green;background:red;},于是根据优先级别，处在后面的red的优先级高，
+于是当然这个div的背景颜色就是红色的了
+
+
+3. IE6.0 下面如何使"插入"的png图片透明?
+例如:
+<img src="a.png"/>
+
+解决方式:
+在页面的Head中加入如下javascript函数loadpng
+<img src="a.png" onload="fixpng(this)">
+
+  <script language="javascript" type="text/javascript">
+    function fixpng(o) {
+      var arVersion = navigator.appVersion.split("MSIE");
+      var version = parseFloat(arVersion[1]);
+        if((version >= 5.5) && (document.body.filters)) {
+        try {
+          var img = o;
+          var imgName = o.src.toUpperCase();
+          if (imgName.substring(imgName.length-3, imgName.length) == "PNG") {
+            var imgID = (img.id) ? "id='" + img.id + "' " : "";
+            var imgClass = (img.className) ? "class='" + img.className + "' " : "";
+            var imgTitle = (img.title) ? "title='" + img.title + "' " : "title='" + img.alt + "' ";
+            var imgStyle = "display:inline-block;" + img.style.cssText;
+            if (img.align == "left") 
+              imgStyle = "float:left;" + imgStyle;
+            if (img.align == "right") 
+              imgStyle = "float:right;" + imgStyle;
+            if (img.parentElement.href) 
+              imgStyle = "cursor:hand;" + imgStyle;   
+            
+            var strNewHTML = "<span " + imgID + imgClass + imgTitle
+                + " style=\"" + "width:" + img.width + "px; height:" + img.height + "px;" + imgStyle + ";" 
+                + "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader" 
+                + "(src=\'" + img.src + "\', sizingMethod='image');\"></span>"; img.outerHTML = strNewHTML;			
+            }
+          } catch (e){}
+        }
+    }
+  </script>
+
