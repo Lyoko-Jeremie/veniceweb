@@ -63,3 +63,23 @@ http://www.pragprog.com/screencasts/v-kserl/source_code
 
 22. 封装了mnesia的一个项目, 可以动态的添加，删除节点在mnesia cluster中
 http://code.google.com/p/fragmentron/
+
+
+后端技术博客
+<1>
+
+前端技术博客
+<1>
+
+IT业界博客
+<1>
+
+Web前端技术:
+<1> 总结了IE & Firefox在CSS兼容性方面的问题
+http://www.cnblogs.com/jazzka702/archive/2009/06/20/1507166.html
+
+Web后端技术
+<1>
+
+技术资源
+<1>
