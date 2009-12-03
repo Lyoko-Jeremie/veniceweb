@@ -14,13 +14,18 @@ body {
 a. 使用淡蓝色背景
 b. 在页面的顶部增加了一个图片gb.gif(背景色渐变), repeat-x属性水平重复平铺, 在顶部有背景色渐变的效果.
 
-2. 所有图片的默认属性(去除图片的边框)
+2. 所有图片的默认属性
 
+正常照片的属性(没有边框)
 img {
   border: 0 none;    %% 第一个是border的宽度border-width，第二个是border的样式border-style.
 }
 
-所有的图片默认没有边框
+小照片的属性
+.photo-mini {
+  border:6px solid #FFFFFF;   %% 包含一个白色边框
+}
+
 
 3.容器container
 (包含了div#header和div#main两个子块)
@@ -28,6 +33,7 @@ img {
 #container {
   margin: 0 auto;    %% 居中的方式: 上下为0, 左右自动
   width; 960px;
+  text-align: left; %% fix body text-align: center issue
 }
 
 只是个容器, div#header和div#main的容器，宽度固定的div, 居中显示.
@@ -38,7 +44,7 @@ IE兼容性问题:
 
 4. 标题左侧的Logo部分
 
-#logo {
+#header-logo {
   float: left;
   margin: 8px 0 0;    %% 第一个表示上, 第二个表示左右，第三个表示下
 }
@@ -75,7 +81,12 @@ div#logo和div#header-nav,这两个部分都是float的，一个浮动在左边
 
 简单说, 不需要一个div出现在另一个的同一行就用clear:both;
 
-7.
+7. 提供了一个class.nav, 可以去除链接的下划线, 并使用特定颜色
+a.nav {
+ color:#3198D3;   
+ font-weight:bold;  
+ text-decoration:none;  %% 去除链接的下滑线
+}
 
 
 
