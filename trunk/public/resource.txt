@@ -16,7 +16,6 @@ http://weblog.miceda.org/2008/05/05/using-erlyweb-templates-with-mochiweb/
 6. 同时安装多个IE6, IE7, IE8的测试工具, 可以测试页面的兼容性.
 http://www.my-debugbar.com/wiki/
 
-
 7. 微软官方的工具- SuperPreview for Internet Explorer 
 http://expression.microsoft.com/en-us/dd565874.aspx
 
