@@ -1,0 +1,42 @@
+主要介绍页面的布局
+
+
+##home.html##
+
+1. 页面的背景设计:
+
+body {
+  background-color:#E2F2FB;
+  background-image:url(/static/image/bg.gif);
+  background-repeat:repeat-x;
+}
+
+a. 使用淡蓝色背景
+b. 在页面的顶部增加了一个图片gb.gif(背景色渐变), repeat-x属性水平重复平铺, 在顶部有背景色渐变的效果.
+
+2. 所有图片的默认属性
+
+img {
+  border: 0 none;    %% 第一个是border的宽度border-width，第二个是border的样式border-style.
+}
+
+所有的图片默认没有边框
+
+3.容器container
+
+#container {
+  margin: 0, auto;    %% 居中的方式: 上下为0, 左右自动
+  width; 960px;
+}
+
+页面的header和main的容器，宽度固定的div, 居中显示.
+
+4. 标题部分header
+
+#logo {
+  float: left;
+  margin: 8px 0 0;    %% 第一个表示上, 第二个表示左右，第三个表示下
+}
+
+漂浮在header右侧的标题logo
+
