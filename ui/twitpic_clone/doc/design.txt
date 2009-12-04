@@ -21,7 +21,7 @@ img {
   border: 0 none;    %% 第一个是border的宽度border-width，第二个是border的样式border-style.
 }
 
-小照片的属性
+小照片的属性      (给图片增加边框的方式, 修改border)
 .photo-mini {
   border:6px solid #FFFFFF;   %% 包含一个白色边框
 }
