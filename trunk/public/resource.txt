@@ -81,7 +81,8 @@ http://www.cnblogs.com/jazzka702/archive/2009/06/20/1507166.html
 http://www.dynamicdrive.com/
 
 Web后端技术
-<1>
+<1> 使用nginx做负载均衡的例子
+http://blog.csdn.net/omohe/archive/2009/07/09/4335765.aspx
 
 技术资源
 <1>

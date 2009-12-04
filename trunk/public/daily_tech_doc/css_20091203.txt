@@ -84,3 +84,11 @@ div{
     }
   </script>
 
+4. display:inline;
+block元素默认是有换行的，使用了内联，可以使block元素在一行显示, 
+效果类似于float: left;
+
+和float: left的区别是
+内联(display:inline;)元素不能设置宽高，因为内联属于行布局，
+其特性是在一行里进行布局，所以不能被设定宽高.
+

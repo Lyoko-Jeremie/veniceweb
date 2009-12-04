@@ -26,6 +26,10 @@ img {
   border: 6px solid #FFFFFF;
 }
 
+.avatar {
+  border: 5px solid #CCE9FF;
+}
+
 #container {
   margin: 0 auto;
   width: 960px;
@@ -69,6 +73,14 @@ img {
   width: 160px;
 }
 
+#nav-user {
+  color: #3198D3;
+  font-size: 14px;
+  font-weight: bold;
+  padding-top: 20px;
+  padding-right: 50px;
+}
+
 #main-left {
   float: left;
   width: 600px;
@@ -83,6 +95,22 @@ img {
 #main-right {
   float: right;
   width: 350px;
+}
+
+.main-right-headline {
+  padding-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.main-right-content {
+  padding-top: 5px;
+  font-size: 14px;
+}
+
+.main-right-next-content {
+  padding-top: 15px;
+  font-size: 14px;
 }
 
 #main-recpic-top {
@@ -114,4 +142,58 @@ img {
   padding: 25px 0 0;
   text-align: right;
   width: 600px;
+}
+
+#profile-photos {
+  float: left;
+  width: 600px;
+}
+
+#profile-info {
+  float: right;
+  width: 300px;
+}
+
+#profile-header {
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+
+#profile-avatar {
+  float: left;
+  width: 90px;
+}
+
+#profile-username {
+  float: left;
+  padding-top: 20px;
+  width: 400px;
+}
+
+.profile-photo-info {
+  padding: 0 4px 4px 0;
+  text-align: right;
+}
+
+.profile-photo {
+  background-color: #FFFFFF;
+  margin: 0 0 15px 15px;
+  padding: 10px;
+}
+
+.profile-photo-img {
+  float: left;
+  width: 165px;
+}
+
+.profile-photo-message {
+  float: left;
+  font-size: 14px;
+  width: 400px;
+}
+
+#profile-about {
+  background-color: #CCE9FF;
+  padding: 10px;
+  width: 275px;
 }
