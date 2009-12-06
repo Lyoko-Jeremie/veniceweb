@@ -73,6 +73,10 @@ img {
   width: 160px;
 }
 
+#top-nav {
+  float: right;
+}
+
 #nav-user {
   color: #3198D3;
   font-size: 14px;
