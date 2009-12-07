@@ -69,7 +69,8 @@ http://code.google.com/p/fragmentron/
 <1>
 
 前端技术博客
-<1>
+<1> 非常不错的前端Blog
+http://lifesinger.org/blog/
 
 IT业界博客
 <1>
