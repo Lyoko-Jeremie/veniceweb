@@ -22,6 +22,12 @@ img {
   border: 0 none;
 }
 
+ol, ul {
+  list-style-image: none;
+  list-style-position: outside;
+  list-style-type: none;
+}
+
 .photo-mini {
   border: 6px solid #FFFFFF;
 }
@@ -200,4 +206,33 @@ img {
   background-color: #CCE9FF;
   padding: 10px;
   width: 275px;
+}
+
+#upload_form {
+  margin: 0 auto;
+  padding-top: 30px;
+  width: 500px;
+  text-align: left;
+}
+
+.form-label {
+  color: #2E3132;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 0 0 10px;
+}
+
+.upload-input {
+  border: 3px solid #C2E0F2;
+  color: #3198D3;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 5px;
+}
+
+.form-hint {
+ color: #61B0DE;
+ font-size: 10px;
+ font-weight: bold;
+ padding: 5px 0 0;
 }

@@ -50,13 +50,23 @@
         </a>
       </div>
 
-      <div id="top-nav">
-        <div id="nav-user">
-          <a class="nav" href="">主页</a>
-          <a class="nav" href="">浏览</a>
-          <a class="nav" href="">照片上传</a>
-          <a class="nav" href="">个人设置</a>
-          <a class="nav" href="">注销</a>
+      <div id="header-nav">
+        <div id="nav-login">
+          <form action="/" method="post">
+
+            <div id="nav-login-inputs">
+              <input class="nav-input" type="text" onclick="" onfocus="" value="Woomsg username" name="username"/>
+              <input class="nav-input" type="password" onclick="" onfocus="" value="Woomsg password" name="password"/>
+              <br/>
+              <input style="margin: 3px;" type="checkbox" value="1" name="remember_me"/>
+              <span style="color: 3198D3; font-size: 10px">记住密码</span>
+            </div>
+
+            <div id="nav-login-button">
+              <input type="image" src="/static/image/button-login.gif"/>
+            </div>
+
+          </form>
         </div>       
       </div>
 
@@ -64,44 +74,32 @@
 
     </div>
  
-    <div id="main" style="text-align: center;">
-      <div id="upload_form">
-        <div style="font-size: 24px; font-weight: bold; padding-bottom: 20px; text-align: center;">上传照片</div>
-        
-        <form enctype="multipart/form-data" action="" method="post">
-          <div class="form-label">选择您要上传的图片</div>
-         
-          <div style="padding-left: 10px;">
-            <input class="upload-input" type="file" name="media"/>
-            <div class="form-hint">可以选择GIF, JPG, PNG格式的图片</div>
-          </div>
-
-          <div style="height: 15px;"></div>
-          <div class="form-label">给照片增加一条描述信息</div>
-          <div style="padding-left: 10px;">
-            <textarea class="upload-input" name="message" style="width: 480px; height: 50px;">
-            </textarea>
-          </div>
-
-          <div style="height: 15px;"></div>
-          <input style="font-size: 14px; "type="submit" value="上传"/>
-        </form>
- 
-        <div style="padding: 25px; line-height: 20px; font-size: 16px;">
-          <div style="padding-bottom: 15px; font-size: 16px; font-weight: bold;">
-          您想通过手机直接发送照片到woomsg吗?
-          </div>
-          发送您的照片到
-          <span style="padding: 4px; background-color: rgb(255, 249, 194); font-size: 16px; font-weight: blod; font-style: italic;">
-            woomsgdev.1234@woomsg.com
-          </span>
-          <br/>
-          <br/>
-          您可以用邮件的<span style="font-size: 16px; font-weight: bold;">主题(Subject)</span>来做为照片的描述信息
+    <div id="main">
+      <center>
+        <br/>
+        <br/>
+          <img src="/static/image/get_help.png"/>
+        <br/>
+        <br/>
+      
+        <div style="font-size: 16px; padding-top: 15px; padding-bottom: 25px; font-weight: bold;">
+          有问题可以发邮件到
+          <a class="nav" style="font-size: 16px; font-weight: bold;" href="mailto:support@woomsg.com">support@woomsg.com</a>
+          或者查看我们的
+          <a class="nav" style="font-size: 16px; font-weight: bold;" href="/api.html">常见的问题(FAQ)</a>
+          页面寻找答案.
         </div>
-      </div>
+        <div style="font-size: 16px; padding-top: 15px; padding-bottom: 25px; font-weight: bold;">
+          所有与woomsg有关的问题, 可以发邮件到
+          <a class="nav" style="font-size: 16px; font-weight: bold;" href="mailto:support@woomsg.com">support@woomsg.com</a>
+        </div>
+        <div style="font-size: 16px; padding-top: 15px; padding-bottom: 25px; font-weight: bold;">
+          所有与商业有关的问题, 发邮件到
+          <a class="nav" style="font-size: 16px; font-weight: bold;" href="mailto:support@woomsg.com">woomsgdev@gmail.com</a>
+        </div>
+      </center>
     </div>
-     
+
     <div id="footer">
        <div id="footer-tag">©2010 woomsg Inc, All Rights Reserved</div>
        <div id="footer-nav">
