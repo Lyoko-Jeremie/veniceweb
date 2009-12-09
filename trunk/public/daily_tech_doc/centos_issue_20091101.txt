@@ -34,3 +34,10 @@ su - Username 切换回当前的用户
 sudo /etc/rc.d/init.d/iptables stop
 (sudo /etc/rc.d/init.d/iptables start启动防火墙)
 
+5. 查看主机IP的时候，提示ifconfig找不到，使用su切换到超级用户后，仍然找不到?
+解决方案:
+使用su切换到超级用户的时候，环境变量并没有跟过来，
+使用su - 切换到超级用户，这样环境变量也会一起切换过来，然后使用ifconfig就可以了。
+
+超级用户的命令一般在/sbin下面，一般用户的命令在/bin下面，所以会提示command not found
+

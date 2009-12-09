@@ -80,6 +80,8 @@ Web前端技术:
 http://www.cnblogs.com/jazzka702/archive/2009/06/20/1507166.html
 <2> 一个很不错的前端的demo网站，javascript & css效果的仓库
 http://www.dynamicdrive.com/
+<3> 9个最常见的IE6 Bug已经fix
+http://coolshell.cn/?p=1817
 
 Web后端技术
 <1> 使用nginx做负载均衡的例子
