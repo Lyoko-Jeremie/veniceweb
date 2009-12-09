@@ -58,7 +58,226 @@ http://erlang-china.org/misc/facebook_comet_in_mochiweb.html
  
 2.4 在新的项目中, 直接make
 2.5 ./start-dev.sh启动新的项目.      
-    
+
+3. 演示一个comet的例子，使用HTTP-CHUNKED的例子, Server端可以一直推送数据到客户端:
+重点:
+(下面使用Req:ok/1这是典型的参数化模板的例子)
+<1> 使用 Req:get(path)获得当前的访问路径Path
+<2> 使用 Req:get(method)获取当前的方法: GET, HEAD, POST
+<3> 使用 Response = Req:ok({"text/plain", chunked})来产生一个chunk-response
+<4> 使用 Response:write_chunk(Data)来发送响应到客户端, Data是发送给客户端的内容.
+
+-module(basicweb_web).
+-export([start/1, stop/0, loop/2]).
+
+%% External API
+
+start(Options) ->
+    {DocRoot, Options1} = get_option(docroot, Options),
+    Loop = fun (Req) ->
+                   ?MODULE:loop(Req, DocRoot)
+           end,
+    mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
+
+stop() ->
+    mochiweb_http:stop(?MODULE).
+
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		"timer" ->
+		    Response = Req:ok({"text/plain", chunked}),   
+		    handle_timer(Response);
+                _ ->
+                    Req:serve_file(Path, DocRoot)
+            end;
+        'POST' ->
+            case Path of
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
+
+%% Internal API
+
+get_option(Option, Options) ->
+    {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
+
+handle_timer(Response) ->
+    Response:write_chunk(io_lib:format("time is: ~p~n", [calendar:local_time()])),
+    timer:sleep(1000),
+    handle_timer(Response).
+
+测试:
+当用户输入http://localhost:8000/timer的时候，
+页面显示(每隔一秒钟打印一条信息):
+time is: {{2009,12,9},{21,18,31}}
+time is: {{2009,12,9},{21,18,32}}
+time is: {{2009,12,9},{21,18,33}}
+time is: {{2009,12,9},{21,18,34}}
+time is: {{2009,12,9},{21,18,35}}
+
+4. 分析mochiweb的内部结构::
+总结:
+a. 如果响应静态文件，通过Req:server_file(Path, DocRoot)来发送
+b. 如果生成动态内容，通过Req:respond({Code, ResponseHeaders, Body})来发送（文本和二进制都可以）
+c. 如果是chunked响应，第一次调用Req:respond()后返回一个Response对象(参数化模块mochiweb_response的一个实例)，
+   以后的响应数据通过这个Response对象发送给客户端，调用Response:write_chunk(Data)来发送后续响应的数据.
+
+补充:
+mochiweb内部，每个HTTP请求一个Erlang Process来处理.
+
+
+详细介绍:
+<1> Web服务器分为三步和mochiweb_request
+a. 接收HTTP请求
+b. 处理HTTP请求，生成响应内容
+c. 发送响应
+
+mochiweb_request是处理HTTP请求的核心部分，负责了第二和第三步的工作，
+由于使用了参数化模板的技术，这意味着具备了OO的特性，它的每个实例化对象
+代表一个用户请求，我们可以像操作OO那样处理HTTP请求，获取请求的信息，
+生成响应内容等等.
+
+<2> 通过Req直接发送给浏览器(Req是mochiweb_request的实例化对象).
+Req:respond({Code, ResponseHeaders, Body})
+Code是HTTP的状态码，例如200
+ResponseHeaders是响应头
+第三个参数是响应内容
+a. 
+HResponse = mochiweb_headers:make([]),
+HResponse1 = mochiweb_headers:enter("Content-Type", "text/plain", HResponse),
+Req:respond({200, HResponse1, "<html><head></head><title>Timer</title><body><h2>this is h2</h2></body></html>"});       
+页面将显示(因为是text/plain):         
+<html><head></head><title>Timer</title><body><h2>this is h2</h2></body></html>
+
+b. 效果和a一样.
+Req:respond({200, [{"Content-Type","text/plain"}], "<html><head></head><title>Timer</title><body><h2>this is h2</h2></body></html>"});      
+
+c. 上面的例子也可以直接使用Req:ok{ContextType, Body}，实质上内部也是调用Rep:respond/1返回状态码为200的HTTP响应.
+Req:ok({"text/html", "<html><head></head><title>Timer</title><body><h1>this is h1</h1></body></html>"});
+页面显示
+this is h1
+
+d. URL不存在的404错误可以使用Req:not_found():
+其内部使实现是:
+not_found() ->
+    not_found([]).
+not_found(ExtraHeaders) ->
+    respond({404, [{"Content-Type", "text/plain"} | ExtraHeaders], <<"Not found.">>}). %% Body使用Binary提高效率.
+
+e. 如果是静态文件，如图片, 可以使用Req:server_file(Path, DocRoot)来返回
+告诉此函数文件的Web根目录(doc_root)和相对路径(Path)就可以将指定的静态文件发给浏览器了
+doc_root目录一般在配置文件中设置，这个目录下的所有文件都可以通过HTTP访问, 默认是yourweb/priv/www.
+
+如果我的一张图片在Server端得存放路径是priv/www/image/test.jpg.
+Req:serve_file(Path, DocRoot)              -> http://localhost:8000/image/test.jpg
+或者
+Req:serve_file(Path, DocRoot ++ "/image")  -> http://localhost:8000/test.jpg
+
+<3> 通过Response模块对象将响应发送给客户端(本质还是调用Req:respond来发送).
+Req:respond函数会返回一个mochiweb_response参数化模块实例对象（假设为Response)，
+Response实例对象包含有对应的Req实例对象。通过Response对象可以得到响应的相关信息
+（如响应状态码，响应消息头，对应的Req对象），它还有一个 send函数可以将响应数据发还给浏览器
+（它的实现其实还是调用Req对象的send函数进行的）。
+
+Response之所以还要有send函数是为了发送 chunked数据（HTTP 1.1)的方便，在第一次响应完成后，
+后继的chunk数据就可以通过最初返回的Response对象继续进行发送了，为此Response有个函数 
+write_chunk()专门干这事，write_chunk检查了请求消息头中的HTTP 版本消息后就调用Response:send。
+
+因此，响应内容最终都是由参数化模块mochiweb_request的respond/1函数发送的。而这个respond(...)
+函数内部最后调用了Req:send(Data)函数将响应通过socket连接（调用gen_tcp:send）返还给浏览器，
+这一发送过程又分成两个阶段：响应消息头（Headers）的发送和消息体（Body）的发送，这两步都是通过Req:send完成的
+
+
+5. Req:get(XXX)方法解析
+mochiweb中,每个client请求其构造一个 Req 对象, Req可以理解成 mochiweb_request 的一个参数化或实例化.
+<1> Req:get(method) -> ‘OPTIONS’ | ‘GET’ | ‘HEAD’ | ‘POST’ | ‘PUT’ | ‘DELETE’ | ‘TRACE’.
+获取Http请求的方式.
+<2> Req:get(raw_path) -> String().
+获取raw_path.比如 http://www.nextim.cn/session/login?username=test#p,那/session/login?username=test#p就是这个raw_path.
+<3> Req:get(path) -> String().
+获取path.比如 http://www.nextim.cn/session/login?username=test#p,那/session/login就是这个raw_path.
+<4> Req:parse_qs() -> [{strng(), string()}].
+获取get参数.比如 http://www.nextim.cn/session/login?username=test#p,则返回[{"username","test"}].
+<5> Req:parse_post() -> [{strng(), string()}].
+确保post数据类型为: application/x-www-form-urlencoded, 否则不要调用(其内部会调用Req:recv_body),返回值类似Req:parse_qs().
+<6> Req:get(peer) -> string().
+返回值为client的ip
+<7> Req:get_header_value(Key) -> undefined | string().
+获取某个header,比如Key为”User-Agent”时，返回”Mozila…….”
+<8> Req:get_primary_header_value(Key) -> undefined | string().
+获取http headers中某个key对应的主值(value以分号分割).
+举例: 假设 Content-Type 为 application/x-www-form-urlencoded; charset=utf8,则
+Req:get_header_value(”content-type”) 返回 application/x-www-form-urlencoded
+<9> Req:get(headers) -> dict().
+获取所有headers
+说明: 返回结果为stdlib/dict 数据结构,可以通过mochiweb_headers模块进行操作.
+举例: 下面代码显示请求中所有headers:
+Headers = Req:get(headers),
+lists:foreach(fun(Key, Value) ->
+io:format(”~p : ~p ~n”, [Key, Value])
+end,
+mochiweb_headers:to_list(Headers)).
+<10> Req:parse_cookie() -> [{string(), string()}].
+解析Cookie
+<11> Req:get_cookie_value(Key) -> string() | undefined
+类似Req:get_header_value(Key)
+
+6. Cookie的例子:
+下面是一个读取和设置Cookie的例子:
+<1> 读取Cookie
+Req:get_cookie_value(Key) -> string() | undefined
+<2> 设置Cookie, 设置的cookie作为ResponseHeaders在Req:respond({Code, ResponseHeaders, Body})返回.
+mochiweb_cookies:cookie(Key, Val, Options) 其中Key:string(), Val:string()
+
+功能: 利用Cookie记录页面的访问次数
+http://localhost:8000/timer的时候，第一次返回
+Key: undefined,
+然后是
+Key: Number     (其中Number是你访问这个页面的次数)
+
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		"timer" ->
+		    CookieKey = Req:get_cookie_value("key"),   %% 读取Cookie 
+		    CookieKey1 = case CookieKey of
+				     undefined ->
+					 1;
+				     _ ->
+					 list_to_integer(CookieKey) + 1
+                                 end,
+		    CookieKey2 = mochiweb_cookies:cookie("key", integer_to_list(CookieKey1), []),  %% 设置Cookie
+                    Req:respond({200, [{"Content-Type","text/html"}, CookieKey2], io_lib:format("<h1>Key: ~p~n</h1>", [CookieKey])});                
+                 _ ->
+                    Req:serve_file(Path, DocRoot ++ "/image")
+            end;
+        'POST' ->
+            case Path of
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
+
+
+7.
 
 
 
+
+
+
+
+
+
+
+                    
