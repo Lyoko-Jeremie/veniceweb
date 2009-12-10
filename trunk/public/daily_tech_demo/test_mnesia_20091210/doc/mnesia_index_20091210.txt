@@ -1,0 +1,15 @@
+对Mnesia性能进行测试:
+主要测试(针对单个节点)
+<1> dirty_*操作和transaction操作的对比
+<2> 大数据量的内存占用和磁盘占用情况
+<3> 不同类型的表ram/disc/disc_only的对比
+<4> 对Index索引字段的查询.
+
+1. 性能测试的函数:
+erlang:statistics(runtime|wall_clock)
+runtime:    总CPU时间，从上次调用以来的CPU时间
+wall_clock: 总的真实消耗的时间，从上次调用以来的真实消耗时间.
+
+在单核情况下，一般runtime小于wall_clock, 但是在多核CPU情况下，runtime可能大于wall_clock.
+
+2.
