@@ -57,29 +57,352 @@ this is the data of file2
 
 与一般的POST对比:
 POST /post.yaws HTTP/1.1
-
 Host	yaws.hyber.org
-
 User-Agent	Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5
-
 Accept	text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-
 Accept-Language	en-us,en;q=0.5
-
 Accept-Encoding	gzip,deflate
-
 Accept-Charset	ISO-8859-1,utf-8;q=0.7,*;q=0.7
-
 Keep-Alive	300
-
 Connection	keep-alive
-
 Referer	http://yaws.hyber.org/form.yaws
-
 Content-Type	application/x-www-form-urlencoded                       %% 一般的POST，和multipart/form-data区别
 Content-Length	67
 
 2. 如何获取文件名字?
 Content-Disposition: form-data; name="myfile2"; filename="file2.txt"
 {"content-disposition", {"form-data", [{"name", "myfile2"}, {"filename", "fiel2.txt"}]}}
+
+
+3. 补充例子: 如何获取POST/GET过来的数据?
+APIs:
+Req:parse_post() - POST, 只对post数据类型为: application/x-www-form-urlencoded的起作用. 不能用于 multipart/form-data
+Req:parse_qs()   - GET
+测试:
+a. 访问http://localhost:8000页面会显示两个表单POST DEMO和GET DEMO
+b. 填写POST DEMO的表单(val1, val2)，提交
+   页面会跳转到 http://192.168.1.107:8000/handleform
+   新页面显示   POST: [{"key1","val1"},{"key2","val2"}] 
+c. 填写GET DEMO的表单(val3, val4)，提交
+   页面会跳转到 http://192.168.1.107:8000/handleform?key3=val3&key4=val4
+   新页面显示   GET: [{"key3","val3"},{"key4","val4"}] 
+
+代码:
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		[] ->
+		    Req:respond({200, [{"Content-Type","text/html"}], render_index()});  %% 渲染主页面
+                "handleform" ->
+		    PostData = Req:parse_qs(),   %% 解析GET
+		    Req:respond({200, [{"Content-Type", "text/html"}], io_lib:format("GET: ~p~n", [PostData])});
+                 _ ->
+                    Req:serve_file(Path, DocRoot)
+            end;
+        'POST' ->
+            case Path of
+               "handleform" ->
+		    PostData = Req:parse_post(),  %% 解析POST
+		    Req:respond({200, [{"Content-Type", "text/html"}], io_lib:format("POST: ~p~n", [PostData])});
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
+
+%% Internal API
+
+get_option(Option, Options) ->
+    {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
+
+render_index() ->
+    <<"<html>
+        <head>
+          <meta content='text/html; charset=UTF-8' http-equiv='content-type'>
+          <title>Mochiweb Index Title</title>
+        </head>
+        <body>
+        POST DEMO:
+        <form action='handleform' method='post'>
+          <input type='text' name='key1'/><br/>
+          <input type='text' name='key2'/><br/>
+          <input type='submit' value='提交'/>
+        </form>
+        <br/>
+        GET DEMO:
+        <form action='handleform' method='get'>
+          <input type='text' name='key3'/><br/>
+          <input type='text' name='key4'/><br/>
+          <input type='submit' value='提交'/>
+        </form>
+        </body>
+      </html>">>.
+
+4. 如何上传文件(单个文件)?
+APIs:
+mochiweb_multipart:parse_multipart_request(Req, Callback).
+
+一个基本的文件上传例子, 没有进行错误验证，文件大小验证等等.
+
+-record(state, {filename, file}).
+
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		[] ->
+		    Req:respond({200, [{"Content-Type","text/html"}], render_index()});
+                 _ ->
+                    Req:serve_file(Path, DocRoot)
+            end;
+        'POST' ->
+            case Path of
+               "upload" ->
+	            %% 处理文件上传
+		    Callback = fun(N) -> callback(N, #state{}) end,
+		    mochiweb_multipart:parse_multipart_request(Req, Callback),
+		    Req:respond({200, [{"Content-Type", "text/html"}], <<"<html><body>upload success!</body></html>">>});
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
+
+%% Internal API
+
+get_option(Option, Options) ->
+    {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
+
+
+%% 处理文件上传的核心服务器逻辑
+callback(Next, State) ->
+    case Next of
+	{headers, Headers} ->
+            io:format("Headers: ~p~n", [Headers]), 
+            %% 打印Headers的信息, 类似于(用于调试):
+            %% Headers: [{"content-disposition",{"form-data",[{"name","myfile"},{"filename","Sunset.jpg"}]}},
+            %%           {"content-type",{"image/jpeg",[]}}]
+	    [ContentDisposition | _ ] = Headers,
+	    NewState = case ContentDisposition of
+			   {"content-disposition", {"form-data", [{"name", _}, {"filename", Filename}]}} ->
+			       #state{filename = "/tmp/" ++ Filename};     %% 获取文件名
+			    _->
+			       State
+                       end,
+	    fun(N) -> callback(N, NewState) end;
+	{body, Body} ->
+	    if
+		State#state.filename =/= undefined ->
+		    if
+			State#state.file =/= undefined ->
+			    file:write(State#state.file, Body),          %% 写数据到文件
+			    NewState = State;
+			true ->
+			    case file:open(State#state.filename, [raw, write]) of
+				{ok, File} ->
+				    file:write(File, Body),
+				    NewState = State#state{file = File};
+				{error, Error} ->
+				    io:format("could not open ~p for writing, error: ~p~n", [State#state.filename, Error]),
+				    NewState = State,
+				    exit(could_not_open_file_for_writing)
+                            end
+                    end;
+		true ->
+		    NewState = State
+            end,
+	    fun(N) -> callback(N, NewState) end;
+	body_end ->
+	    if
+		State#state.file =/= undefined ->   %% 上传完毕，close文件Handler.
+		    file:close(State#state.file);
+		true ->
+		    ok
+            end,
+	    fun(N) -> callback(N, #state{}) end;
+	_ ->
+	    fun(N) -> callback(N, State) end
+    end.
+
+render_index() ->
+    <<"<html>
+        <head>
+          <meta content='text/html; charset=UTF-8' http-equiv='content-type'>
+          <title>Mochiweb Index Title</title>
+        </head>
+        <body>
+        POST DEMO:
+        <form action='upload' method='post' enctype='multipart/form-data'>
+          <input type='file' name='myfile'/><br/>
+          <input type='submit' value='上传'>
+        </form>
+        </body>
+      </html>">>.
+
+
+5. 如何上传文件(多个文件)?
+演示一次上传三个文件
+
+a. 会打印三次Header
+Headers: [{"content-disposition",
+           {"form-data",[{"name","myfile1"},{"filename","Blue hills.jpg"}]}},
+          {"content-type",{"image/jpeg",[]}}]
+Headers: [{"content-disposition",
+           {"form-data",[{"name","myfile2"},{"filename","Sunset.jpg"}]}},
+          {"content-type",{"image/jpeg",[]}}]
+Headers: [{"content-disposition",
+           {"form-data",[{"name","myfile3"},{"filename","Water lilies.jpg"}]}},
+          {"content-type",{"image/jpeg",[]}}]
+
+b. 和上面4的代码完全一样，不需要做任何修改, 只需要修改render_index/0来渲染主页面，一次上传三个文件
+render_index() ->
+    <<"<html>
+        <head>
+          <meta content='text/html; charset=UTF-8' http-equiv='content-type'>
+          <title>Mochiweb Index Title</title>
+        </head>
+        <body>
+        POST DEMO:
+        <form action='upload' method='post' enctype='multipart/form-data'>
+          <input type='file' name='myfile1'/><br/>
+          <input type='file' name='myfile2'/><br/>
+          <input type='file' name='myfile3'/><br/>
+          <input type='submit' value='上传'>
+        </form>
+        </body>
+      </html>">>.
+
+6. 如何上传文件(混合多个文件和提交的表单数据)?
+
+a. 会打印5个Header
+Headers: [{"content-disposition",{"form-data",[{"name","key1"}]}}]
+POST-DATA - Key:"key1", Value:<<"val1">>          %% 解析出来的数据
+Headers: [{"content-disposition",{"form-data",[{"name","key2"}]}}]
+POST-DATA - Key:"key2", Value:<<"val2">>          %% 解析出来的数据
+Headers: [{"content-disposition",                 %% 解析文件
+           {"form-data",[{"name","myfile1"},{"filename","Sunset.jpg"}]}},
+          {"content-type",{"image/jpeg",[]}}]
+Headers: [{"content-disposition",                 %% 解析文件
+           {"form-data",[{"name","myfile2"},{"filename","Water lilies.jpg"}]}},
+          {"content-type",{"image/jpeg",[]}}]
+Headers: [{"content-disposition",                 %% 解析文件
+           {"form-data",[{"name","myfile3"},{"filename","Winter.jpg"}]}},
+          {"content-type",{"image/jpeg",[]}}]
+
+
+b. 代码:
+-record(state, {filename, file, key, value}).  %% 修改state, 增加一个key, value来存储POST的TEXT.
+
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		[] ->
+		    Req:respond({200, [{"Content-Type","text/html"}], render_index()});
+                 _ ->
+                    Req:serve_file(Path, DocRoot)
+            end;
+        'POST' ->
+            case Path of
+               "upload" ->
+		    Callback = fun(N) -> callback(N, #state{}) end,
+		    mochiweb_multipart:parse_multipart_request(Req, Callback),
+		    Req:respond({200, [{"Content-Type", "text/html"}], <<"<html><body>upload success!</body></html>">>});
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
+
+%% Internal API
+
+get_option(Option, Options) ->
+    {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
+
+callback(Next, State) ->
+    case Next of
+	{headers, Headers} ->
+	    [ContentDisposition | _ ] = Headers,
+	    io:format("Headers: ~p~n", [Headers]),
+	    NewState = case ContentDisposition of
+			   {"content-disposition", {"form-data", [{"name", _}, {"filename", Filename}]}} -> %% POST FILE
+			       #state{filename = "/tmp/" ++ Filename};
+			   {"content-disposition", {"form-data", [{"name", Key}]}} ->   %% POST TEXT
+			       #state{key = Key};
+			    _->
+			       State
+                       end,
+	    fun(N) -> callback(N, NewState) end;
+	{body, Body} ->
+	    if
+		State#state.filename =/= undefined ->
+		    if
+			State#state.file =/= undefined ->
+			    file:write(State#state.file, Body),
+			    NewState = State;
+			true ->
+			    case file:open(State#state.filename, [raw, write]) of
+				{ok, File} ->
+				    file:write(File, Body),
+				    NewState = State#state{file = File};
+				{error, Error} ->
+				    io:format("could not open ~p for writing, error: ~p~n", [State#state.filename, Error]),
+				    NewState = State,
+				    exit(could_not_open_file_for_writing)
+                            end
+                    end;
+		true ->
+		    if 
+			State#state.key =/= undefined ->       %% 解析POST过来的TEXT
+			    io:format("POST-DATA - Key:~p, Value:~p~n", [State#state.key, Body]),
+			    NewState = #state{};
+			true ->
+			    NewState = State
+		    end
+            end,
+	    fun(N) -> callback(N, NewState) end;
+	body_end ->
+	    if
+		State#state.file =/= undefined ->
+		    file:close(State#state.file);
+		true ->
+		    ok
+            end,
+	    fun(N) -> callback(N, #state{}) end;
+	_ ->
+	    fun(N) -> callback(N, State) end
+    end.
+
+render_index() ->
+    <<"<html>
+        <head>
+          <meta content='text/html; charset=UTF-8' http-equiv='content-type'>
+          <title>Mochiweb Index Title</title>
+        </head>
+        <body>
+        POST DEMO:
+        <form action='upload' method='post' enctype='multipart/form-data'>
+          <input type='text' name='key1'/><br/>
+          <input type='text' name='key2'/><br/>
+          <input type='file' name='myfile1'/><br/>
+          <input type='file' name='myfile2'/><br/>
+          <input type='file' name='myfile3'/><br/>
+          <input type='submit' value='提交'>
+        </form>
+        </body>
+      </html>">>.
+
+7. 针对6的情况，如何"返回"解析出来的POST TEXT的数据?也就是跟随文件一起POST过来的TEXT数据?
+TODO:
+
+
+
+
 
