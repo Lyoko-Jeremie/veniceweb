@@ -92,7 +92,14 @@ http://steve.vinoski.net/blog/
 http://weblog.miceda.org/
 
 技术资源
-<1>
+<1> 远程原理Linux服务器三剑客: putty & winscp & tightVNC
+a. putty 是SSH远程登录工具
+http://www.chiark.greenend.org.uk/~sgtatham/putty/
+b. winscp则是基于SSH的文件传输软件，不需要在服务器端安装ftp软件，
+即可通过它对服务器的所有文件进行管理，包括上传下载。
+http://winscp.net
+c. tightVNC则是图形化的远程管理工具，类似windows的远程桌面连接，开源免费。
+http://www.tightvnc.com/
 
 其它资源
 <1> 上海众生网络，机房托管服务
