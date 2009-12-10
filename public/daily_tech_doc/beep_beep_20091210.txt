@@ -4,4 +4,6 @@
 1. 项目主页:
 http://github.com/davebryson/beepbeep
 
+一非常简单的MVC的模型.
+
 
