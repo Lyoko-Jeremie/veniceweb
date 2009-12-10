@@ -1,2 +1,85 @@
-1. 一个mochiweb文件上传的例子:
+一个mochiweb文件上传的例子:
 http://jimmyg.org/blog/2007/multipart-post-with-erlang-and-mochiweb.html
+
+1.
+使用multipart/form-data发送文件
+Content-Type必须是multipart/form-data
+multipart/form-data编码的POST请求格式与application/x-www-form-urlencoded完全不同，
+multipart/form-data需要首先在HTTP请求头设置一个分隔符，例如boundary=---------------------------122872775310383
+
+
+看下面的例子:
+我们有如下内容需要提交:
+<form action="uploadDo" method="post" enctype="multipart/form-data">
+  <input type="text" name="key1" /><br />
+  <input type="text" name="key2" /><br />
+  <input type="file" name="myfile1" /><br />
+  <input type="file" name="myfile2" /><br />
+  <input type="submit" value="提交" />
+</form>
+
+
+Host: localhost:8000
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: zh-cn,zh;q=0.5
+Accept-Encoding: gzip,deflate
+Accept-Charset: gb2312,utf-8;q=0.7,*;q=0.7
+Keep-Alive: 300
+Connection: keep-alive
+Referer: http://localhost:8000/upload.yaws
+Content-Type: multipart/form-data; boundary=---------------------------122872775310383   %% 注意这个Boundary
+Content-Length: 655
+
+空行
+消息体
+-----------------------------122872775310383
+Content-Disposition: form-data; name="key1"
+
+val1
+-----------------------------122872775310383
+Content-Disposition: form-data; name="key2"
+
+val2
+-----------------------------122872775310383
+Content-Disposition: form-data; name="myfile1"; filename="file1.txt"    %% 注意name和filename的区别, 提取文件名
+Content-Type: text/plain
+
+this is the data of file1
+-----------------------------122872775310383                            %% Boundary分割多个文件数据
+Content-Disposition: form-data; name="myfile2"; filename="file2.txt"    %% 注意name和filename的区别, 提取文件名
+Content-Type: text/plain
+
+this is the data of file2
+
+-----------------------------122872775310383--
+
+
+与一般的POST对比:
+POST /post.yaws HTTP/1.1
+
+Host	yaws.hyber.org
+
+User-Agent	Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5
+
+Accept	text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+
+Accept-Language	en-us,en;q=0.5
+
+Accept-Encoding	gzip,deflate
+
+Accept-Charset	ISO-8859-1,utf-8;q=0.7,*;q=0.7
+
+Keep-Alive	300
+
+Connection	keep-alive
+
+Referer	http://yaws.hyber.org/form.yaws
+
+Content-Type	application/x-www-form-urlencoded                       %% 一般的POST，和multipart/form-data区别
+Content-Length	67
+
+2. 如何获取文件名字?
+Content-Disposition: form-data; name="myfile2"; filename="file2.txt"
+{"content-disposition", {"form-data", [{"name", "myfile2"}, {"filename", "fiel2.txt"}]}}
+
