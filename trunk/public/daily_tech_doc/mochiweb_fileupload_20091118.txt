@@ -401,6 +401,7 @@ render_index() ->
 
 7. 针对6的情况，如何"返回"解析出来的POST TEXT的数据?也就是跟随文件一起POST过来的TEXT数据?
 TODO:
+参考mochiweb_multipart:parse_form/2
 
 
 
