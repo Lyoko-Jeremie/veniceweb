@@ -1,0 +1,69 @@
+介绍proplists
+
+文档地址:
+http://www.erlang.org/doc/man/proplists.html
+
+1. Property lists就是一般的lists. 使用的时候通常包含两类元素
+(除去这两类之外的元素也可以包含在lists中，但是被忽略):
+{Key, Val}或者Atom, 后者被看作是{Atom, true}
+
+如果一个property lists包含多个一样的Key, 则第一个出现的{Key, Val}会覆盖后面的,
+例如(下面的例子返回的是val3):
+proplists:get_value(key1, [key5, {key1, val3}, {key1, val2},{"key1", "val1"}]).
+val3
+
+property lists通常用于函数的参数传递，子函数可以重写Options来覆盖一些默认的设置.
+
+
+2. 使用方式:
+APIs:
+新增
+property(Property)              -> atom() | tuple()      %% 如果Property是{Atom, true}或Atom返回Atom; {Key, Val}返回{Key, Val} 
+property(Key, Val)              -> atom() | tuple()      %% 如果是{Atom, true}返回Atom; {Key, Val}返回{Key, Val}
+查找:
+proplists:get_val(key, List)    -> term() | undefined    %% 返回的是Val
+proplists:get_all_values()      -> [term()]
+proplists:lookup(Key, List)     -> tuple() | none        %% 返回的是{Key, Val}
+proplists:lookup_all(Key, List) -> [tuple()]
+删除:
+proplists:delete(Key)           -> List                  %% 删除Key对应的所有entries.
+
+测试:
+Prop1 = [].
+[]
+Prop2 = [ proplists:property(key1, val1) | Prop1].
+[{key1, val1}]
+Prop3 = [ proplists:property(key2) | Prop2].
+[key2,{key1,val1}]
+
+
+PropLists = [key5, {key1, val3}, {key2, val2}, {key1, val1}].
+[key5,{key1,val3},{key2,val2},{key1,val1}]
+proplists:get_value(key1, PropLists).  %% 多个Val对应相同的Key的时候，返回第一个
+val3
+proplists:get_value(key5, PropLists).  %% 对于Atom, 如果存在，返回true.
+true
+proplists:get_value(key7, PropLists).  %% 对于不存在的Key, 返回undefined
+undefined
+
+proplists:get_all_values(key1, PropLists).  %% 返回所有的vals, 多个Val
+[val3,val1]
+proplists:get_all_values(key2, PropLists).  %% 返回所有的vals, 一个Val
+[val2]
+proplists:get_all_values(key7, PropLists).  %% 返回所有的vals, 不存在
+[]
+proplists:get_all_values(key5, PropLists).  %% 返回所有的vals, Atom
+[true]
+
+proplists:lookup(key1, PropLists).        
+{key1,val3}
+proplists:lookup(key5, PropLists).
+{key5, true}
+proplists:lookup(key7, PropLists).
+none
+
+proplists:delete(key1, PropLists).          %% 删除key1对应的所有Vals  
+[key5,{key2,val2}]
+
+
+
