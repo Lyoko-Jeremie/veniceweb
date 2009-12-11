@@ -190,7 +190,17 @@ callback(Next, State) ->
 	    [ContentDisposition | _ ] = Headers,
 	    NewState = case ContentDisposition of
 			   {"content-disposition", {"form-data", [{"name", _}, {"filename", Filename}]}} ->
-			       #state{filename = "/tmp/" ++ Filename};     %% 获取文件名
+			       #state{filename = "/tmp/" ++ Filename};     %% 获取文件名 
+                               %% Bug#这个逻辑存在问题: 
+	                       %% 修正, 如果这个input-file上传的文件时空, 这时候Filename是[], 
+                               %% 需要对这种情况进行判断，如果为[], 则跳过不做任何处理
+	                       %%
+                               %% case Filename of
+			       %%     [] ->
+			       %%         State;
+			       %%     _ ->
+			       %%         #state{filename = "/tmp/" ++ Filename}
+			       %% end;
 			    _->
 			       State
                        end,
@@ -333,7 +343,7 @@ callback(Next, State) ->
 	    io:format("Headers: ~p~n", [Headers]),
 	    NewState = case ContentDisposition of
 			   {"content-disposition", {"form-data", [{"name", _}, {"filename", Filename}]}} -> %% POST FILE
-			       #state{filename = "/tmp/" ++ Filename};
+			       #state{filename = "/tmp/" ++ Filename};    %% (需要修正Filename为空的问题, 见#4中的修正方式)
 			   {"content-disposition", {"form-data", [{"name", Key}]}} ->   %% POST TEXT
 			       #state{key = Key};
 			    _->
@@ -400,8 +410,133 @@ render_index() ->
       </html>">>.
 
 7. 针对6的情况，如何"返回"解析出来的POST TEXT的数据?也就是跟随文件一起POST过来的TEXT数据?
-TODO:
 参考mochiweb_multipart:parse_form/2
+
+代码:
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		[] ->
+		    Req:respond({200, [{"Content-Type","text/html"}], render_index()});
+                 _ ->
+                    Req:serve_file(Path, DocRoot)
+            end;
+        'POST' ->
+            case Path of
+               "upload" ->
+		    Res = parse_form2(Req),            %% 使用方式: 返回的结果是一个proplists, 包含了解析出来的input-file和input-text.
+                    io:format("Res:~p~n", [Res]),      %% 打印结果:
+	                                               %% Res:
+                                                       %% [{"key1",<<"aaa">>}, {"key2",<<"bbb">>},
+                                                       %% "/tmp/Blue hills.jpg","/tmp/Sunset.jpg","/tmp/Water lilies.jpg"]
+                                                       %% 或者(key2为空)
+                                                       %% [{"key1",<<"aa">>},{"key2",<<>>},"/tmp/Winter.jpg"]
+
+		    Req:respond({200, [{"Content-Type", "text/html"}], <<"<html><body>upload success</body></html>">>});
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
+...
+
+parse_form2(Req) ->
+    Callback = fun(Next) -> callback2(Next, #state{}, []) end,
+    {_, _, Res} = mochiweb_multipart:parse_multipart_request(Req, Callback),
+    Res.
+
+%%
+%% Header: (三种可能的形式, 其中C是包含的input-file可能为空)
+%% a. Headers: [{"content-disposition",{"form-data",[{"name","key2"}]}}]        
+%% b. Headers: [{"content-disposition",{"form-data",[{"name","myfile1"},{"filename","Sunset.jpg"}]}},
+%%              {"content-type",{"image/jpeg",[]}}]
+%% c. Headers: [{"content-disposition",{"form-data",[{"name","myfile2"},{"filename",[]}]}},
+%%              {"content-type",{"application/octet-stream",[]}}]
+callback2(Next, State, Acc) ->
+    case Next of
+	{headers, Headers} ->
+	    io:format("Headers: ~p~n", [Headers]),
+	    {"form-data", H1} = proplists:get_value("content-disposition", Headers),
+            Name = proplists:get_value("name", H1),
+            Filename = proplists:get_value("filename", H1),
+	    NewState = case Filename of
+			   undefined ->
+			       #state{key = Name};
+			   [] ->
+			       State;
+			   _ ->
+			       #state{filename = "/tmp/" ++ Filename}
+                       end,
+	    fun(N) -> callback2(N, NewState, Acc) end;
+	{body, Body} ->
+	    if
+		State#state.filename =/= undefined ->
+		    if
+			State#state.file =/= undefined ->
+			    file:write(State#state.file, Body),
+			    NewState = State,
+			    NewAcc   = Acc;
+			true ->
+			    case file:open(State#state.filename, [raw, write]) of
+				{ok, File} ->
+				    file:write(File, Body),
+				    NewState = State#state{file = File},
+				    NewAcc   = Acc;
+				{error, Error} ->
+				    io:format("could not open ~p for writing, error: ~p~n", [State#state.filename, Error]),
+				    NewState = State,
+				    NewAcc   = Acc,
+				    exit(could_not_open_file_for_writing)
+                            end
+                    end;
+		true ->
+		    if 
+			State#state.key =/= undefined ->
+			    NewState = #state{},
+			    NewAcc   = [{State#state.key, Body} | Acc];
+			true ->
+			    NewState = State,
+			    NewAcc   = Acc
+		    end
+            end,
+	    fun(N) -> callback2(N, NewState, NewAcc) end;
+	body_end ->
+	    if
+		State#state.file =/= undefined ->
+		    file:close(State#state.file),
+		    NewAcc = [ State#state.filename | Acc];
+		true ->
+		    NewAcc = Acc
+            end,
+	    fun(N) -> callback2(N, #state{}, NewAcc) end;
+	eof ->
+	    lists:reverse(Acc);
+	_ ->
+	    fun(N) -> callback2(N, State, Acc) end
+    end.
+
+render_index() ->
+    <<"<html>
+        <head>
+          <meta content='text/html; charset=UTF-8' http-equiv='content-type'>
+          <title>Mochiweb Index Title</title>
+        </head>
+        <body>
+        POST DEMO:
+        <form action='upload' method='post' enctype='multipart/form-data'>
+          <input type='text' name='key1'/><br/>
+          <input type='text' name='key2'/><br/>
+          <input type='file' name='myfile1'/><br/>
+          <input type='file' name='myfile2'/><br/>
+          <input type='file' name='myfile3'/><br/>
+          <input type='submit' value='提交'>
+        </form>
+        </body>
+      </html>">>.
+
 
 
 
