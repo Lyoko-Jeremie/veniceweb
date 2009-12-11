@@ -1,0 +1,39 @@
+介绍Mnesia的Index
+
+1. 作用:
+通常情况下我们通过mnesia:read(Tab, Key)来读取Mnesia表中的整条数据, 也就是根据Key来读取.
+索引Index为我们引入了一条新的机制，我们可以利用Index字段在不知道Key的情况下读取数据.
+
+2. 例子:
+APIs:
+index_read(Tab, SecondaryKey, Pos) -> transaction abort | RecordList 返回的是结果列表.
+
+a. 没有增加索引字段
+mnesia:create_table(user1, [{attributes, [id, name, age]}, {disc_copies, [node()]}]). %% 创建user1表
+{atomic,ok}
+mnesia:dirty_write({user1, 1, lqiang, 23}).   %% 写入数据
+ok
+mnesia:dirty_write({user1, 2, huangwei, 23}).
+ok
+mnesia:dirty_write({user1, 3, sunchen, 24}). 
+ok
+mnesia:dirty_read(user1, 1).           %% 根据Key读取数据
+[{user1,1,lqiang,23}]
+mnesia:dirty_index_read(user1, 24, age).             %% 由于在创建表的时候，没有增加索引字段，所以不能根据Index读取数据.
+** exception exit: {aborted,{badarg,[user1,24,4]}}
+     in function  mnesia:abort/1
+     in call from mnesia_index:dirty_read/3
+
+b. 增加了索引字段
+mnesia:create_table(user2, [{index, [age]},{attributes, [id, name, age]}, {disc_copies, [node()]}]). %% 创建user1表, age是索引字段.
+{atomic,ok}
+mnesia:dirty_write({user2, 1, lqiang, 23}).   %% 写入数据             
+ok                                        
+mnesia:dirty_write({user2, 2, huangwei, 23}).             
+ok                                        
+mnesia:dirty_write({user2, 3, sunchen, 24}). 
+ok
+mnesia:dirty_index_read(user2, 24, age).   %% 根据索引读取数据, 返回结果List
+[{user2,3,sunchen,24}]
+mnesia:dirty_index_read(user2, 23, age).   %% 根据索引读取数据, 返回结果List
+[{user2,2,huangwei,23},{user2,1,lqiang,23}]
