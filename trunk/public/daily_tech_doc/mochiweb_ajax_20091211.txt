@@ -1,0 +1,126 @@
+测试mochiweb对ajax的支持
+
+1. Ajax技术的简单介绍
+a. 如何创建http_request对象，我们封装了一个方法getXmlHttpRequest()这个方法使用与IE和Firefox。
+b. 还要注意这个对象的三个属性:
+   <1> onreadystatechange属性，通常的使用方法是给它绑定一个函数，当状态改变的时候，会调用这个函数:
+       xmlHttp.onreadystatechange=function()
+       {
+           // 我们需要在这里写一些代码
+       }
+
+   <2> 还有readystate属性，这个属性保存了服务器的相应状态，没当readystate状态改变的时候，onreadystatechange
+       关联的函数就会被调用。通常4表示请求完成，我们可以使用服务器返回的数据了。\
+       0       请求未初始化（在调用 open() 之前）
+       1       请求已提出（调用 send() 之前）
+       2       请求已发送（这里通常可以从响应得到内容头部）
+       3       请求处理中（响应中通常有部分数据可用，但是服务器还没有完成响应）
+       4       请求已完成（可以访问服务器响应并使用它）
+
+   <3> 最后一个属性是responseText，用来表示服务器返回的数据: 所以我们一般的使用方式是:
+       xmlHttp.onreadystatechange=function()
+       {
+           if(readystate == 4) {
+               var value = http_request.responseText;
+               //继续下面的操作
+           }
+       }
+
+2. 一个使用javascript和mochiweb完成的最基本的ajax的例子:
+效果:
+例子中有两个文本框，当我们在第一个文本框数据内容的时候，第二个文本框会动态的现实当前时间.
+a. core.js
+function getXmlHttpRequest() {      %% 获取一个XmlHttpRequest对象    
+  http_request = false;
+  if(window.ActiveXObject) {   
+    try {
+      http_request = new ActiveXObject("Msxml2.XMLHTTP");
+    } catch(e) {
+      try {
+        http_request = new ActiveXObject("Microsoft.XMLHTTP");
+      } catch(e) {
+      }
+    }                 
+  } else if(window.XMLHttpRequest) {                
+    http_request = new XMLHttpRequest();             
+  }
+  return http_request;            
+}
+
+function ajaxFunction() {
+  var xmlHttp = getXmlHttpRequest();                      %% 1. 获取XmlHttpRequest对象
+  
+  xmlHttp.onreadystatechange = function() {               %% 2. 关联回调函数，显示服务器返回的内容xmlHttp.responseText
+    if(xmlHttp.readyState == 4) {
+      document.myForm.time.value = xmlHttp.responseText;  
+    }
+  };
+
+  xmlHttp.open("GET","ajax/time",true);                   %% 3. 打开HTTP连接，发送请求(GET或者POST)
+  xmlHttp.send(null);
+}
+
+b. mochiweb code
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		[] ->
+		    Req:respond({200, [{"Content-Type","text/html"}], render_index()});
+		"ajax/time" ->      %% 响应Ajax请求，返回当前时间
+		    Req:respond({200, [{"Content-Type", "text/plain"}], io_lib:format("~p~n", [calendar:local_time()])});
+                 _ ->
+                    Req:serve_file(Path, DocRoot)
+            end;
+        'POST' ->
+            case Path of
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
+
+%% Internal API
+
+get_option(Option, Options) ->
+    {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
+
+render_index() ->
+    <<"<html>
+        <head>
+          <meta content='text/html; charset=UTF-8' http-equiv='content-type'>
+          <title>Mochiweb Index Title</title>
+        </head>
+        <body>
+        <form name='myForm'>
+          Username: <input id='id_1' type='text' name='username' onkeyup='ajaxFunction()'/>
+          Time: <input id='id_2' type='text' name='time'/>
+        </form>
+        <script type='text/javascript' src='/js/core.js'></script>
+        <script type='text/javascript' src='/js/jquery-1.3.2.min.js'></script>
+        </body>
+      </html>">>.
+
+3. 使用JQuery的Ajax例子:
+为什么core.js 要放在文档的最下方呢?
+因为JQuery代码中要选取DOM中的元素，如果放在Head中元素还没有load完成，根本无法选取.
+
+上面的例子使用JQuery重写, 只需要重写core.js
+$(document).ready(
+  function() {
+    $('#id_1').keyup(
+      function() {
+	$.get("ajax/time",
+              {'key1':'val1'}, 
+              function(data) {
+	         $('#id_2').val(data);
+              });
+      }
+    )
+  }
+)
+
+
+
