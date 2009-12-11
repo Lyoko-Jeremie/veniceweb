@@ -1,0 +1,79 @@
+介绍pg和pg2模块 - Distributed Named Process Groups
+
+文档:
+http://www.erlang.org/doc/man/pg.html
+http://www.erlang.org/doc/man/pg2.html
+
+1. pg
+<1> 这是一个实验性的模块，分布式进程组，一个进程组关联到一个公共的名字，包含一些列的进程，这些进程可以分布在不同的节点上.
+<2> 序列化的消息:
+    当我们向这个进程组发消息的时候，进程组中的所有成员都会收到这条消息，而且消息是序列话的.
+    例如: P1向进程组发送了消息M1, P2同时向进程组发送了消息M2, 进程组中的所有进程都会按照同样的顺序收到消息.
+<3> 当一个进程终止后，会自动退出进程组.
+<4> APIs:
+    pg:create(PgName)       -> ok | {error, Reason}  在当前节点上创建pg group
+    pg:create(PgName, Node) -> ok | {error, Reason}  在指定节点上创建pg group
+    
+    pg:join(PgName, Pid) -> Members - [pid()]        加入这个pg group
+    pg:members(PgName)   -> Members                  返回这个pg group的所有成员
+
+    pg:send(PgName, Msg)  -> void()                  给group的所有成员发消息{pg_message, From, PgName, Msg}
+    pg:esend(PgName, Msg) -> void()                  给group的所有成员发消息{pg_message, From, PgName, Msg}, 除了当前发消息的process.
+
+补充:
+pg:esend/2
+官方的文档是:
+Sends the tuple {pg_message, From, PgName, Msg} to all members of the process group PgName, except ourselves.
+我的理解是(没有测试):
+给group的所有成员发消息{pg_message, From, PgName, Msg}, 除了当前发消息的process.
+
+<5> 测试(分布式的节点上的process加入同一个pg group):
+a. 启动node1:
+   pg:create(mygroup).   %% 创建Group
+   ok
+   pg:members(mygroup).
+   []
+   pg:join(mygroup, self()).
+   []
+   pg:members(mygroup).     
+   [<0.37.0>]
+b. 启动node2:
+   self().
+   <0.39.0>
+   net_adm:ping('node1@liqiang-tfs').
+   pong
+   pg:join(mygroup, self()).         %% 加入到Group
+   [<6239.37.0>]
+c. 在node1上测试:
+   pg:members(mygroup).    %% Group包含两个成员    
+   [<6244.39.0>,<0.37.0>]
+
+
+2. pg2 
+<1> 这个模块和pg模块有所不同，在pg模块，每个消息要发送给group的所有成员，而pg2模块，消息可以发送给group组中的一个
+    ，多个，或者全部成员.
+<2> 与pg模块不同的是，这个模块没有特别的API可以发送消息给group，我们应该使用get_members/1或者get_local_members/1来
+    找到group中的成员，然后直接发消息给这些进程.
+
+<3> 测试:
+a. 启动node1:
+pg2:create(mygroup).
+ok
+pg2:get_members(mygroup).
+[]
+pg2:join(mygroup, self()).
+ok
+pg2:get_members(mygroup). 
+[<0.41.0>]
+b. 启动node2:
+net_adm:ping('node1@liqiang-tfs').
+pong
+pg2:which_groups().     %% 第一次没有返回mygroup
+[]
+pg2:which_groups().     %% 第二次返回mygroup, 延时??
+[mygroup]
+pg2:join(mygroup, self()).
+ok
+c. 在node1上测试:
+pg2:get_members(mygroup).
+[<6304.37.0>,<0.41.0>]
