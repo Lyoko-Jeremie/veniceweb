@@ -110,6 +110,51 @@ disc_only_copies   = []
 原先node1上所有的数据都可以在node2上读取.
 
 
+
+###补充###: 
+通过erl启动命令行参数, 让新的节点加入到mnesia cluster中:
+作用和在master节点上调用mnesia:change_config(extra_db_nodes, ['node2@liqiang-tfs'])的效果是一样的.
+<1> 启动node1, 创建schema, 启动mnesia, 创建一个表user.
+werl.exe -setcookie testcookie -sname node1 -mnesia dir '"c:/home/mnesia/node1"'
+mnesia:create_schema([node()]).
+ok
+(node1@liqiang-tfs)2> mnesia:start().       
+ok
+mnesia:create_table(user, [{attributes, [id, name, age]}, {disc_copies, [node()]}]).
+{atomic,ok}
+<2> 启动node2(启动后会自动加入到node1的集群中)
+werl.exe -setcookie testcookie -sname node2 -mnesia dir '"c:/home/mnesia/node2"' extra_db_nodes ['node1@liqiang-tfs']
+mnesia:start().
+ok
+mnesia:change_table_copy_type(schema, node(), disc_copies).  %% 改变schema的属性为disc_copies.
+{atomic,ok}
+<3> 启动node3(启动后会自动加入到node1和node2的集群中)
+werl.exe -setcookie testcookie -sname node3 -mnesia dir '"c:/home/mnesia/node3"' extra_db_nodes ['node1@liqiang-tfs']
+mnesia:start().
+ok
+mnesia:change_table_copy_type(schema, node(), disc_copies).  %% 改变schema的属性为disc_copies.
+{atomic,ok}
+<4>在node3上查看当前mnesia clustor的情况:
+mnesia:info().
+.....
+running db nodes   = ['node1@liqiang-tfs','node2@liqiang-tfs','node3@liqiang-tfs']  %% 三个节点都在集群中
+stopped db nodes   = [] 
+master node tables = []
+remote             = [user]
+ram_copies         = []
+disc_copies        = [schema]
+disc_only_copies   = []
+[{'node1@liqiang-tfs',disc_copies}] = [user]
+[{'node1@liqiang-tfs',disc_copies},
+ {'node2@liqiang-tfs',disc_copies},
+ {'node3@liqiang-tfs',disc_copies}] = [schema]
+...
+mnesia:dirty_write({user, 1, liqiang, 23}). %% 写数据
+ok
+mnesia:dirty_read({user, 1}).               %% 读数据
+[{user,1,liqiang,23}]
+
+
 2. 如何动态的从mnesia cluster中删除一个节点?
 用到的Mnesia APIs:
 mnesia:info()
