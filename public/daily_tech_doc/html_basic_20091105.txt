@@ -1,7 +1,7 @@
 RFC1945 - HTTP 1.0
 RFC2616 - HTTP 1.1
 
-1. HTTPf服务器不维护客户的状态信息, 所以HTTP是一个无状态的协议(stateless protocol)
+1. HTTP服务器不维护客户的状态信息, 所以HTTP是一个无状态的协议(stateless protocol)
 
 2. HTTP 1.0使用非持久连接(nonpersistent connection), HTTP 1.1默认使用持久连接(persistent connection)
    
