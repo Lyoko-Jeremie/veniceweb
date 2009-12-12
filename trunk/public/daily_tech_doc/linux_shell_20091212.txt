@@ -1,0 +1,108 @@
+介绍Bourne Shell编程的知识
+
+1. 如何运行Bourne Shell脚本? 三种方式
+(运行脚本前需要确认脚本有运行的权限chmod u+x script_file)
+<1> 先运行/bin/sh来运行Bourne Shell, 然后在Bourne Shell下运行脚本.
+<2> /bin/sh script_file
+<3> 在Shell文件开头增加  #! /bin/sh
+
+2. Shell变量是可以读写的存储空间，用户可以使用它们作为缓冲区完成任务.
+分为: Shell环境变量和用户自定义变量
+<1> Shell环境变量, 如$PATH $HOME $PWD等等. 可以使用set命令查看所有的
+    Shell变量(包括用户自定义变量)
+<2> 读写用户自定义的Shell变量. (加上$符号，就可以引用(读)到当前变量的值, 所以使用echo就可以显示变量的值)
+    a. name=liqiang    (赋值，等号前后不能有空格)
+       echo $name
+       liqiang
+    b. name=li qiang   %% 有空格，没用引号包含，会把qiang当做命令执行.
+       qiang: command not found  
+    c. name="li qiang" %% 正确的方式，引号包含
+       echo $name
+       li qiang
+    d. name=text*      %% 没有用引号包含，会把*当做通配符，列出当前工作目录下
+                          所有与text*匹配的文件，如果当前目录没有与之匹配的文件，
+                          则显示text*      
+       echo $name
+       text1.txt text2.txt
+    e. name="text*"
+       echo $name
+       text*
+    f. name=liqiang
+       echo $name
+       liqiang
+       echo "$name"
+       liqiang
+       echo "this is $name"
+       this is liqiang
+       echo '$name'
+       $name
+       echo \$name
+       $name
+    g. command=pwd
+       echo $command
+       pwd
+
+       $command
+       /home/woomsgadmin/tmp %%输出当前的工作路径
+
+3. 命令替换(替换一段命令的执行结果)
+`command`
+用反引号也叫着重号引起一个命令，在Shell执行的时候会将该命令的输出结果
+来替代该命令.
+command=pwd
+echo "path: $command"
+path: pwd
+
+command=`pwd`    %%命令替换
+echo "path: $command"
+path: /home/woomsgadmin/tmp
+
+任何时候都可以使用，例如:
+echo "current data is `date`"
+current data is 2009年 12月 12日 星期六 19:33:03 CST
+
+习题? 如何将echo "Hello, World"的输出赋给一个变量arg1，并显示这个变量?
+arg1=`echo "Hello, World"`
+echo $arg1
+Hello, World
+
+4. 重置变量，也就是将变量的值设置为NULL.
+<1> unset name
+<2> unset name1 name2 %% 同时重置两个
+<3> name1=            %% 等号后面什么也不写
+
+5. 创建只读的用户自定义变量
+name=liqiang
+age=32
+readonly name age     %% 设置name和age为只读
+name=liqiangnew
+name: readonly variable
+
+单独运行readonly会显示所有的只读变量, 和set类似.
+
+6. 读取标准输入:
+#! /bin/sh
+echo "Enter input: "
+read line                %% 把标准输入读入到变量line中.
+echo "You entered: $line"
+
+7. Shell脚本参数传递
+#! /bin/sh
+echo "Command name: $0"    %% 程序本身的名字
+echo "Command count: $#"   %% 参数个数
+echo "Command arg1: $1"    %% $1 - $9 九个参数的值
+echo "Command arg2: $2"
+
+./test.sh liqiang haha
+Command name: ./test.sh
+Command count: 2
+Command arg1: liqiang
+Command arg2: haha
+
+
+
+
+
+
+
+
