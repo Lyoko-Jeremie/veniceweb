@@ -104,3 +104,7 @@ http://www.tightvnc.com/
 其它资源
 <1> 上海众生网络，机房托管服务
 http://www.v01.cn/
+
+页面效果不错的网站
+<1> 
+http://stackoverflow.com/
