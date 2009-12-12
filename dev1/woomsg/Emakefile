@@ -1,3 +1,4 @@
+{"src/tools/common/*", [debug_info, {outdir, "ebin"}]}.
 {"src/tools/erltl/*", [debug_info, {outdir, "ebin"}]}.
 {"src/tools/image/*", [debug_info, {outdir, "ebin"}]}.
 {"src/controller/*", [debug_info, {outdir, "ebin"}]}.
