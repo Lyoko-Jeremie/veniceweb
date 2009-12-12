@@ -269,7 +269,27 @@ loop(Req, DocRoot) ->
     end.
 
 
-7.
+7. 重定向的例子: URL Redirect
+loop(Req, DocRoot) ->
+    "/" ++ Path = Req:get(path),
+    case Req:get(method) of
+        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+            case Path of
+		"login" ->
+		    Req:respond({302, [{"Location", "home/user/qiang"}], ""});    %% 重定向到 http://localhost:8000/home/user/qiang
+		"home/user/qiang" ->
+		    Req:respond({200, [{"Content-Type", "text/html"}], "login success"});
+                 _ ->
+                    Req:serve_file(Path, DocRoot)
+            end;
+        'POST' ->
+            case Path of
+                _ ->
+                    Req:not_found()
+            end;
+        _ ->
+            Req:respond({501, [], []})
+    end.
 
 
 
