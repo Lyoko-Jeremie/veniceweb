@@ -57,3 +57,9 @@ net.ipv4.netfilter.ip_conntrack_max = 1048576
 问题: 上面的修改只有在防火墙打开的时候会成功, 也就是 /etc/rc.d/init.d/iptables start
 的时候才成功，当我们把防火墙关掉，会产生如下错误:
 net.ipv4.netfilter.ip_conntrack_max is a unknown key
+
+8. cat命令:
+cat命令主要有三个功能:
+a. 显示文件内容，不能修改:    cat filename 
+b. 从标准输入创建一个文件:    cat > filename  (ctrl + d结束)
+c. 将几个文件合并成一个文件:  cat file1 file2 > file3
