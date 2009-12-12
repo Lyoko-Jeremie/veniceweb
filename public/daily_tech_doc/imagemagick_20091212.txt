@@ -1,0 +1,34 @@
+
+1. 主页: http://www.imagemagick.org/
+
+2. Windows平台下安装与使用
+   我们直接下载二进制版本: ImageMagick-6.5.5-7-Q16-windows-dll.exe, 在你的windows系统上安装，如果
+   安装出问题，可以先安装vcredist_x86.exe.
+   
+   安装完成会自动设定PATH，所以convert.exe等命令可以直接使用.
+
+3. convert命令介绍:
+   我们准备的原始图片尺寸是src.jpg 200x150
+
+   2.1 默认时，宽度和高度表示要最终需要转换图像的最大尺寸，
+   同时Convert会控制图片的宽和高，保证图片按比例进行缩放.
+   下面的例子会生成一张600X450的图片.
+   convert -resize 600×600 src.jpg dst.jpg
+
+   2.2 如果需要转换成600×600，而图片无需保持原有比例，可以在
+   宽高后面加上一个感叹号!
+   convert -resize 600×600! src.jpg dst.jpg
+
+
+   3.3 生成验证码
+   convert -background white -fill black -font Sylfaen -pointsize 24 -size 128x64 -gravity center label:"teststring" dest.jpg
+   -background 控制背景
+   -fill 控制字体颜色
+   -font 控制字体
+   -pointsize 控制字体大小
+   -size 控制输入图片的大小(这个尺寸可以去掉)
+   -travity 控制文字位置
+   label 表示要输入的文字
+   最后一个是目标文件
+
+   
