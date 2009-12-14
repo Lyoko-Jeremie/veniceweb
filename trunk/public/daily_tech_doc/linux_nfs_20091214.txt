@@ -1,0 +1,25 @@
+Linux NFS
+
+1. 如果挂载NFS
+a. root身份登录系统
+b. 在默认情况下系统是没有启动nfs服务的，需要启动
+   service nfs status
+   service nfs start
+c. 修改NFS的配置文件/etc/exports, 
+   示例
+   # more /etc/exports
+   /nfs 192.168.XX.XXX(rw,sync,no_root_squash) 192.168.XX.XXX(rw,sync,no_root_squash) 192.168.XX.XXX(rw,sync,no_root_squash) 
+
+   其中/nfs 表示将哪个目录共享出来 , 
+   192.168.XX.XXX及以后的IP表示允许访问的IP地址 , 
+   rw表示可读可写, sync表示内存硬盘同步，
+   no_root_squash表示如果以root身份mount该NFS服务器，则身份就是root身份
+d. 使配置生效， 可以执行命令
+   exportfs命令来立刻生效， 
+   但最好用重启NFS服务器: service nfs restart
+e. 利用mount命令与局域网的共享目录建立链接
+   mount -t nfs 192.168.XX.XXX:/nfs  /mnt
+   这里面的/nfs必须跟上面/etc/exports配置文件中的共享目录一样
+f. 释放资源，断开链接
+   umount /mnt
+
