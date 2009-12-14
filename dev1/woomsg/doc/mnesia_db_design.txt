@@ -1,0 +1,38 @@
+V1:
+mnesia db的设计
+
+1. #user#(set)  
+用户表 一对一关系, key是用户名
+
+username:    用户名
+password:    密码
+email:       邮箱
+photo:       头像存放路径
+create_data: 注册日期
+
+2. #user_ext#(set) 
+用户扩展信息
+
+username: 用户名
+fullname: 全名
+sex:      性别
+location: 住址
+web:      个人网站
+describe: 个人介绍
+
+
+3. #following#(bag)
+用户关系表, 一对多关系
+用户1关注用户2
+
+username1:    关注用户2的人
+username2:    用户
+
+4. #picture#(set)
+图片表
+guid:         图片的ID
+owner:        图片的拥有者  [index]
+path:         存放路径
+create_data:  图片创建时间
+
+
