@@ -1,6 +1,6 @@
 Linux NFS
 
-1. 如果挂载NFS
+1. 如果挂载NFS(网上摘抄的步骤，未测试)
 a. root身份登录系统
 b. 在默认情况下系统是没有启动nfs服务的，需要启动
    service nfs status
