@@ -1,0 +1,186 @@
+介绍makefile的基础知识
+参考文档:
+http://blog.csdn.net/wody87/archive/2009/09/16/4557835.aspx
+
+1. 编译和链接
+对于c/c++:
+a. 首先要把源文件编译成目标文件，在windows下是*.obj, 在linux下是*.o文件, 这个过程叫做编译, 一般来说
+   每个源文件都对应一个目标文件.
+b. 把大量的目标文件(Object File)合成可执行文件的过程叫做链接
+
+补充:
+源文件太多，编译生成的中间目标文件太多，而在链接时需要明显地指出中间目标文件名，这对于编译很不方便，
+所以，我们要给中间目标文件打个包，在Windows下这种包叫“库文件”（Library File)，也就是 *.lib 文件，
+在UNIX下，是Archive File，也就是 *.a 文件.
+
+2. 一个最基本的makefile来演示makefile的威力:
+我们的工程有8个C文件，和3个头文件
+规则是：
+a. 如果这个工程没有编译过，那么我们的所有C文件都要编译并被链接。
+b. 如果这个工程的某几个C文件被修改，那么我们只编译被修改的C文件，并链接目标程序。
+c. 如果这个工程的头文件被改变了，那么我们需要编译引用了这几个头文件的C文件，并链接目标程序。
+
+
+分析:
+<1> makefile的规则
+    target...:prerequisites...
+    	command
+    或者是:
+    target...:prerequisites...;command
+    
+    target可以是一个目标文件，一个可执行文件，或者是一个标签Label.
+    prerequisites是target所以懒的目标文件
+    command是make需要的命令，用来生成target, 可以是任意的Shell命令
+    如果不与prerequisites一行，则必须用Tab开头. 如果和prerequisites一行
+    用分号隔开.
+
+    一句话总结是:
+    prerequisites中如果有一个以上的文件比target文件要新的话，command
+    所定义的命令就会被执行.
+<2> makefile中的\表示换行.
+<3> Command以Tab开头
+<4> clean没有依赖文件，仅仅是一个label, 我么可以用make clean来执行.
+<5> 在找寻依赖的过程中，如果出现错误，比如最后被依赖的文件找不到，
+    那么make就会直接退出，并报错，而对于所定义的命令的错误，或是编译不成功，make根本不理。
+    make只管文件的依赖性，即，如果在我找了依赖关系之后，冒号后面的文件
+    还是不在，那么对不起，我就不工作啦。
+
+makefile的内容
+edit : main.o kbd.o command.o display.o \
+insert.o search.o files.o utils.o
+	cc -o edit main.o kbd.o command.o display.o \
+	insert.o search.o files.o utils.o
+
+main.o : main.c defs.h
+	cc -c main.c
+kbd.o : kbd.c defs.h command.h
+	cc -c kbd.c
+command.o : command.c defs.h command.h
+	cc -c command.c
+display.o : display.c defs.h buffer.h
+	cc -c display.c
+insert.o : insert.c defs.h buffer.h
+	cc -c insert.c
+search.o : search.c defs.h buffer.h
+	cc -c search.c
+files.o : files.c defs.h buffer.h command.h
+	cc -c files.c
+utils.o : utils.c defs.h
+	cc -c utils.c
+clean :
+	rm edit main.o kbd.o command.o display.o \
+	insert.o search.o files.o utils.o
+
+3. makefile中使用变量:
+makefile中的变量就是一个字符串，和C语言中的宏类似, 在需要的时候可以展开重复使用.
+定义: var = xxx
+使用: $(var)
+
+我们可以将2中的例子这样改写:
+objects = main.o kbd.o command.o display.o \
+insert.o search.o files.o utils.o
+
+edit : $(objects)
+	cc -o $(objects)
+
+main.o : main.c defs.h
+	cc -c main.c
+kbd.o : kbd.c defs.h command.h
+	cc -c kbd.c
+command.o : command.c defs.h command.h
+	cc -c command.c
+display.o : display.c defs.h buffer.h
+	cc -c display.c
+insert.o : insert.c defs.h buffer.h
+	cc -c insert.c
+search.o : search.c defs.h buffer.h
+	cc -c search.c
+files.o : files.c defs.h buffer.h command.h
+	cc -c files.c
+utils.o : utils.c defs.h
+	cc -c utils.c
+clean :
+	rm edit $(objects)
+
+4. makefile的自动推导功能:
+<1> 只要make看到一个[.o]文件，它就会自动的把[.c]文件加在依赖关系中，
+如果make找到一个whatever.o，那么whatever.c，就会是whatever.o的依赖文件。
+并且 cc -c whatever.c 也会被推导出来.
+<2>.PHONY表示，clean是个伪目标文件。
+
+所以我们可以更新我们的3中的makefile代码:
+objects = main.o kbd.o command.o display.o \
+insert.o search.o files.o utils.o
+
+edit : $(objects)
+	cc -o $(objects)
+
+main.o : defs.h
+kbd.o : defs.h command.h
+command.o : defs.h command.h
+display.o : defs.h buffer.h
+insert.o : defs.h buffer.h
+search.o : defs.h buffer.h
+files.o : defs.h buffer.h command.h
+utils.o : defs.h
+
+.PHONY : clean
+clean :
+	rm edit $(objects)
+
+5. 利用makefile的自动推导功能，实现另类风格的makefile(不推荐使用，依赖关系不明确)
+objects = main.o kbd.o command.o display.o \
+insert.o search.o files.o utils.o
+
+edit : $(objects)
+	cc -o $(objects)
+
+$(objects) : defs.h
+kbd.o command.o files.o: command.h
+display.o insert.o search.o files.o: buffer.h
+
+.PHONY : clean
+clean :
+	rm edit $(objects)
+
+6. 清除目标文件的规则:
+clean:
+	rm edit $(objects)
+
+更文件的做法是:
+.PHONY : clean
+clean:
+	-rm edit $(objects)
+
+.PHONY意思表示clean是一个“伪目标”，。而在rm命令前面加了一个小减号
+的意思就是，也许某些文件出现问题，但不要管，继续做后面的事.
+
+7. makefile总述:
+<1> 显示规则，显式的说明依赖关系
+<2> 隐晦规则，make自动推导的功能
+<3> 变量定义，定义一些列变量
+<4> 文件指示
+<5> 注释，和Shell脚本一样，以#开头作为注释（如果make中要使用#，需要\#转义）
+<6> makefile中的命令，必须以Tab开头
+
+8. 引用其它makefile
+语法: 
+include <filename>, include前面可以有空格，但不能是Tab, filename可以使用通配符.
+当引用多个文件的时候，使用空格隔开
+
+例如:
+我们要引用a.mk b.mk c.mk和foo.make以及一个变量$(bar), 其中包含了e.mk和f.mk
+可以:
+include foo.make *.mk $(bar)
+
+-include <filename>
+无论include过程中出现什么错误，都不要报错继续执行.
+
+9. 环境变量
+
+10.
+
+
+
+
+
