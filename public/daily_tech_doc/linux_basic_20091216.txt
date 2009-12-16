@@ -1,0 +1,75 @@
+介绍Linux系统的基础知识
+
+
+1. cat 链接并显示文件
+<1> cat myfile 会显示文件myfile的所有内容
+<2> cat myfile1 myfile2 会显示myfile1和myfile2的内容
+<3> cat -n myfile 会显示文件myfile的所有内容，加行号
+<4> cat > newfile  (如果myfile已经存在，覆盖已有的内容)
+会把标准输入的内容输入到newfile中. <Ctrl - D>结束标准输入.
+
+2. more 浏览或者翻阅文本文件
+<1> more myfile 显示文件myfile的内容
+<2> more -10 myfile 显示文件myfile的内容, 没屏幕显示10行<Space>翻页, <Q>退出
+
+3. cp 拷贝文件
+<1> cp file1 file2 拷贝file1到file2
+<2> cp -i file1 file2 如果目标存在，覆盖前提示用户
+<3> cp -r fold1 fold2 递归的拷贝文件夹(需要-r参数)
+
+4. mv 移动文件
+<1> mv file1 file2 移动file1到file2
+<2> mv -i file1 file2 如果目标存在，覆盖前提示用户
+<3> mv fold1 fold2 移动文件夹(和移动文件一样, 不需要-r参数)
+
+5. rm 删除文件
+<1> rm file 删除file
+<2> rm -i file 删除前提示用户
+<3> rm -r fold 递归的删除fold的所有内容，包括子目录和文件
+
+6. ls 显示文件信息
+ls [Options] [pathname]
+ls 如果pathname不写，则显示当前目录的所有文件
+ls ~ 显示当前用户的$HOME目录下的文件
+ls ~user1 显示user1用户的$HOME目录下的文件
+<1> ls 显示文件
+<2> ls -a 显示所有文件，包含隐藏文件
+<3> ls -i 显示文件，包括inode
+<4> ls -l 显示文件的详细信息
+<5> ls -F 在目录名后面显示/, 在二进制后面显示*, 在符号链接后面显示@
+
+7. mkdir 一个或者多个目录
+<1> mkdir dir1 创建目录dir1
+<2> mkdir dir1 dir2 创建目录dir1, dir2
+<3> mkdir -m 700 dir1 创建目录dir1，并指定权限700 
+<4> mkdir -p(小写) dir1/dir2 可以创建父目录, 会创建dir1和dir1的子目录dir2
+
+8. rmdir 删除一个目录(可以用rm -r dir代替)
+<1> rmdir dir1  删除dir1
+    (效果等同于 rm -r dir1)
+<2> rmdir dir1/dir2    删除dir2, 保留dir1
+<3> rmdir -p dir1/dir2 同时删除dir2和dir1
+
+9. man 查看命令信息
+<1> man ls 查看ls命令的信息. 和more一样，<Space>翻页, <Q>退出
+<2> man -k login 根据关键字login进行搜索
+<3> man -s2 login 指定搜索的Linux手册的章节
+
+10. whereis 沿着特定的路径搜索二进制，源文件，和用户手册的位置
+<1> whereis sh 搜索sh的二进制，源文件，和用户手册
+<2> whereis -b sh 只搜索二进制
+<3> whereis -m sh 只搜索用户手册
+<4> whereis -s sh 只搜索源文件
+
+11. whoami 查看当前登录用户
+
+12. cal 查看当前日期
+
+13. 
+
+
+
+
+
+
+
