@@ -65,7 +65,12 @@ ls ~user1 显示user1用户的$HOME目录下的文件
 
 12. cal 查看当前日期
 
-13. 
+13. alias 设置别名
+<1> alias 查看当前所有的别名
+<2> alias dir='ls -al'  (dir /tmp等于ls -al /tmp)
+    alias gohome='cd /home/username'
+<3> unalias dir 删除dir别名
+<4> unalias 删除所有别名
 
 
 
