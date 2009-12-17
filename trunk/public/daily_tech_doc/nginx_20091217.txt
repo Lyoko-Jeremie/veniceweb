@@ -1,0 +1,68 @@
+安装配置Nginx做负载均衡
+
+1. 安装Nginx
+a. 下载源代码http://nginx.org/download/nginx-0.8.30.tar.gz
+b. tar -xzvf nginx-0.8.30.tar.gz
+c. cd nginx-0.8.30
+d. ./configure
+   出错:
+   error: the HTTP rewrite module requires the PCRE library.
+   workaround:
+   安装pcre模块: sodu yum install pcre-devel
+   重新configure, 成功.
+e. make
+f. sudo make install
+
+2. 配置Nginx
+我们可以在/usr/local/nginx/conf中找到配置文件 nginx.conf
+配置如下:
+(这个例子中，我们后端只使用一个运行于192.168.1.102:8000的mochiweb作为AppServer)
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #设定负载均衡的服务器列表
+    #weigth参数表示权值，权值越高被分配到的几率越大
+    upstream mochiweb {
+	server 192.168.1.102:8000;
+        #server 192.168.1.102:8001  weight=5;
+        #server 192.168.1.102:8002  weight=1;
+        #server 192.168.1.102:8003  weight=6;
+
+    }
+
+    #设定虚拟主机
+    server {
+        listen       80;
+        server_name  192.168.1.102;
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+
+        #对 "/" 启用负载均衡
+        location / {
+            proxy_pass         http://192.168.1.102:8000;
+            proxy_redirect     off;
+
+            proxy_set_header   Host             $host;
+            proxy_set_header   X-Real-IP        $remote_addr;
+            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+
+            client_max_body_size       10m;
+            client_body_buffer_size    128k;
+
+            proxy_connect_timeout      90;
+            proxy_send_timeout         90;
+            proxy_read_timeout         3600;
+
+            proxy_buffering off;
+        }
+}
+
+
+3. 启动Nginx和关闭Nginx
+使用命令来启动
+Nginx: sudo /usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+使用命令来关闭
+Nginx: killall nginx
