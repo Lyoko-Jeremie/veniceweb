@@ -2,15 +2,27 @@
 
 
 1. cat 链接并显示文件
+该命令在屏幕上显示一个或者多个文件的所有内容，所以对于那些超过一页的文件的内容，
+该命令只能显示最后一页.
+
 <1> cat myfile 会显示文件myfile的所有内容
 <2> cat myfile1 myfile2 会显示myfile1和myfile2的内容
 <3> cat -n myfile 会显示文件myfile的所有内容，加行号
 <4> cat > newfile  (如果myfile已经存在，覆盖已有的内容)
 会把标准输入的内容输入到newfile中. <Ctrl - D>结束标准输入.
+<5> cat 不带参数执行的时候，会从标准输入读取内容，每次一行，从标准输入中显示出来.
+<6> cat file1 file2 > file3    合并文件: 将file1和file2的内容合并到file3, 如果file3不存在，则创建新文件
+<7> cat file1 file2 >> file3   追加文件: 将file1和file2的内容追加到file3末尾, 如果file3不存在，则创建新文件
+<8> cat >> file3 从标准输入追加内容到file3
 
-2. more 浏览或者翻阅文本文件
+
+2. more/head/tail 浏览或者翻阅文本文件
+一次要查看多页的内容, 可以翻页
+(也可以使用head tail来查看文件的头部或者尾部)
 <1> more myfile 显示文件myfile的内容
 <2> more -10 myfile 显示文件myfile的内容, 没屏幕显示10行<Space>翻页, <Q>退出
+<3> head myfile
+<4> tail myfile
 
 3. cp 拷贝文件
 <1> cp file1 file2 拷贝file1到file2
@@ -198,8 +210,255 @@ a. 新创建的文件默认不具有可执行允可权限
 b. 新创建的目录默认具有可执行允可权限
 
 21. 特殊访问位:
+<1> SUID: 用户ID(与User的x公用一位)
+有些Linux命令需要些文件, 而执行这些命令的用户却没有问价的访问权限，例如/etc/passwd
+我们普通的用户需要使用passwd来修改密码，但是普通用户却没有修改/etc/passwd文件的权限.
 
-22.
+一般来说，命令是根据发出命令的用户的权限来执行的，我们使用SUID可以完成上面passwd的工作,
+如果某个命令的可执行文件设置了SUID位, 则该命令执行的时候，就拥有了这个文件所有者的权限,
+我们passwd设置了SUID位，那么我们运行的时候就拥有了超级用户的权限，可以修改/etc/passwd了.
+
+chmod 4xxx file-list
+chmod u+s  file-list
+如果用户已经拥有了执行权限，则执行权限位被设置为s, 否则设置成S.
+
+下面的例子: (rw-rw-r-- -> rwSrw-r--)
+ls -l file2
+-rw-rw-r-- 1 woomsgadmin woomsgadmin 4 12-21 12:50 file2
+chmod u+s file2
+ls -l file2
+-rwSrw-r-- 1 woomsgadmin woomsgadmin 4 12-21 12:50 file2
+
+<2> SGID: 组ID(与Group的x公用一位)
+和SUID类似，使得进程拥有文件的所有者所在的组的权限.
+
+chmod 2xxx file-list
+chmod g+s  file-list
+如果用户所在的组已经拥有了执行权限，则执行权限位被设置为s, 否则设置成S.
+
+<3> Sticky: 粘着位(与Other的x公用一位)
+当对一个目录设置了粘着位的时候，非授权你的用户不能删除或者重命名这个目录的其他用户的文件.
+通常对包含多个用户文件的共享目录设置该位.
+
+如果一个程序设置了改位，即使该程序已经结束，系统也会尽量的将该程序的可执行代码保存在内存中，
+也就是驻留内存，如果一定要换出，则存放与交换空间(swap space)，也就是如果程序设置了粘着位，程序退出，
+要么保存在内存中，要么保存在swap space中，这样做的优点是对于频繁执行的程序，可以迅速的启动.
+
+chmod 1xxx file-list
+chmod +t   file-list
+如果其它用户已经拥有了执行权限，则执行权限位被设置为t, 否则设置成T.
+
+用户权限的总结: 一共12位
+SUID SGID Stick r w x r w x r w x
+
+22. wc file-list 查看文件的信息
+<1> wc myfile (返回文件的行数 字数 字符数)
+
+23. diff 比较文件
+逐行的比较file1和file2的内容，用一系列命令显示其区别.
+<1> diff file1 file2   (其中file1和file2都可以是-, 标示跟标准输入进行比较)
+<2> diff -e file1 file2 > ed.script  (为ed编辑器产生脚本, 输入到ed.script中)
+
+<3> diff结合ed一起使用
+假设有file1和file2两个文件
+$cat file1
+this is file1
+this is file1-1
+this is a test string
+this is the end of file
+this is the end of file-1
+$ cat file2
+this is file2
+this is a test string
+this is a another string
+this is the end of file
+
+$diff file1 file2
+1,2c1
+< this is file1
+< this is file1-1
+---
+> this is file2
+3a3
+> this is a another string
+5d4
+< this is the end of file-1
+分析:
+将file1转换成file2的指令有三种: add(a), change(c), delete(d)
+1, 2c1 : 将file1的第一行好第二行转变成file2的第一行
+3a3 : 将file2的第三行追加到file1的第三章之后
+5d5 : 将file1的第五行删除
+<   : 是指第1个文件的行内容
+--- : 是分割两个文件
+>   : 是第2个文件的行内容
+
+使用ed.script将file1修改成file2
+$diff -e file1 file2 > ed.script
+$cat ed.script   %% (注意分析ed编辑器的内容)
+5d
+3a
+this is a another string
+.
+1,2c
+this is file2
+.
+cat >> ed.script   %% 在ed.script末尾增加包含w和q的两行
+w
+q
+<Ctrl - D>
+$ed file1 < ed.script  %% file1将通过ed.script修改成和file2一样的内容
+
+补充: ed编辑器的基本使用
+ed编辑器是以行为单位对文件进行编辑的
+. - 退出编辑文件模式, 进入命令行模式
+w - 保存文件
+q - 真正的退出ed编辑器
+
+
+24. uniq 删除重复的行
+删除文件中连续重复出现的行，只保留一个副本:
+<1> uniq file
+<2> uniq -c file 在每个输出的行前显示它出现的次数
+<3> uniq -d file 显示重复的行
+<4> uniq -u file 显示不重复的行
+
+25. 使用diff和patch给源代码打补丁详解:
+
+
+26. Linux下一些常用工具的正则表达式规则:
+|        x|y|z        或者, x或者y或者z
+.        .com         任意字符, Acom acom
+^        ^x           行首, 以x开始的一行
+$        D$           行尾, 以D结尾的一行
+\        \*           转义, 标示字符*
+/        /L..e/       定界符, 标示正则表达式的头或者尾, Love Laae等等
+()       (xy)         分组, 匹配xy xyxy xyxyxy
+?        xy?          选择, 匹配x或者xy 
+*        xy*          重复(0此或者多次), x xy xyy xyyy
++        xy+          重复(1此或者多次), xy xyy xyyy
+[]       /[Hh]ello/   取集合中的一个字符, 匹配中括号中的任意字符, Hello hello
+[^]      /[^A-KM-Z]/  取集合中的一个字符, 不匹配中括号中的字符, Hello
+
+
+/^Yes/    以Yes开始的一行
+/th/      字符串th出现在单词的任意位置
+/:S/      以冒号结尾的一行
+/[0-9]/   单个数字
+
+27. gzip和gunzip压缩文件和解压文件:
+<1> gzip file         压缩文件file, 压缩后file会被file.gz替换 
+<2> gunzip file.gz    解压file.gz, 解压后file.gz会被file替换
+
+$gzip -v file
+file:    82.8% -- replaced with file.gz
+$gunzip -v file.gz 
+file.gz:         82.8% -- replaced with file
+
+28. find 命令进行查找
+find directory-list expression
+<1> find /home/user/tmp -sname file1 在/home/user/tmp目录下查找名为file1的文件
+
+29. grep | egrep | fgrep 用于在文件中进行搜索, 支持正则表达式
+grep [options] pattern [file-list]
+egrep [options] [string] [file-list]
+fgrep [options] [expression] [file-list]
+
+三个命令中fgrep最快, 但使用范围最有限, egrep最慢, 但使用范围最广, 可以用这则表达式
+grep速度适中.
+<1> grep liqiang file1      看看file1中是否包含liqiang这个单词
+<2> grep -n liqiang file*   看看当前目录中以file开头的文件中那个文件包含liqiang(-n 随匹配行打印出行号)
+
+30. Linux的链接
+总结:
+可以创建硬链接和符号链接两种形式
+硬链接一般只针对文件，不针对目录. 和初始文件公用相同的文件索引节点.
+符号链接可以针对文件，也可以针对目录，符号链接是一种特殊的文件，建立的时候要建立新的文件索引节点. 读取的时候需要额外开销.
+
+<1> 链接分为硬链接和软连接，软链接又叫符号链接
+<2> ln [options] exiting-file new-file   创建一个指向exiting-file的硬链接, 将其命名为new-file
+    ln [options] exiting-file-list directory 为file-list中的文件在directory下创建硬链接, 要求directory必须存在.
+    这两种硬链接的方式一般针对文件，不针对目录
+
+<3> 为一个文件创建一个硬链接
+为file1创建硬链接file1.hard, 注意观察inode的价值, file1和file1.hard具有相同的索引节点号
+和file1的链接数的变化: inode从1变为2, 也就是当创建一个文件的硬链接的时候，链接数加1.
+当删除一个具有多个硬链接的文件的时候，链接数减1. 也就是虽然file1被删除了，但是其内容仍然保存在磁盘中.
+因为file1的索引节点并没有被删除，file1.hard仍然指向这个索引节点.
+如果链接数为0，则系统删除该文件.
+(补充: mv移动文件后，硬链接仍然可以访问)
+
+$ ls -il file1
+526085 -rw-rw-r-- 1 woomsgadmin woomsgadmin 20 12-21 16:13 file1
+$ ln file1 file1.hard      %% 创建硬链接
+$ ls -il file1 file1.hard 
+526085 -rw-rw-r-- 2 woomsgadmin woomsgadmin 20 12-21 16:13 file1
+526085 -rw-rw-r-- 2 woomsgadmin woomsgadmin 20 12-21 16:13 file1.hard
+$ rm file1                 %% 删除一个文件
+$ ls -il file1.hard 
+526085 -rw-rw-r-- 1 woomsgadmin woomsgadmin 20 12-21 16:13 file1.hard
+
+<4> 为一个目录下的所有文件创建硬链接
+在dir1下创建三个文件fil1,file2,file3
+为dir1目录下的所有文件在dir2下创建硬链接，文件名相同, 
+要求dir2必须存在，并且具有可执行和写的权限
+创建硬链接之后, dir1下的所有文件链接数都变成2
+简单来说: 初始文件和硬链接文件的所有内容都相同，就是同一个文件.
+
+$ ls -il dir1
+526089 -rw-rw-r-- 1 woomsgadmin woomsgadmin 22 12-21 16:17 file1
+526092 -rw-rw-r-- 1 woomsgadmin woomsgadmin 22 12-21 16:17 file2
+526093 -rw-rw-r-- 1 woomsgadmin woomsgadmin 22 12-21 16:17 file3
+$ ln dir1/* dir2   %% 
+$ ls -il dir1
+526089 -rw-rw-r-- 2 woomsgadmin woomsgadmin 22 12-21 16:17 file1
+526092 -rw-rw-r-- 2 woomsgadmin woomsgadmin 22 12-21 16:17 file2
+526093 -rw-rw-r-- 2 woomsgadmin woomsgadmin 22 12-21 16:17 file3
+$ ls -il dir2
+526089 -rw-rw-r-- 2 woomsgadmin woomsgadmin 22 12-21 16:17 file1
+526092 -rw-rw-r-- 2 woomsgadmin woomsgadmin 22 12-21 16:17 file2
+526093 -rw-rw-r-- 2 woomsgadmin woomsgadmin 22 12-21 16:17 file3
+
+<5> 为一个文件创建软连接，也就是符号链接, 观察其与硬链接的区别:
+(ln 参数多了一个-s)
+$ ls -il file1
+526085 -rw-rw-r-- 1 woomsgadmin woomsgadmin 8 12-21 16:24 file1
+$ ln -s file1 file1.soft    %% 创建符号链接
+$ ls -il file1 file1.soft 
+526085 -rw-rw-r-- 1 woomsgadmin woomsgadmin 8 12-21 16:24 file1
+526087 lrwxrwxrwx 1 woomsgadmin woomsgadmin 5 12-21 16:24 file1.soft -> file1
+
+区别:
+初始文件和链接文件的索引节点号不同, 这意味着它们是不同的文件
+初始文件时普通文件, 用-标示，链接文件用l标示.
+两个文件的链接数都是1，也说明它们是不同的文件
+文件大小不同
+链接文件后面是 file1.soft -> file1   (file1有5个字符，所以链接文件的大小是5)
+
+软连接文件的读取过程:
+实质上软连接文件中file1.soft存放时的是初始文件的路径，系统在读取的时候首先会打开file1.soft
+读取其内容，从而获取file1的名字，然后在读取file1的内容.
+这会导致文件操作变慢，实质上用符号链接读取文件，需要一次额外的读盘操作.
+
+我们可以编辑符号链接所指向的文件，但是必须保持初始文件的路径不变，否则读取失效.
+硬链接不存在这个文件，在硬链接的情况下即使用mv移动了初始文件，访问仍然正常.
+
+<6> 为一个目录创建一个符号链接
+ln -s pic2 pic2.soft 如果pic2是一个目录，则会为这个目录创建一个符号链接
+
+31. 重定向和管道
+
+32. Linux进程的简单介绍
+
+33. 文件系统的备份
+
+34.
+
+
+
+
+
+
+
 
     
     
