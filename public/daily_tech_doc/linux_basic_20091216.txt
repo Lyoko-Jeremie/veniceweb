@@ -323,7 +323,25 @@ q - 真正的退出ed编辑器
 <4> uniq -u file 显示不重复的行
 
 25. 使用diff和patch给源代码打补丁详解:
+diff的三个重要选项: -r, -u, -N
+-r选项按照文件目录递归创建修补文件.
+-u还是统一模式
+-N是指当diff遇到一个只存在于两个树中的一个树中的文件时,默认情况下跳过文件并且打印一个警告到stderr.
+这个行为可以通过-N选项来更改,这也导致了diff认为丢失的文件实际上是存在的,但它是空的.采用这种方式,
+一个修补文件可以包括已经创建的文件.然后应用修补程序创建新的文件.
 
+<1> 给单个文件制作patch
+制作两个文件file1和file2
+diff -uN file1 file2 > file1.patch
+
+<2> 给目录制作patch
+diff -ruN dir1 dir1_new > dir1.patch
+
+<3> 给目录dir1打patch
+diff --dir dir1 < dir1.patch
+
+<4> 恢复目录dir1
+diff --dir dir1 -R < dir1.patch
 
 26. Linux下一些常用工具的正则表达式规则:
 |        x|y|z        或者, x或者y或者z
@@ -356,7 +374,7 @@ file.gz:         82.8% -- replaced with file
 
 28. find 命令进行查找
 find directory-list expression
-<1> find /home/user/tmp -sname file1 在/home/user/tmp目录下查找名为file1的文件
+<1> find /home/user/tmp -name file1 在/home/user/tmp目录下查找名为file1的文件
 
 29. grep | egrep | fgrep 用于在文件中进行搜索, 支持正则表达式
 grep [options] pattern [file-list]
@@ -446,12 +464,195 @@ $ ls -il file1 file1.soft
 ln -s pic2 pic2.soft 如果pic2是一个目录，则会为这个目录创建一个符号链接
 
 31. 重定向和管道
+a. 输入和输出重定向
+Linux内核会自动为每条命令打开三个文件，stdin, stdout, stderr. 默认的情况下键盘是标准输入, 控制台终端是标准输出.
+流程是: (键盘)stdin -> command -> (显示屏)stdout | (显示屏)stderr
+##输入重定向
+command < input file
+流程是: (input file)stdin -> command -> (显示屏)stdout | (显示屏)stderr
+##输出重定向
+command > output file
+流程是: (键盘)stdin -> command -> (output file)stdout | (显示屏)stderr
+##合并输入输出重定向
+command < input file > output file
+command > output file < input file
+流程是: (input file)stdin -> command -> (output file)stdout | (显示屏)stderr
+##标准错误重定向
+command 2> output errorlog
+流程是: (键盘)stdin -> command -> (显示屏)stdout | (output errorlog)stderr
+##在一条命令中重定向标准输出和标准错误
+command 1> command.output 2> command.errors
+或者(标准输出和标准错误都重定向到一个文件中)
+command 1> command.output.error 2>&1
+command 1> command.output.error 1>&2
+##在一条命令中重定向标准输入，标准输出和标准错误
+command 0< input file 1> command.output 2> command.errors
+##追加操作(使用>>替换上面的>)
+command >> output file
+
+分析:
+输入重定向
+cat < tmpfile
+cat tmpfile
+上面两个虽然都是把tmpfile的内容显示在屏幕上，但是逻辑不同，第一个是cat的输入重定向，
+第二个是cat的参数.
+类似的:
+grep liqiang file1
+grep liqiang < file1
+第一个file1是grep的参数, 第二个是grep的输入重定向.
+
+输出重定向
+grep -n liqiang file1 > liqiang.file1
+
+合并输入输出重定向
+cat < file1 > file1.backup
+
+标准错误重定向(如果file5不存在, 则错误信息输入到error.log)
+(一般情况下，我们把标准错误信息链接在显示屏，方便及时的得到错误信息)
+ls -il file5 2> error.log
+
+b. 管道
+Linux允许一个命令的标准输入作为另外一个命令的标准输入
+command1 | command2 | command3 | ... | commandN
+其中command1的标准输出是command2的标准输入，以此类推.
+
+我们通常把这些通过管道连接起来的命令称为filter, 它们从标准输入取得数据，经过一些列处理，输出到标准输出，
+管道和过滤器用于单个命令无法完成的复杂任务.
+
+管道允许两条linux命令(进程)相互通讯，所以管道又被看成时一种进程间通讯的方式
+
+一个例子:
+ls -l | more -5 %% 将当前文件夹的内容显示出来，每屏幕显示5行
+可以用下面的命令替换，但是会慢很多
+ls -l > tmp.file
+more -5 < tmp.file (或者more -5 tmp.file)
+rm tmp.file
+
+c.  重定向和管道的组合
+用户无法单独使用重定向或者管道实现: 将某个命令的标准输出重定向到一个文件，同时还将该输出作为另外一个命令
+的标准输入.
+我们可以使用tee来完成这个需求
+
+command1 | tee file1 file2 ... fileN | command2
+先执行command1 将结果保存在file1...fileN中，然后再发送给command2作为其标准输入.
+
+例如:
+cat file1 | grep liqiang | tee liqiang.file1 | wc -l
+
+总结: Bourne shell的重定向操作
+>file       输出重定向
+<file        输入重定向
+>>file       追加标准输出
+0<file       输入重定向
+1>fiel       输出重定向
+2>file       错误重定向
+1>>file1     将标准输出追加到file
+2>>file1     将标准错误追加到file
+<&m          将标准输入连接到描述符为m的文件中
+>&m          将标准输出连接到描述符为m的文件中
+m>&n         将文件描述符m和n连接
+cmd1 | cmd2  命令cmd1的标准输出时cmd2的标准输入
+
 
 32. Linux进程的简单介绍
+a. Linux进程的状态
+一个Linux进程通常来说，包含5种状态:
+就绪: 进程准备运行，但没有得到CPU
+运行: 进程正在运行，占用CPU
+等待: 等待某个事件的发生
+被交换: 暂时保存在交换空间商
+僵死: 垂死的进程，通常一个进程的父进程在该进程调用exit系统调用前就终止时候，该进程就是僵死进程.
+
+fork系统调用:
+fork是linux的系统调用，用来创建子进程（child process）。子进程是父进程(parent process)的一个副本，
+从父进程那里获得一定的资源分配以及继承父进程的环境。子进程与父进程唯一不同的地方在于pid（process id）
+
+Shell为每一次命令创建一个新的进程，当命令进程运行时，Shell等待，直到该命令结束.
+
+b. 执行二进制的外部命令的流程(通过exec来执行)
+Shell命令分为"内部命令"和"外部命令(二进制或者是shell脚本)"两种.
+(sh)父进程  fork-> (sh)子进程
+(sh)父进程      -> (exec sort)子进程
+
+c. 执行Shell脚本的流程(会创建一个子Shell来执行, 也即是父shell的副本来执行):
+(sh)父进程  fork-> (sh)子进程
+(sh)父进程      -> (sh)子进程  fork-> (sh)子进程
+(sh)父进程      -> (sh)子进程      -> (exec find)子进程
+
+d. exec命令运行另一个程序来替代当前shell
+我们启动一个sh: /bin/sh
+再启动一个bash: /bin/bash
+然后在bash中执行exec more file1, 这条命令会使exec more来替换当前的bash shell, 也就是bash
+当这条命令执行后, 我们会回到sh.
+这个过程也就是Shell执行外部二进制命令的原理.
+
+e. 如何在shell脚本中指定特定的shell执行?
+在shell脚本的开头:
+#! /bin/sh
+或者
+#! /bin/bash
+
+f. Linux中系统的调度算法(优先级值越大，优先级越低): 
+优先级值  = 优先级阀值 + Nice值 + (最近的CPU使用率/2)
+系统用上面的公式为每个进程计算一个优先级值，每秒都会重新计算一次，当进程调度的时候，具有"最小优先级"值
+的进程会获得CPU, 当多个进程遇有相同优先级值的时候，使用先来先服务的原则.
+
+优先级阀值: 是一个整数，通常是40或60
+Nice值: 是一个默认值为20的整数，可以修改
+最近的CPU使用率: CPU使用率会不断更新, CPU的使用率越高，说明这个进程最近占用了越多的CPU时间.
+
+g. 使用ps命令报告进程状态
+ps -a 显示在当前终端上除了登录shell外之外的所有进程信息
+ps -e 显示所有运行在系统中的进程信息
+ps -l 显示进程的详细状态列表
+ps -u uidlist 使用逗号分隔uid.
+
+可以用下面的公式来计算进程的优先级值(PRI), 值越大，优先级越低.
+PRI = 优先级阀值 + NI + (C/2)
+
+h. 使用top命令
+使用top实时的监视CPU和内存的活动，每5秒钟刷新一次.
+使用<Ctrl - C>退出
+
+i. 前台进程和后台进程的相关命令
+command   前台进程
+command & 后台进程
+
+fg[%jobid] 切换job号为jobid的后台进程到前台执行，如果fg不带参数，则将当前作业切换到前台执行.
+jobs或者jobs -l列出当前所有的Job.
+bg[%jobid] 切换job号为jobid的前台的job到后台执行.
+
+例如: 返回的是Job的 -> [JobID] + PID
+$ find /home/ -name liqiang -print > data.log &
+[1] 11639
+
+要终止一个前台进程，<Ctrl - C>就可以了；
+要终止后台进程，可以使用kill命令; 或者使用fg将其转换到前台，然后<Ctrl - C>
+
+j. Linux守护进程
+任何后台运行的进程都可以成为守护进程，但作为一个术语，通常指在后台运行的系统进程.
+
+k. 命令的顺序执行
+cmd1; cmd2; cmd3; cmd4
+
+l. 命令的并行执行(每个命令都作为一个单独的进程执行)
+cmd1& cmd2& cmd3& cmd4&
+
+m. 命令的分组
+(cmd1; cmd2; cmd3; cmd4)
+
+n. init进程
+只要系统运行，最先运行的是/etc/init, 这个进程的PID是1，是所有进程的祖先.
 
 33. 文件系统的备份
+四个命令:
+<1> tar -czvf dir.tar.gz dir  (压缩)
+<2> tar -xzvf dir.tar.gz      (解压)
+<3> tar -cvf  dir.tar dir     (压缩)
+<4> tar -xvf  dir.tar         (解压)
 
-34.
+34. 使用gcc和make来编译c语言的程序
+
 
 
 
