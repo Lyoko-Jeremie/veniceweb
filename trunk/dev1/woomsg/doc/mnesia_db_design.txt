@@ -30,12 +30,12 @@ username2:    用户
 
 4. #pic#(set)
 图片表
-
 guid:         图片的GUID
 owner:        图片的拥有者  [index]
 path:         存放路径
 msg:          图片的描述信息
 count:        图片的评论数
+spam:         是否是垃圾信息(0表示正常信息, 1表示垃圾信息)
 create_data:  图片创建时间
 
 5. #pic_comment#(bag)
@@ -45,4 +45,3 @@ guid:         图片的GUID
 owner:        发表评论的人 
 comment:      图片的评论
 create_data:  评论的创建时间
-
