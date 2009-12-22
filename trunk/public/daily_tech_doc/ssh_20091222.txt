@@ -1,0 +1,9 @@
+SSH (Secure Shell) 
+windows下可以使用putty远程登录
+
+1. 启动sshd服务(ssh默认使用22端口)
+   service sshd start
+
+2. sshd配置文件的路径:
+   /etc/ssh/sshd_config
+
