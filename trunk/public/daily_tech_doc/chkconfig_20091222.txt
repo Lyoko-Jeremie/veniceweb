@@ -1,0 +1,7 @@
+Centos 有chkconfig这个命令来管理init脚本, chcconfig可以激活或者禁止系统初始化时
+的服务.
+
+1.
+
+
+
