@@ -44,7 +44,7 @@ init([]) ->
     Ip = case os:getenv("MOCHIWEB_IP") of false -> "0.0.0.0"; Any -> Any end,   
     WebConfig = [
          {ip, Ip},
-                 {port, 8000},
+                 {port, 80},
                  {docroot, woomsg_deps:local_path(["priv", "www"])}],
     Web = {woomsg_web,
            {woomsg_web, start, [WebConfig]},
