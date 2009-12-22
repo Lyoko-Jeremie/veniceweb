@@ -28,11 +28,21 @@ describe: 个人介绍
 username1:    关注用户2的人
 username2:    用户
 
-4. #picture#(set)
+4. #pic#(set)
 图片表
-guid:         图片的ID
+
+guid:         图片的GUID
 owner:        图片的拥有者  [index]
 path:         存放路径
+msg:          图片的描述信息
+count:        图片的评论数
 create_data:  图片创建时间
 
+5. #pic_comment#(bag)
+图片评论表
+
+guid:         图片的GUID
+owner:        发表评论的人 
+comment:      图片的评论
+create_data:  评论的创建时间
 
