@@ -1,0 +1,14 @@
+运行Erlang程序相关知识介绍:
+
+1. erlc hello.erl
+   erlc -noshell -s hello start -s init stop
+   
+   每一个-s...命令都会应用apply(hello, start, [])或者apply(init, stop, [])来执行
+   -s的命令会顺序执行.
+
+2. code:get_path() 获取加载的path
+   code:add_patha(Dir) 在加载路径的开头加载path 
+   code:add_pathz(Dir) 在加载路径的结尾加载path
+   
+   erl -pa Dir1 -pa Dir2 ... 在加载路径的开头加载path 
+   erl -pz Dir1 -pz Dir2 ... 在加载路径的结尾加载path
