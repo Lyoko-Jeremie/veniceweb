@@ -4,6 +4,8 @@ FAQ List:
 3. 在一个节点上演示将当前已有的表格分片fragment存储, 增加删除分片的方法
 4. 多个节点的分片测试
 5. 节点池node_pool如何保持存储的fragment在各个节点中的平衡?
+6. 总结Mnesia使用linear hashing线性哈希的特点?
+7. 在Centos上多节点不能连通net_adm:ping/1返回pang
 
 
 
@@ -430,6 +432,19 @@ Mnesia会尝试让每个片段的副本均匀的分布在节点池的所有节点, 期望所有节点都有同样数
 扩充的时候受影响的分片中有将近一半的住户迁徙到新的分片
 缩减时一个分片中的用户都迁徙到另一个分片
 大多数情况下，各分片中住户的数量不均衡
+
+7.在Centos上多节点不能连通net_adm:ping/1返回pang
+我启动连个Erlang Node
+erl -sname node1 -setcookie cookie
+erl -sname node2 -setcookie cookie
+两个节点，发现不能相互通讯, 原因是无法与epmd模块通讯.
+例如运行: net_adm:names() 返回{error, address}
+
+解决方案:
+调用net_adm:localhost()查看erlang的localhost-view, 得到woomsgserver.
+然后修改/etc/hosts, 加入下面一行:
+192.168.1.109 woomsgserver
+
 
 
 
