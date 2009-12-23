@@ -1,0 +1,17 @@
+URL的设计:
+
+1. http://www.woomsg.com/user/USERNAME
+USERNAME是用户的登录ID, 也就是用户名.
+
+2. http://www.woomsg.com/public_timeline/
+浏览公共的图片
+
+3. http://www.woomsg.com/upload/
+图片上传
+
+4. http://www.woomsg.com/settings
+个人设置
+
+5. http://www.woomsg.com/PIC_GUID
+PIC_GUID是图片的GUID, 如果图片不存在，则显示404页面
+
