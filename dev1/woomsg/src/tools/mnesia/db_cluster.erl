@@ -1,5 +1,56 @@
 -module(db_cluster).
--export([add_slave/1, delete_slave/1]).
+-export([start_mnesia_node/1, start_mnesia_nodes/1,
+	 stop_mnesia_node/1, stop_mnesia_nodes/1,
+	 add_slave/1, delete_slave/1]).
+
+start_mnesia_node(Node) ->
+    case rpc:call(Node, mnesia, start, []) of
+	ok ->
+	    ok;
+	_ ->
+	    error
+    end.
+
+stop_mnesia_node(Node) ->
+    case rpc:call(Node, mnesia, stop, []) of
+	stopped ->
+	    ok;
+	_ ->
+	    error
+    end.
+
+start_mnesia_nodes(Nodes) when is_list(Nodes) -> 
+    FailedNodes = lists:foldl(fun(Node, AccIn) ->
+	                          case rpc:call(Node, mnesia, start, []) of
+	  	                      ok ->
+		                          AccIn;
+		                      _ ->
+		                          [Node | AccIn]
+                                  end
+	                      end, [], Nodes),
+    case FailedNodes of
+	[] ->
+	    ok;
+	_ ->
+	    {error, FailedNodes}
+    end.
+
+
+stop_mnesia_nodes(Nodes) when is_list(Nodes) ->
+    FailedNodes = lists:foldl(fun(Node, AccIn) ->
+	                          case rpc:call(Node, mnesia, stop, []) of
+	  	                      ok ->
+		                          AccIn;
+		                      _ ->
+		                          [Node | AccIn]
+                                  end
+	                      end, [], Nodes),
+    case FailedNodes of
+	[] ->
+	    ok;
+	_ ->
+	    {error, FailedNodes}
+    end.
 
 %% 该函数在Mnesia cluster的Master节点上运行, 把SlaveNode添加到Mnesia cluster中.
 add_slave(SlaveNode) ->

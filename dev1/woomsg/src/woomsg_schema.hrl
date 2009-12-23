@@ -18,8 +18,8 @@
 	}).
 
 -record(following, {
-	  username1,
-	  username2
+	  username,
+	  usernamelist
         }).
 
 -record(pic, {
@@ -28,6 +28,7 @@
 	  path,
 	  msg,
 	  count,
+	  taglist,
 	  spam,
 	  create_data
         }).
@@ -38,3 +39,8 @@
 	  comment,
 	  create_data
         }).
+
+-record(pic_tag, {
+	   tag,
+	   guid
+	}).
