@@ -3,9 +3,9 @@
 
 -include("woomsg_schema.hrl").
 
-%% @MasterNodes 主节点, 存储了所有数据的拷贝
+%% @ MasterNodes 主节点, 存储了所有数据的拷贝
 %%              (MasterNodes必须是NodePool中的一部分)
-%% @NodePool 决定分片的存储节点
+%% @ NodePool 决定分片的存储节点
 install(MasterNodes, NodePool)  ->
     %% start the cluster 
     db_cluster:stop_mnesia_nodes(NodePool),
