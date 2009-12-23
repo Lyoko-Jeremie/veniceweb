@@ -1,4 +1,175 @@
 介绍Erlang的Application
 
-1.
+1. 例子:
+一个最基本的supervisor的例子:
+基于gen_server实现一个key & val的存储系统, 实现一个supervisor来监控这个存储系统,
+当存储系统异常退出的时候，自动重启存储服务.
+
+[test.erl] - 实现supervisor
+-module(test).
+-behavior(supervisor).
+-export([start_link/0, start_in_shell/0, init/1]).
+
+-define(SERVER, supervisor_server).
+
+%% Erlang Shell的任何crash都会导致supervisor exit.
+start_link() ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+start_in_shell() ->
+    {ok, Pid} = supervisor:start_link({local, ?SERVER}, ?MODULE, []),
+    unlink(Pid).                    %% 防止shell中的crash导致supervisor server crash
+
+
+init([]) ->
+    {ok, {{one_for_one, 10, 1000},  %% 
+          [{tag_store_server,       %% Id
+           {impl, start_link, []},  %% StartFunc: {M, F, A}, 决定了如何启动这个worker process.
+           permanent,               %% Restart = permanent | transient | temporary
+           brutal_kill,             %% Shutdown
+           worker,                  %% worker | supervisor
+           [impl]}]}}.              %% [Module] 
+
+[impl.erl] - 实现一个key & val存储的gen_server
+-module(impl).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+         terminate/2, code_change/3]).
+
+-export([start_link/0, insert/2, lookup/1, crash/0]).
+
+-define(SERVER, store_server).
+
+start_link() ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).  %% 回调模块的名称(以及服务器的名字)
+
+insert(Key, Val) ->
+    gen_server:call(?SERVER, {insert, Key, Val}).
+
+lookup(Key) ->
+    gen_server:call(?SERVER, {lookup, Key}).
+
+crash() ->
+    gen_server:call(?SERVER, {crashed}).   %% 发送crashed消息, 这个消息handle_call/3没有处理, 所以crashed掉.
+
+init([]) ->
+    {ok, ets:new(?MODULE, [set])}.
+
+handle_call({insert, Key, Val}, _From, State) ->
+    Reply = ets:insert(State, {Key, Val}), 
+    {reply, Reply, State};
+handle_call({lookup, Key}, _From, State) ->
+    Reply = ets:lookup(State, Key), 
+    {reply, Reply, State}.
+
+handle_cast(_Msg, State) ->
+    {noreply, State}.
+
+handle_info(_Info, State) ->
+    {noreply, State}.
+
+terminate(_Reason, State) ->    %% 服务器停止, 做一些清理工作.
+    ets:delete(State),
+    ok.
+
+code_change(_OldVersion, State, _Extra) ->
+    {ok, State}.
+
+
+测试1:
+test:start_in_shell().   %% 避免了由于shell的crash导致supervisor exit的问题.
+true
+impl:insert(key1, val1).
+true
+impl:lookup(key1).      
+[{key1,val1}]
+impl:crash().     
+
+=ERROR REPORT==== 16-Nov-2009::14:54:36 ===
+** Generic server store_server terminating 
+** Last message in was {crashed}
+** When Server state == 20498
+** Reason for termination == 
+** {function_clause,[{impl,handle_call,
+                           [{crashed},{<0.37.0>,#Ref<0.0.0.135>},20498]},
+                     {gen_server,handle_msg,5},
+                     {proc_lib,init_p_do_apply,3}]}
+** exception exit: {{function_clause,
+                        [{impl,handle_call,
+                             [{crashed},{<0.37.0>,#Ref<0.0.0.135>},20498]},
+                         {gen_server,handle_msg,5},
+                         {proc_lib,init_p_do_apply,3}]},
+                    {gen_server,call,[store_server,{crashed}]}}
+     in function  gen_server:call/2
+impl:lookup(key1).       %% 为什么这里的数据为空呢? 因为服务器被重启，创建了一个新的ets表，以前的数据丢失.
+[]
+impl:insert(key1, val1).
+true
+impl:lookup(key1).      
+[{key1,val1}]
+
+2. 实现一个application来控制上面的程序.
+[my_app.erl] - 
+-module(my_app).
+-behaviour(application).
+-export([start/2, stop/1]).
+
+start(_Type, _StartArgs) ->
+    test:start_link().         %% 启动监控树
+
+stop(_State) ->
+    ok.
+
+[my_app.app] - 应用程序的配置文件
+{application, testapp,                  %% 应用程序的名字
+ [ {description, "this is test app"},   %% 应用程序的描述
+   {vsn, "1.0"},                        %% 应用程序的版本
+   {modules, [test_app, test, impl]},   %% 这个应用程序所带入的模块, 一个模块只能在一个应用程序中定义
+   {registered, []},
+   {applications, [kernel, stdlib]},    %% 这里的所有的程序必须启动起来，然后才能启动my_app
+   {mod, {my_app, []}},                 %% 注意: 应用程序的启动模块, 通过这个模块启动
+   {env, []}
+]}. 
+
+3. 应用程序测试:
+APIs:
+application:loaded_applications/0
+application:load/1
+application:start/1
+application:stop/1
+
+测试:
+application:loaded_applications().
+[{kernel,"ERTS  CXC 138 10","2.13.2"},
+ {stdlib,"ERTS  CXC 138 10","1.16.2"},
+ {sasl,"SASL  CXC 138 11","2.1.6"}]
+application:load(my_app).            %% 使用my_app.app中的my_app来加载
+ok
+application:loaded_applications().
+[{kernel,"ERTS  CXC 138 10","2.13.2"},
+ {stdlib,"ERTS  CXC 138 10","1.16.2"},
+ {testapp,"this is test app","1.0"},      %% 新的testapp已经加载进来
+ {sasl,"SASL  CXC 138 11","2.1.6"}]
+application:start(testapp).         %% 使用my_app.app文件中定义的testapp名字来启动程序
+
+=PROGRESS REPORT==== 23-Dec-2009::19:58:21 ===
+          supervisor: {local,supervisor_server}
+             started: [{pid,<0.72.0>},
+                       {name,tag_store_server},
+                       {mfa,{impl,start_link,[]}},
+                       {restart_type,permanent},
+                       {shutdown,brutal_kill},
+                       {child_type,worker}]
+
+=PROGRESS REPORT==== 23-Dec-2009::19:58:21 ===
+         application: testapp
+          started_at: node3@woomsg
+ok
+application:stop(testapp).        %% 停止程序
+
+=INFO REPORT==== 23-Dec-2009::19:59:17 ===
+    application: testapp
+    exited: stopped
+    type: temporary
+ok
+
 
