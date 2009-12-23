@@ -21,12 +21,11 @@ web:      个人网站
 describe: 个人介绍
 
 
-3. #following#(bag)
-用户关系表, 一对多关系
-用户1关注用户2
+3. #following#(set)
+用户username关注usernamelist中的用户
 
-username1:    关注用户2的人
-username2:    用户
+username:    关注用户2的人
+usernamelist:    用户
 
 4. #pic#(set)
 图片表
@@ -45,3 +44,9 @@ guid:         图片的GUID
 owner:        发表评论的人 
 comment:      图片的评论
 create_data:  评论的创建时间
+
+6. #pic_tag#(bag)
+图片tag表
+
+tag:       图片标签
+guid:      图片的GUID
