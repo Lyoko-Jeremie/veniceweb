@@ -1,6 +1,8 @@
 描述当前Server的架构
 
-1. 项目的内容保存在/home/woomsg, 目录结构如下
+1. 项目的内容保存在/home/woomsg, 目录结构如下:
+   这个目录结构可以通过./server_config.sh /home/woomsg 自动创建出来
+
    /home/woomsg
                %% Mnesia Cluster
                /mnesia/dbnodemaster
