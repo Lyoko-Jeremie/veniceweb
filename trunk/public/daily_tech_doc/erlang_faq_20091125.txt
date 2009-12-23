@@ -215,7 +215,7 @@ b. frag_properties  这个可以在所有的上下文中使用.
 mnesia:change_table_flag(Tab, Change)
 Change的参数:
 a. {activate, FragProps} 激活一个表的分片属性, FragProps为空或者是{node_pool, Nodes}
-b. deactive 解除表的分片属性, 片断的数量必须是1，没有其它表在其外键中引用这个表。
+b. deactivate 解除表的分片属性, 片断的数量必须是1，没有其它表在其外键中引用这个表。
 c. {add_frag, NodesOrDist} 增加一个片段到分片表, NodesOrDist可以是一个节点列表或者是
                             mnesia:table_info(Tab, frag_dist)在mnesia_frag上下文的返回结果
 d. del_frag 删除一个片断
