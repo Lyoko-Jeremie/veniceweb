@@ -1,3 +1,30 @@
 介绍Erlang中的日志处理
 
-1.
+1. 默认启动Erlang的时候启动的是erl -boot start_clean
+   我们可以启动一个产品环境的Erlang 
+   erl -boot start_sasl
+
+2. 使用错误日志配置文件启动Erlang
+   erl -boot start_sasl -config log.config
+
+   log.config - 循环日志
+   [{ sasl, [
+         %% minimise shell error logging
+         {sasl_error_logger, false},
+         %% only report error
+         {errlog_type, error},
+         %% the log file directory
+         {error_logger_mf_dir, "/home/woomsgadmin/error_logs"},
+         %% bytes perf logfile
+         {error_logger_mf_maxbytes, 10485760}, %% 10M
+         %% maximum number of
+         {error_logger_mf_maxfiles, 10}
+   ]}].
+
+3. 日志的处理
+   rb:start() | tb:start([{max, 20}])
+   rb:stop()
+
+   rb:list()
+   rb:show(Item)
+
