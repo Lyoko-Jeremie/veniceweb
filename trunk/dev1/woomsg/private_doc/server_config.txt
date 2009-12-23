@@ -1,0 +1,31 @@
+描述当前Server的架构
+
+1. 项目的内容保存在/home/woomsg, 目录结构如下
+   /home/woomsg
+               %% Mnesia Cluster
+               /mnesia/dbnodemaster
+               /mnesia/dbnodeslave1
+               /mnesia/dbnodeslave2
+               /mnesia/dbnodeslave3
+               /mnesia/dbnodeslave4
+
+               %% Error Log
+               /error_logs
+               /error_logs_dev
+
+2. Mnesia Cluster
+   启动一个Master Node, 保存了所有表的原始拷贝.
+   启动四个Slave Node, 组成节点池node_pool, 均匀的保存所有表的fragments.
+   
+   #NodeName#   - #NodePath#
+   dbnodemaster - /home/woomsg/mnesia/dbnodemaster
+   dbnodeslave1 - /home/woomsg/mnesia/dbnodeslave1
+   dbnodeslave2 - /home/woomsg/mnesia/dbnodeslave2
+   dbnodeslave3 - /home/woomsg/mnesia/dbnodeslave3
+   dbnodeslave4 - /home/woomsg/mnesia/dbnodeslave4
+
+3. Error Log
+   错误日志的保存路径
+   开发模式: /home/woomsg/error_logs_dev
+   产品模式: /home/woomsg/error_logs
+   
