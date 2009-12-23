@@ -1,6 +1,7 @@
 我们提供了一个Mnesia操作的扩展模块, 可以方便的操作Mnesia数据库
 db - 对一些基本操作的封装(适用于普通表和分片表)
 frag_db - 封装了表分片的一些特殊操作
+db_cluster - 封装了mnesia集群的操作
 
 ## -- 介绍db -- ##
 1. APIs - 根据Key更新一个或者多个Field
@@ -43,5 +44,6 @@ find(Table, Field, Key) 根据Field的Value获取数据(Field必须是index)
 5. APIs: 删除数据
 delete(Table)      删除整个表格的数据, 也就是清空表格
 delete(Table, Key) 按照Key删除数据
+
 
 
