@@ -1,0 +1,49 @@
+我们提供了一个Mnesia操作的扩展模块, 可以方便的操作Mnesia数据库
+db - 对一些基本操作的封装(适用于普通表和分片表)
+frag_db - 封装了表分片的一些特殊操作
+db_cluster - 封装了mnesia集群的操作
+
+## -- 介绍db -- ##
+1. APIs - 根据Key更新一个或者多个Field
+要求:
+a. Key必须存在，否则返回{error, key_not_found}错误
+b. Table必须是set类型的表格
+set(Table, Key, {Field, Value})  %% 设置一个field的value
+set(Table, Key, Fields)          %% 同时设置多个field的value
+
+例如:
+-record(user, {id, username, age, describe})
+db:set(user, 1, {username, "liqiang-updated"})
+db:set(user, 1, [{username, "liqiang-updated"}, {describe, "liqiang-describe-updated"}])
+
+2. APIs - 根据Key更新Field(增加/减少)
+要求:
+a. Key必须存在，否则返回{error, key_not_found}错误
+b. Table必须是set类型的表格
+c. 在dec的时候, Count必须小于等于原来Field的价值, 否则返回{error, out_of_balance}
+也就是Field的值在做减法之后不能为负数.
+dec(Table, Key, {Field, Count})  %% Field减少Count
+inc(Table, Key, {Field, Count})  %% Field增加Count
+
+例如:
+-record(user, {id, username, age, describe})
+db:dec(user, 1, {age, 2})   %% age减1
+db:inc(user, 1, {age, 1})   %% age加2
+
+3. APIs: 获取一个Field的value
+要求:
+a. Key必须存在，否则返回{error, key_not_found}错误
+b. Table必须是set类型的表格
+get(Table, Key, Field)
+
+4. APIs: 按照row获取数据
+find(Table) 获取整个表格的数据
+find(Table, Key) 获取Key对应的row的数据
+find(Table, Field, Key) 根据Field的Value获取数据(Field必须是index)
+
+5. APIs: 删除数据
+delete(Table)      删除整个表格的数据, 也就是清空表格
+delete(Table, Key) 按照Key删除数据
+
+
+
