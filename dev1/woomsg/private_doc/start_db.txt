@@ -1,5 +1,8 @@
 如何启动mnesia cluster
 
 1. 通过start-db.sh来启动mnesia nodes:
-   start-db.sh node1 '"/home/woomsg/mnesia/node1"'
-   start-db.sh node2 '"/home/woomsg/mnesia/node2"'
+   start-db.sh dbnodemaster '"/home/woomsg/mnesia/dbnodemaster"'
+   start-db.sh dbnodeslave1 '"/home/woomsg/mnesia/dbnodeslave1"'
+   start-db.sh dbnodeslave2 '"/home/woomsg/mnesia/dbnodeslave2"'
+   start-db.sh dbnodeslave3 '"/home/woomsg/mnesia/dbnodeslave3"'
+   start-db.sh dbnodeslave4 '"/home/woomsg/mnesia/dbnodeslave4"'
