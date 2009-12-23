@@ -9,9 +9,11 @@
 
 2. 编译tools和Controller
    cd dev1/woomsg
-   launch erl shell
-   make:all()  %% 使用Emakefile来编译src/tools和src/controller
+   ./build.sh
+   %% 使用Emakefile来编译src/tools和src/controller
 
 3. 编译view
-   compile_erltl:make(ErlTLPath, EBinPath, OutSrcPath)
-   compile_erltl:make(dev1/woomsg/src/view, dev1/woomsg/ebin, dev1/woomsg/esrc)
+   cd dev1/woomsg
+   ./build-view.sh %% start a new erlang shell
+   %% compile_erltl:make(ErlTLPath, EBinPath, OutSrcPath)
+   compile_erltl:make("src/view", "ebin", "esrc")
