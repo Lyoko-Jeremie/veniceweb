@@ -1,0 +1,26 @@
+介绍Session的设计
+
+1. 通过Mnesia数据库中的session表来存储信息, 这个表的结构很简单
+   是一个key/value结构
+   key = username 
+   value = session_id
+
+   其中session_id是随机生成的字符串, 在用户每次登录的时候更新.
+
+2. 原理是:
+   <1> 当用户登录的时候, 会在session表中保存一条{username, session_id}的新
+       记录, 并把这条记录以cookie的形式发送给客户端, 客户端在登录后保存了
+       这样一条cookie:
+       cookie{username, session_id}
+   <2> 当用户再次访问页面的时候, 会根据客户端发送来的这条cookie来判断用户
+       的状态, 如果cookie中的session_id和session表中的一致, 表示用户已经
+       登录, 否则需要重新登录.
+   <3> 当用户注销的时候, 我们会把session表中的session_id更新为"logout", 这
+       样就可以使客户端cookie中保存的session_id和session表中的不一致而失效.
+
+3. 依赖:
+   该模块依赖Mnesia Cluster模块, 需要后台的数据库启动起来才有效. 因为
+   sessino的数据保存在数据库中.
+
+
+   

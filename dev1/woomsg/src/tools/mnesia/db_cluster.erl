@@ -39,7 +39,7 @@ start_mnesia_nodes(Nodes) when is_list(Nodes) ->
 stop_mnesia_nodes(Nodes) when is_list(Nodes) ->
     FailedNodes = lists:foldl(fun(Node, AccIn) ->
 	                          case rpc:call(Node, mnesia, stop, []) of
-	  	                      ok ->
+	  	                      stopped ->
 		                          AccIn;
 		                      _ ->
 		                          [Node | AccIn]

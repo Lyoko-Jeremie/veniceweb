@@ -6,3 +6,15 @@
    start-db.sh dbnodeslave2 '"/home/woomsg/mnesia/dbnodeslave2"'
    start-db.sh dbnodeslave3 '"/home/woomsg/mnesia/dbnodeslave3"'
    start-db.sh dbnodeslave4 '"/home/woomsg/mnesia/dbnodeslave4"'
+
+2. 如何安装Mnesia Cluster?
+通过#1启动Master和Slave节点, 然后在MasterNode上运行下面命令:
+woomsgserver是服务器的名字
+woomsgapp是服务器的节点名
+woomsg_schema:install( ['woomsgapp@woomsgserver'],
+                       ['dbnodemaster@woomsgserver'],           
+                       ['dbnodeslave1@woomsgserver',
+								'dbnodeslave2@woomsgserver',
+								'dbnodeslave3@woomsgserver',
+								'dbnodeslave4@woomsgserver']).
+

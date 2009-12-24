@@ -51,3 +51,9 @@ create_data:  评论的创建时间
 
 tag:       图片标签
 guid:      图片的GUID
+
+7. #session#(set)
+用户登录的session表
+
+username:    用户名字
+session_id:  当前登录的session id
