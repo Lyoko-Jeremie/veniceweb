@@ -44,3 +44,8 @@
 	   tag,
 	   guid
 	}).
+
+-record(session, {
+           username,
+	   session_id
+       }).
