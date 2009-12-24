@@ -21,21 +21,7 @@ stop() ->
     mochiweb_http:stop(?MODULE).
 
 loop(Req, DocRoot) ->
-    "/" ++ Path = Req:get(path),
-    case Req:get(method) of
-        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
-            case Path of
-                _ ->
-                    Req:serve_file(Path, DocRoot)
-            end;
-        'POST' ->
-            case Path of
-                _ ->
-                    Req:not_found()
-            end;
-        _ ->
-            Req:respond({501, [], []})
-    end.
+    woomsg_router:handle_request(Req, DocRoot).
 
 %% Internal API
 

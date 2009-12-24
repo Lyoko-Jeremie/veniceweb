@@ -1,0 +1,2 @@
+<%@ index(Data) %>
+<h1>it works: <% Data %> </h1>
