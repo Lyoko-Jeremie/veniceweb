@@ -1,4 +1,4 @@
-描述当前Server的架构
+描述当前WooMsg Server Cluster的架构
 
 1. 项目的内容保存在/home/woomsg, 目录结构如下:
    这个目录结构可以通过./server_config.sh /home/woomsg 自动创建出来
@@ -19,6 +19,9 @@
    启动一个Master Node, 保存了所有表的原始拷贝.
    启动四个Slave Node, 组成节点池node_pool, 均匀的保存所有表的fragments.
    
+   Mnesia Node 可以通过下面的脚本来启动: 
+   ./start-db.sh dbnodemaster '"/home/woomsg/mnesia/dbnodemaster"'
+   
    #NodeName#   - #NodePath#
    dbnodemaster - /home/woomsg/mnesia/dbnodemaster
    dbnodeslave1 - /home/woomsg/mnesia/dbnodeslave1
@@ -28,6 +31,14 @@
 
 3. Error Log
    错误日志的保存路径
+   错误日志的配置在 log.config文件中
+
    开发模式: /home/woomsg/error_logs_dev
    产品模式: /home/woomsg/error_logs
-   
+
+4. App服务器的启动(woomsgapp是自定义的服务器Node名字)
+   ./start.sh woomsgapp
+   ./start-dev.sh woomsgapp 
+
+5. Cookie约定
+   所有相互通讯的节点cookie设置为: woomsgprivatecookie   
