@@ -4,6 +4,7 @@
    这个目录结构可以通过./server_config.sh /home/woomsg 自动创建出来
  Server Node不存储任何数据, 只是添加到集群通讯用的.
 
+  ['woomsgapp@woomsgserver','dbnodemaster@woomsgserver','dbnodeslave1@woomsgserver','dbnodeslave2@woomsgserver','dbnodeslave3@woomsgserver','dbnodeslave4@woomsgserver']
    /home/woomsg
                %% Mnesia Cluster
                /mnesia/dbnodemaster
