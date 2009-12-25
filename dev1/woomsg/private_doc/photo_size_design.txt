@@ -1,0 +1,19 @@
+包含了图片的尺寸信息:
+
+
+1. 头像
+   mini:    48x48  - default_photo.jpg
+   normal:  72x72  - default_photo_normal.jpg
+
+2. 首页的大图片
+   550x400
+
+3. 用户上传的图片:
+   75x75   - 首页下面的滚动图片           - path.jpg
+              public_timeline显示的图片
+   150x150 - 用户主页上显示的图片         - path_normal.jpg
+   X x Y   - 图片的原始尺寸               - path_large.jpg
+
+   
+    
+   
