@@ -1,0 +1,21 @@
+图片存储的结构:
+
+1. 图片保存在
+   /home/woomsg/fs 目录下
+                  /pic   保存用户上传的图片
+                  /photo 保存头像
+
+2. 头像的设计:
+   所有的头像都存储在photo目录下, 
+   包含两个尺寸:  
+   normal: 72x72  - default_photo_normal.jpg
+   mini:   48x48  - default_photo.jpg
+
+   在数据库中存储mini的相对路径:
+   /photo/sys/default_photo.jpg
+ 
+   normal的相对路径根据mini动态计算出来:
+   /photo/sys/default_photo_normal.jpg
+
+3.
+
