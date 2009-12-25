@@ -43,10 +43,16 @@ install(ServerNodes, MasterNodes, NodePool)  ->
     %% error check
     DBCluster0 = [MasterNodes | NodePool ],
     DBCluster = lists:flatten([ServerNodes | DBCluster0]),
-    db_cluster:stop_mnesia_nodes(DBCluster),
+    io:format("DBCluster: ~p~n", [DBCluster]),
+
+    StopRet = db_cluster:stop_mnesia_nodes(DBCluster),
+    io:format("db_cluster:stop_mnesia_nodes: ~p~n", [StopRet]),
+
     mnesia:delete_schema(DBCluster),
-    mnesia:create_schema(DBCluster),
-    db_cluster:start_mnesia_nodes(DBCluster),
+    CreateRet = mnesia:create_schema(DBCluster),
+    io:format("mnesia:create_schema on cluster: ~p~n", [CreateRet]),
+    StartRet = db_cluster:start_mnesia_nodes(DBCluster),
+    io:format("db_cluster:start_mnesia_nodes: ~p~n", [StartRet]),
 
     %% user - set
     frag_db:create_table(user, 2, NodePool, 

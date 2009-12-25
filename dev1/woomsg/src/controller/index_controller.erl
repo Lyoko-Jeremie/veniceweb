@@ -3,8 +3,8 @@
 
 handle_get(Req, _DocRoot) ->
     Data = index_view:index("love you"),
-    Cookie1 = mochiweb_cookies:cookie("sessionid", "aaaaaaasdfasdfasdf", []),
-    Cookie = mochiweb_cookies:cookie("session_id", "asdfasdfasdf", []),
+    Cookie1 = mochiweb_cookies:cookie("ses_username", "aaaaaaasdfasdfasdf", []),
+    Cookie = mochiweb_cookies:cookie("ses_session_id", "asdfasdfasdf", []),
     Req:respond({200, [{"Content-Type","text/html"}, Cookie, Cookie1], Data}).
 
 handle_post(_Req, _DocRoot) ->
