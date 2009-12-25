@@ -4,14 +4,17 @@
    这个目录结构可以通过./server_config.sh /home/woomsg 自动创建出来
  Server Node不存储任何数据, 只是添加到集群通讯用的.
 
-  ['woomsgapp@woomsgserver','dbnodemaster@woomsgserver','dbnodeslave1@woomsgserver','dbnodeslave2@woomsgserver','dbnodeslave3@woomsgserver','dbnodeslave4@woomsgserver']
+  目前只需要三个节点存储mnesia db:
+ ['woomsgapp@woomsgserver','dbnodemaster@woomsgserver','dbnodeslave1@woomsgserver']
+
+   目录结构:
    /home/woomsg
                %% Mnesia Cluster
                /mnesia/dbnodemaster
                /mnesia/dbnodeslave1
-               /mnesia/dbnodeslave2
-               /mnesia/dbnodeslave3
-               /mnesia/dbnodeslave4
+               /mnesia/dbnodeslave2  %% 暂时不用
+               /mnesia/dbnodeslave3  %% 暂时不用
+               /mnesia/dbnodeslave4  %% 暂时不用
                                  
                %% Server Node
                /mnesia/servernode
@@ -32,9 +35,9 @@
    #NodeName#   - #NodePath#
    dbnodemaster - /home/woomsg/mnesia/dbnodemaster
    dbnodeslave1 - /home/woomsg/mnesia/dbnodeslave1
-   dbnodeslave2 - /home/woomsg/mnesia/dbnodeslave2
-   dbnodeslave3 - /home/woomsg/mnesia/dbnodeslave3
-   dbnodeslave4 - /home/woomsg/mnesia/dbnodeslave4
+   dbnodeslave2 - /home/woomsg/mnesia/dbnodeslave2  %% 暂时不用
+   dbnodeslave3 - /home/woomsg/mnesia/dbnodeslave3  %% 暂时不用
+   dbnodeslave4 - /home/woomsg/mnesia/dbnodeslave4  %% 暂时不用
 
 3. Error Log
    错误日志的保存路径

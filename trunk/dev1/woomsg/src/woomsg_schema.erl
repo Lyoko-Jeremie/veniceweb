@@ -49,38 +49,40 @@ install(ServerNodes, MasterNodes, NodePool)  ->
     db_cluster:start_mnesia_nodes(DBCluster),
 
     %% user - set
-    frag_db:create_table(user, 16, NodePool, 
+    frag_db:create_table(user, 2, NodePool, 
                          [{type, set},
 			  {disc_copies, MasterNodes}, 
 			  {attributes, record_info(fields, user)}]),
     %% user_ext - set
-    frag_db:create_table(user_ext, 16, NodePool, 
+    frag_db:create_table(user_ext, 2, NodePool, 
                          [{type, set},
 			  {disc_copies, MasterNodes}, 
 			  {attributes, record_info(fields, user_ext)}]),
-    %% following - set
-    frag_db:create_table(following, 16, NodePool, 
-                         [{type, set},
+    %% following - bag
+    frag_db:create_table(following, 2, NodePool, 
+                         [{type, bag},
+                          {index, [username2]},
 			  {disc_copies, MasterNodes}, 
 			  {attributes, record_info(fields, following)}]),
     %% pic - set
-    frag_db:create_table(pic, 64, NodePool, 
+    frag_db:create_table(pic, 2, NodePool, 
                          [{type, set},
+			  {index, [owner]},
 			  {disc_copies, MasterNodes}, 
 			  {attributes, record_info(fields, pic)}]),
     %% pic_comment - bag
-    frag_db:create_table(pic_comment, 64, NodePool, 
+    frag_db:create_table(pic_comment, 2, NodePool, 
                          [{type, bag},
 			  {disc_only_copies, MasterNodes}, 
 			  {attributes, record_info(fields, pic_comment)}]),
     %% pic_tag - bag
-    frag_db:create_table(pic_tag, 64, NodePool, 
+    frag_db:create_table(pic_tag, 2, NodePool, 
                          [{type, bag},
 			  {disc_only_copies, MasterNodes}, 
 			  {attributes, record_info(fields, pic_tag)}]),
 
     %% session - set
-    frag_db:create_table(session, 16, NodePool, 
+    frag_db:create_table(session, 2, NodePool, 
                          [{type, set},
 			  {disc_copies, MasterNodes}, 
 			  {attributes, record_info(fields, session)}]),
