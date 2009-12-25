@@ -9,12 +9,12 @@
    550x400
 
 3. 用户上传的图片:
-   75x75     - 首页下面的滚动图片           - path_mini.jpg
+   75x75     - 首页下面的滚动图片                  - path_square.jpg
                public_timeline显示的图片
-   100 x Y   - 用户主页上显示的图片         - path.jpg
-   240 x Y   - 中型图片                     - path_mid.jpg
-   500 x Y   - 大型图片                     - path_large.jpg
-   X x Y   - 图片的原始尺寸                 - path_ori.jpg
+   100 x Y   - thumb: 用户主页上显示的图片         - path.jpg
+   240 x Y   - small: 小型图片                     - path_small.jpg
+   500 x Y   - mediu: 中型图片                     - path_mediu.jpg
+   X x Y     - large: 大型图片 图片的原始尺寸      - path_large.jpg
 
    
     
