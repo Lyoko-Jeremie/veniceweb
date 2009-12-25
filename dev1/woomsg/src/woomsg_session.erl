@@ -28,6 +28,7 @@ get_cookie_username(Username) ->
 set_logout(Username) ->
     set_session_id(Username, ?SID_LOGOUT).
 
+%% 成功返回: {atomic, ok}
 set_session_id(Username, SessionId) ->
     F = fun() ->
 		mnesia:write({session, Username, SessionId})
@@ -35,10 +36,15 @@ set_session_id(Username, SessionId) ->
     mnesia:transaction(F).
 
 %% 获取当前的session_id
-%% 成功返回: {atomic, Val}
-%% 失败返回: {atomic,{error,key_not_found}}
+%% 成功返回: SessionId
+%% 失败返回: []
 get_session_id(Username) ->
-    db:get(session, Username, session_id).
+    case db:find(session, Username) of
+	{atomic, [{session, Username, SessionId}]} ->
+	    SessionId;
+	_ ->
+	    []
+    end.
 
 %% 将查Req中的session_id是否于数据库中的匹配, 如果匹配, 
 %% 表示用户登录.
@@ -49,7 +55,7 @@ check_session_id(Req) ->
 check_session_id(Req, Username) ->
     Sid = Req:get_cookie_val("ses_session_id"),
     case woomsg_session:get_session_id(Username) of
-	{error, _} ->
+	[] ->
 	    false;
 	Val ->
 	    Sid =:= Val	    
