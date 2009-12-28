@@ -93,6 +93,38 @@
 
       <div id="main-recpic">
         <center>
+
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+          <a href="/">
+	    <img class="photo-mini" height="75" weight="75" src="/test/mini-pic.jpg"/>
+          </a>
+
           <div id="main-recpic-bottom">
             关注<a class="nav" href="/">woomsgdev</a>&nbsp;&
             <a class="nav" href="/">woomsgblog</a>获取更多关于WOOMSG的最新消息和更新
@@ -102,6 +134,15 @@
     </div>
 
     <div id="footer">
+      <div id="footer-tag">&copy; 2010 woomsg Inc, All Rights Reserved</div>
+      <div>
+        <a class="nav" href="/">主页</a>
+        <a class="nav" href="/">Blog</a>
+        <a class="nav" href="/">API</a>
+        <a class="nav" href="/">FAQ</a>
+        <a class="nav" href="/">服务条款</a>
+        <a class="nav" href="/">联系我们</a>
+      </div>
     </div>
 
   </div>
