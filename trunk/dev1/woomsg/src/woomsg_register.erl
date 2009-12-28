@@ -1,23 +1,21 @@
 -module(woomsg_register).
 -include("woomsg_configure.hrl").
--export([is_registered/1, register/3]).
+-export([is_registered/1, 
+         register/3]).
 
 %% 判断用户是否已经注册
+%% 注册过: 返回true
+%% 未注册: 返回false
 is_registered(Username) ->
-    case db:get(user, Username, username) of
-        {atomic, Username} ->
-	    true;
-	_ ->
-	    false
-    end.
+    woomsg_user:is_exist(Username).
 
 %% 注册新用户
-%% 更新user和user_ext两张表
+%% (密码使用MD5存储)
+%% 成功返回: ok
+%% 失败返回: error
 register(Username, Password, Email) ->
-    F = fun() ->
-	    Photo = ?DEFAULT_PHOTO,
-	    CreateData = woomsg_datetime:get_datetime(),
-	    mnesia:write({user, Username, Password, Email, Photo, CreateData}),
-            mnesia:write({user_ext, Username, "", "", "", "", ""})
-	end,
-    mnesia:transaction(F).
+    PhotoGuid = ?DEFAULT_PHOTO_GUID,
+    PhotoPath = ?DEFAULT_PHOTO_PATH,
+    PhotoType = ?DEFAULT_PHOTO_TYPE,
+    Md5Pwd = woomsg_md5:md5_hex(Password),
+    woomsg_user:new_user(Username, Md5Pwd, Email, PhotoGuid, PhotoPath, PhotoType).
