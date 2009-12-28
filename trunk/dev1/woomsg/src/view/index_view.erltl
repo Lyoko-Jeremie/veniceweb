@@ -83,6 +83,27 @@
       </div>
    
       <div id="main-right">
+        <div style="padding-top: 20px;font-size: 18px; font-weight: bold;">
+          WOOMSG是什么?
+        </div>
+        <div style="padding-top: 5px; font-size: 14px;">
+          WOOMSG让您随时随地的分享您的照片
+        </div>
+        <div style="padding-top: 20px;font-size: 18px; font-weight: bold;">
+          如何使用WOOMSG?
+        </div>
+        <div style="padding-top: 5px; font-size: 14px;">
+          您可以使用手机, 也可以直接在网站上传您的图片 
+        </div>
+        <div style="padding-top: 15px; font-size: 14px;">
+          如果您是一位应用程序开发者, 我们非常鼓励您使用我们提供的API来开发个性化的应用程序 
+        </div>
+        <div style="padding-top: 20px;font-size: 18px; font-weight: bold;">
+          如何获取一个WOOMSG帐户?
+        </div>
+        <div style="padding-top: 5px; font-size: 14px;">
+          点击下面的链接, 马上创建一个WOOMSG帐户
+        </div>
       </div>
 
       <div style="clear:both;"></div>
