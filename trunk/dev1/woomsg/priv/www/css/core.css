@@ -1,0 +1,13 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+body {
+  background-color: #E2F2FB;
+  background-image: url(/image/bg.gif);
+  background-repeat: repeat-x;
+  font-family: verdana,arial,helvetica,sans-serif;
+  text-align: center; /* IE6 need this */
+}
