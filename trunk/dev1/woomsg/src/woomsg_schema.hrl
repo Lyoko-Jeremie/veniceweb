@@ -4,8 +4,10 @@
           username,
           password,
 	  email,
-	  photo,
-	  create_data
+	  photo_guid,
+          photo_path,
+          photo_type,
+	  create_date
         }).
 
 -record(user_ext, {
@@ -26,19 +28,21 @@
 	  guid,
 	  owner,
 	  path,
+          type,
 	  msg,
 	  count,
           dig,
 	  taglist,
 	  spam,
-	  create_data
+	  create_date
         }).
 
 -record(pic_comment, {
 	  guid,
+          pic_guid,
 	  owner,
 	  comment,
-	  create_data
+	  create_date
         }).
 
 -record(pic_tag, {
@@ -49,4 +53,9 @@
 -record(session, {
            username,
 	   session_id
+       }).
+
+-record(nfs_cache, {
+           key,    
+           path
        }).
