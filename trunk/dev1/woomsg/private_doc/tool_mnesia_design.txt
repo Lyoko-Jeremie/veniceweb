@@ -1,49 +1,35 @@
-ÎÒÃÇÌá¹©ÁËÒ»¸öMnesia²Ù×÷µÄÀ©Õ¹Ä£¿é, ¿ÉÒÔ·½±ãµÄ²Ù×÷MnesiaÊı¾İ¿â
-db - ¶ÔÒ»Ğ©»ù±¾²Ù×÷µÄ·â×°(ÊÊÓÃÓÚÆÕÍ¨±íºÍ·ÖÆ¬±í)
-frag_db - ·â×°ÁË±í·ÖÆ¬µÄÒ»Ğ©ÌØÊâ²Ù×÷
-db_cluster - ·â×°ÁËmnesia¼¯ÈºµÄ²Ù×÷
+ä»‹ç»Mnesia toolçš„è®¾è®¡
 
-## -- ½éÉÜdb -- ##
-1. APIs - ¸ù¾İKey¸üĞÂÒ»¸ö»òÕß¶à¸öField
-ÒªÇó:
-a. Key±ØĞë´æÔÚ£¬·ñÔò·µ»Ø{error, key_not_found}´íÎó
-b. Table±ØĞëÊÇsetÀàĞÍµÄ±í¸ñ
-set(Table, Key, {Field, Value})  %% ÉèÖÃÒ»¸öfieldµÄvalue
-set(Table, Key, Fields)          %% Í¬Ê±ÉèÖÃ¶à¸öfieldµÄvalue
+db         - å°è£…äº†åŸºæœ¬çš„æ•°æ®åº“æ“ä½œ
+frag_db    - å°è£…äº†è¡¨çš„åˆ†ç‰‡çš„æ“ä½œ
+db_cluster - å°è£…äº†é›†ç¾¤çš„æ“ä½œ
 
-ÀıÈç:
--record(user, {id, username, age, describe})
-db:set(user, 1, {username, "liqiang-updated"})
-db:set(user, 1, [{username, "liqiang-updated"}, {describe, "liqiang-describe-updated"}])
+# -ä»‹ç»db- #
 
-2. APIs - ¸ù¾İKey¸üĞÂField(Ôö¼Ó/¼õÉÙ)
-ÒªÇó:
-a. Key±ØĞë´æÔÚ£¬·ñÔò·µ»Ø{error, key_not_found}´íÎó
-b. Table±ØĞëÊÇsetÀàĞÍµÄ±í¸ñ
-c. ÔÚdecµÄÊ±ºò, Count±ØĞëĞ¡ÓÚµÈÓÚÔ­À´FieldµÄ¼ÛÖµ, ·ñÔò·µ»Ø{error, out_of_balance}
-Ò²¾ÍÊÇFieldµÄÖµÔÚ×ö¼õ·¨Ö®ºó²»ÄÜÎª¸ºÊı.
-dec(Table, Key, {Field, Count})  %% Field¼õÉÙCount
-inc(Table, Key, {Field, Count})  %% FieldÔö¼ÓCount
+1. APIs - æ ¹æ®Keyæ›´æ–°ä¸€ä¸ªæˆ–è€…å¤šä¸ªFields
+a. Tableå¿…é¡»æ˜¯setç±»å‹
+b. Keyå¿…é¡»å­˜åœ¨, å¦åˆ™è¿”å›{error, key_not_found}é”™è¯¯
+set(Table, Key, {Field, Value })
+set(Table, Key, Fields)
 
-ÀıÈç:
--record(user, {id, username, age, describe})
-db:dec(user, 1, {age, 2})   %% age¼õ1
-db:inc(user, 1, {age, 1})   %% age¼Ó2
+2. APIs: - æ ¹æ®Keyæ›´æ–°Field(å¢åŠ æˆ–è€…å‡å°‘) 
+a. Tableå¿…é¡»æ˜¯setç±»å‹
+b. Keyå¿…é¡»å­˜åœ¨, å¦åˆ™è¿”å›{error, key_not_found}é”™è¯¯
+c. åœ¨decçš„æ—¶å€™, Countå¿…é¡»å°äºæˆ–è€…ç­‰äºåŸæ¥Fieldçš„å€¼, å¦åˆ™è¿”å›{error, out_of_balance}
+dec(Table, Key, {Field, Count})
+inc(Table, Key, {Field, Count})
 
-3. APIs: »ñÈ¡Ò»¸öFieldµÄvalue
-ÒªÇó:
-a. Key±ØĞë´æÔÚ£¬·ñÔò·µ»Ø{error, key_not_found}´íÎó
-b. Table±ØĞëÊÇsetÀàĞÍµÄ±í¸ñ
+3. APIs: - è·å–ä¸€ä¸ªFieldå¯¹åº”çš„Value
+a. Tableå¿…é¡»æ˜¯setç±»å‹
+b. Keyå¿…é¡»å­˜åœ¨, å¦åˆ™è¿”å›{error, key_not_found}é”™è¯¯
 get(Table, Key, Field)
 
-4. APIs: °´ÕÕrow»ñÈ¡Êı¾İ
-find(Table) »ñÈ¡Õû¸ö±í¸ñµÄÊı¾İ
-find(Table, Key) »ñÈ¡Key¶ÔÓ¦µÄrowµÄÊı¾İ
-find(Table, Field, Key) ¸ù¾İFieldµÄValue»ñÈ¡Êı¾İ(Field±ØĞëÊÇindex)
+4. APIs: - æŒ‰ç…§rowè·å–æ•°æ®
+find(Table)        è¿”å›æ•´ä¸ªè¡¨çš„æ•°æ®
+find(Table, Key)   æ ¹æ®Keyè·å–æ•°æ®
+find(Table, Field, Key) æ ¹æ®Fieldçš„Valueè·å–æ•°æ®(Fieldå¿…é¡»æ˜¯Index)
 
-5. APIs: É¾³ıÊı¾İ
-delete(Table)      É¾³ıÕû¸ö±í¸ñµÄÊı¾İ, Ò²¾ÍÊÇÇå¿Õ±í¸ñ
-delete(Table, Key) °´ÕÕKeyÉ¾³ıÊı¾İ
-
-
+5. APIs: - åˆ é™¤æ•°æ®
+delete(Table)      - æ¸…ç©ºè¡¨
+delete(Table, Key) - æŒ‰ç…§Keyåˆ é™¤æ•°æ®
 
