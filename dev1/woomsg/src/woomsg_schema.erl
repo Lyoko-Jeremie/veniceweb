@@ -76,9 +76,10 @@ install(ServerNodes, MasterNodes, NodePool)  ->
 			  {index, [owner]},
 			  {disc_copies, MasterNodes}, 
 			  {attributes, record_info(fields, pic)}]),
-    %% pic_comment - bag
+    %% pic_comment - set
     frag_db:create_table(pic_comment, 2, NodePool, 
-                         [{type, bag},
+                         [{type, set},
+			  {index, [pic_guid]},
 			  {disc_only_copies, MasterNodes}, 
 			  {attributes, record_info(fields, pic_comment)}]),
     %% pic_tag - bag
@@ -92,6 +93,11 @@ install(ServerNodes, MasterNodes, NodePool)  ->
                          [{type, set},
 			  {disc_copies, MasterNodes}, 
 			  {attributes, record_info(fields, session)}]),
+    %% nfs_cache - set
+    frag_db:create_table(nfs_cache, 1, NodePool, 
+                         [{type, set},
+			  {disc_copies, MasterNodes}, 
+			  {attributes, record_info(fields, nfs_cache)}]),
     ok.
     
     
