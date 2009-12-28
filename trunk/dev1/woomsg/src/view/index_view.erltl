@@ -1,4 +1,4 @@
-<%@ index(Data) %>
+<%@ index(Data, Username, Password) %>
 <html>
 
 <head>
@@ -56,7 +56,7 @@
 	  <form action="/login" method="post">
 
             <div id="nav-login-inputs">
-	      <input class="nav-input" type="text" onclick="" onfocus="" value="请输入用户名" name="username"/>
+	      <input class="nav-input" type="text" onclick="" onfocus="" value=<% Username %> name=<% Password %>/>
 	      <input class="nav-input" type="password" onclick="" onfocus="" value="woomsg password" name="password"/>
 	      <br/>
 	      <input style="margin: 3px;" type="checkbox" value="1" name="remember"/>

@@ -39,12 +39,15 @@ get_cookie_of_sessionid(Username) ->
 	    []
     end.
 
+%% 存在返回Val:string(), 不存在返回undefined.
 parse_cookie_remember(Req) ->
     Req:get_cookie_val(?SES_USERNAME).
 
+%% 存在返回Val:string(), 不存在返回undefined.
 parse_cookie_username(Req) ->
     Req:get_cookie_val(?SES_USERNAME).
 
+%% 存在返回Val:string(), 不存在返回undefined.
 parse_cookie_sessionid(Req) ->
     Req:get_cookie_val(?SES_USERNAME).
 
