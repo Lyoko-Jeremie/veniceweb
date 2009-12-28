@@ -1,68 +1,83 @@
-V1:
-mnesia dbµÄÉè¼Æ
+Mnesia DBè®¾è®¡
 
-1. #user#(set)  
-( Ò»¶ÔÒ»¹ØÏµ)
-ÓÃ»§±í, keyÊÇÓÃ»§Ãû
+1. #user# (set)
+(ä¸€å¯¹ä¸€å…³ç³»)
+ç”¨æˆ·ä¿¡æ¯è¡¨
 
-username:    ÓÃ»§Ãû
-password:    ÃÜÂë
-email:       ÓÊÏä
-photo:       Í·Ïñ´æ·ÅÂ·¾¶
-create_data: ×¢²áÈÕÆÚ
+username:    ç”¨æˆ·å
+password:    ç”¨æˆ·å¯†ç 
+email:       é‚®ä»¶åœ°å€
+photo_guid:  å¤´åƒå›¾ç‰‡çš„GUID
+photo_path:  å¤´åƒå›¾ç‰‡çš„ä¿å­˜è·¯å¾„
+photo_type:  å¤´åƒå›¾ç‰‡çš„ç±»å‹
+create_date: åˆ›å»ºæ—¥æœŸ
 
-2. #user_ext#(set) 
-(Ò»¶ÔÒ»¹ØÏµ)
-ÓÃ»§À©Õ¹ĞÅÏ¢
+2. #user_ext# (set)
+(ä¸€å¯¹ä¸€å…³ç³»)
+ç”¨æˆ·æ‰©å±•ä¿¡æ¯è¡¨
 
-username: ÓÃ»§Ãû
-fullname: È«Ãû
-sex:      ĞÔ±ğ
-location: ×¡Ö·
-web:      ¸öÈËÍøÕ¾
-describe: ¸öÈË½éÉÜ
+username:    ç”¨æˆ·å
+fullname:    å…¨å
+sex:         æ€§åˆ«
+location:    ä¸ªäººåœ°å€
+web:         ä¸ªäººç½‘ç«™
+describe:    æè¿°
+
+3. #following# (bag)
+(ä¸€å¯¹å¤šå…³ç³»)
+ç”¨æˆ·username1å…³æ³¨ç”¨æˆ·username2
+
+username1:   å…³æ³¨ç”¨æˆ·username2çš„äºº
+username2:   è¢«å…³æ³¨çš„äºº   [index]
+
+4. #pic# (set)
+(ä¸€å¯¹ä¸€å…³ç³»)
+<1> å›¾ç‰‡çš„GUIDå’Œpath, typeå†³å®šäº†å›¾ç‰‡çš„å­˜æ”¾è·¯å¾„
+<2> countå’Œdigå¯ä»¥ç»™å›¾ç‰‡å¹³åˆ†, ç”¨äºåæœŸçš„æ•°æ®æŒ–æ˜
+
+guid:        å›¾ç‰‡çš„GUID
+owner:       å›¾ç‰‡æ‹¥æœ‰è€…  [index]
+path:        å›¾ç‰‡çš„ä¿å­˜è·¯å¾„
+type:        å›¾ç‰‡ç±»å‹
+msg:         å›¾ç‰‡çš„æè¿°æ¶ˆæ¯
+count:       è¯„è®ºæ¬¡æ•°
+dig:         é¡¶çš„æ¬¡æ•°
+taglist:     æ ‡ç­¾åˆ—è¡¨
+spam:        æ˜¯å¦ä¸ºåƒåœ¾ä¿¡æ¯(0æ­£å¸¸ä¿¡æ¯, 1åƒåœ¾ä¿¡æ¯)
+create_date: åˆ›å»ºæ—¥æœŸ
+
+5. #pic_comment# (set)
+(ä¸€å¯¹å¤šå…³ç³»)
+å›¾ç‰‡çš„è¯„è®ºä¿¡æ¯
+guid:        è¯„è®ºçš„GUID
+pic_guid:    å›¾ç‰‡çš„GUID [index]
+owner:       è¯„è®ºçš„åˆ›å»ºè€…
+comment:     è¯„è®º
+create_date: åˆ›å»ºæ—¥æœŸ
 
 
-3. #following#(bag)
-(Ò»¶Ô¶àµÄ¹ØÏµ)
-ÓÃ»§username1¹Ø×¢username2
+6. #pic_tag# (bag)
+(ä¸€å¯¹å¤šçš„å…³ç³»)
+æ ‡ç­¾è¡¨
 
-username1:    ¹Ø×¢username2
-username2:    ±»username1¹Ø×¢ [index]
+tag:   æ ‡ç­¾
+guid:  å›¾ç‰‡çš„GUID
 
-4. #pic#(set)
-(Ò»¶ÔÒ»µÄ¹ØÏµ)
-Í¼Æ¬±í
-(Ê¹ÓÃcountºÍdig½áºÏÆğÀ´, ¿ÉÒÔ½øĞĞºóÆÚµÄÊı¾İÍÚ¾ò, ¶ÔÕÕÆ¬½øĞĞÆÀ·Ö)
-guid:         Í¼Æ¬µÄGUID
-owner:        Í¼Æ¬µÄÓµÓĞÕß  [index]
-path:         ´æ·ÅÂ·¾¶
-msg:          Í¼Æ¬µÄÃèÊöĞÅÏ¢
-count:        Í¼Æ¬µÄÆÀÂÛÊı
-dig:          ÓÃ»§¶¥ÕâÕÅÍ¼Æ¬µÄ´ÎÊı
-taglist:      ±êÇ©ÁĞ±í
-spam:         ÊÇ·ñÊÇÀ¬»øĞÅÏ¢(0±íÊ¾Õı³£ĞÅÏ¢, 1±íÊ¾À¬»øĞÅÏ¢)
-create_data:  Í¼Æ¬´´½¨Ê±¼ä
+7. #session# (set)
+(ä¸€å¯¹ä¸€å…³ç³»)
+SessionçŠ¶æ€ä¿¡æ¯
 
-5. #pic_comment#(bag)
-(Ò»¶Ô¶àµÄ¹ØÏµ)
-Í¼Æ¬ÆÀÂÛ±í
+username:    ç”¨æˆ·å
+session_id:  å½“å‰çš„session id
 
-guid:         Í¼Æ¬µÄGUID
-owner:        ·¢±íÆÀÂÛµÄÈË 
-comment:      Í¼Æ¬µÄÆÀÂÛ
-create_data:  ÆÀÂÛµÄ´´½¨Ê±¼ä
+8. #nfs_cache# (set)
+(ä¸€å¯¹ä¸€å…³ç³»)
+NFSçš„meta
 
-6. #pic_tag#(bag)
-(Ò»¶Ô¶àµÄ¹ØÏµ)
-Í¼Æ¬tag±í(Ìá¹©ÁË¸ù¾İ±êÇ©ËÑË÷Í¼Æ¬µÄ¹¦ÄÜ)
+key:   pic | photo
+path:  è®°å½•NFS-photoæˆ–è€…NFS-picå½“å‰ç”¨çš„è·¯å¾„
 
-tag:       Í¼Æ¬±êÇ©
-guid:      Í¼Æ¬µÄGUID
 
-7. #session#(set)
-(Ò»¶ÔÒ»µÄ¹ØÏµ)
-ÓÃ»§µÇÂ¼µÄsession±í
 
-username:    ÓÃ»§Ãû×Ö
-session_id:  µ±Ç°µÇÂ¼µÄsession id
+
+

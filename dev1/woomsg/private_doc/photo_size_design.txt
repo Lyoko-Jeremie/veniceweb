@@ -2,19 +2,41 @@
 
 
 1. 头像
-   mini:    48x48  - default_photo.jpg
-   normal:  72x72  - default_photo_normal.jpg
+   /home/woomsg/fs
+
+   例如:
+   node: sys (存放系统头像)
+         node1
+         node2
+         ...
+   ---
+   guid: pic-guid
+   path: /photo/sys/path-guid
+   type: jpg
+   ---
+   size: mini | normal
+                  /photo/sys/path-guid/mini/pic-guid.jpg
+                  /photo/sys/path-guid/normal/pic-guid.jpg
+   mini:    48x48  
+   normal:  72x72  
 
 2. 首页的大图片
    550x400
 
 3. 用户上传的图片:
-   75x75     - 首页下面的滚动图片                  - path_square.jpg
+   node: node1
+         node2 
+         ...
+   size: square | thumb | small | mediu | large
+
+   /pic/node1/path-guid/square/pic-guid.jpg
+
+   75x75     - square 首页下面的滚动图片                  
                public_timeline显示的图片
-   100 x Y   - thumb: 用户主页上显示的图片         - path.jpg
-   240 x Y   - small: 小型图片                     - path_small.jpg
-   500 x Y   - mediu: 中型图片                     - path_mediu.jpg
-   X x Y     - large: 大型图片 图片的原始尺寸      - path_large.jpg
+   150 x Y   - thumb: 用户主页上显示的图片         
+   240 x Y   - small: 小型图片                     
+   500 x Y   - mediu: 中型图片                     
+   X x Y     - large: 大型图片 图片的原始尺寸      
 
    
     
