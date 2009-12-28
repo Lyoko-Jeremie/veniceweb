@@ -39,7 +39,6 @@ new_pic(Guid, Owner, Path, Type, Msg) ->
 	_ ->
 	    error
     end.
-
 %% TODO: 这个函数存在Bug, 需要修正
 %%        
 %% 删除一张照片:
@@ -56,18 +55,15 @@ delete_pic(Guid) ->
 	    case mnesia:delete({pic, Guid}) of
                 ok ->
 		    %% 更新pic_comment表, 删除所有的评论信息
-                    io:format("delete success~n", []),
-                    case mnesia:index_match_object(pic_comment, {pic_comment, '_', Guid, '_', '_', '_'}, pic_guid) of 
+                    case mnesia:index_match_object({pic_comment, '_', Guid, '_', '_', '_'}, pic_guid) of 
 			[] ->
 			    ok;
-			ValList when is_list(ValList) ->
-			    io:format("ValList: ~p~n", ValList),
+			ValList when is_list(ValList)->
 			    lists:foreach(fun({pic_comment, CommentGuid, _Guid, _, _, _} = _Elem) ->
 					      mnesia:delete({pic_comment, CommentGuid})
 					  end, ValList),
 			    ok;
-			Any ->
-                            io:format("Any:~p~n", [Any]),
+			_ ->
 			    error
                     end;
 		_ ->
