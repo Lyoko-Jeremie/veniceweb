@@ -1,5 +1,10 @@
 -module(woomsg_datetime).
 -export([get_datetime/0, 
+         get_date/0,
+         get_time/0,
+         get_datetime_string/0,
+         get_date_string/0,
+         get_time_string/0,
          get_date_from_datetime/1,
 	 get_time_from_datetime/1,
          get_seconds_since_datetime/1,
@@ -22,6 +27,26 @@
 %% 获取当前的datetime
 get_datetime() ->
     calendar:local_time().
+
+%% 获取当前的date
+get_date() ->
+    erlang:date().
+
+%% 获取当前的time
+get_time() ->
+    erlang:now().
+
+get_datetime_string() ->
+    {{Y, Month, D},{H, Minute, S}} = calendar:local_time(),
+    integer_to_list(Y) ++ integer_to_list(Month) ++ integer_to_list(D) ++ integer_to_list(H) ++ integer_to_list(Minute) ++ integer_to_list(S).
+
+get_date_string() ->
+    {Y, M, D} = erlang:date(),
+    integer_to_list(Y) ++ integer_to_list(M) ++ integer_to_list(D).  
+
+get_time_string() ->
+    {H, M, S} = erlang:now(),
+    integer_to_list(H) ++ integer_to_list(M) ++ integer_to_list(S).
 
 get_date_from_datetime(Datetime) ->
     {Date, _Time} = Datetime,
