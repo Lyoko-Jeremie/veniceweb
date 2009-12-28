@@ -6,7 +6,12 @@ handle_request(Req, DocRoot) ->
     "/" ++ Path = Req:get(path),
     case Req:get(method) of
         Method when Method =:= 'GET'; Method =:= 'HEAD' ->
-            case Path of
+            %% 解析出Path的前缀:
+	    %% E.g. 
+	    %% login/user -> login
+	    %% login      -> login
+            PrefixPath = woomsg_util:list_index_prefix($/, Path),
+            case PrefixPath of
 		"" ->
 		    index_controller:handle_get(Req, DocRoot);
 		"index" ->
@@ -15,6 +20,8 @@ handle_request(Req, DocRoot) ->
 		    api_controller:handle_get(Req, DocRoot);
 		"faq" ->
 		    faq_controller:handle_get(Req, DocRoot);
+		"login" ->
+		    login_controller:handle_get(Req, DocRoot);
 		"publictimeline" ->
 		    publictimeline_controller:handle_get(Req, DocRoot);
 		"setting" ->
@@ -32,6 +39,8 @@ handle_request(Req, DocRoot) ->
             end;
         'POST' ->
             case Path of
+		"login" ->
+		    login_controller:handle_post(Req, DocRoot);
                 _ ->
                     Req:not_found()
             end;
