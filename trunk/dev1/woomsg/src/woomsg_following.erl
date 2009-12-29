@@ -1,9 +1,25 @@
 -module(woomsg_following).
--export([add_following/2,
+-export([is_following/2,
+         add_following/2,
          remove_following/2,
          get_following_limit/2,
          get_following_limit/3,
          get_following_all/1]).
+
+%% 用户Username1是否关注Username2
+%% 如果关注返回: true
+%% 否则返回:     false
+%% (函数本身发生错误也返回false)
+is_following(Username1, Username2) ->
+    F = fun() ->
+	    mnesia:match_object({following, Username1, Username2})
+	end,
+    case mnesia:transaction(F) of
+	{atomic, [{following, Username1, Username2}]} ->
+	    true;
+	_ ->
+	    false
+    end.
 
 %% 添加一个Following
 %% 成功返回: ok

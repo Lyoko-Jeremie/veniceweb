@@ -8,7 +8,7 @@ handle_get(Req, _DocRoot) ->
             Data = upload_view:index(CookieUsr),
             Req:respond({200, [{"Content-Type","text/html"}], Data});
 	{logout, _CookieUsr} ->
-	    %% 用户登录没登录, 重定向到主页
+	    %% 用户没有登录, 重定向到主页
 	    Req:respond({302, [{"Location", "/"}], []})
     end.
 
