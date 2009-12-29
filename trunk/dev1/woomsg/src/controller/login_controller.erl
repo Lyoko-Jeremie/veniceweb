@@ -32,17 +32,12 @@ handle_post(Req, _DocRoot) ->
             Req:respond({200, [{"Content-Type", "text/html"}], Data});
 	true ->
             %% 验证成功
-            %% <1> 更新cookie
+            %% <1> 根据新的参数username/password/remember更新cookie
             %% <2> 跳转到用户Username主页
             CookieUsr = woomsg_cookie:get_cookie_of_username(Username),
             CookieSid = woomsg_cookie:get_cookie_of_sessionid(Username),
-            case Remember =:= ?REMEMBER_VAL of
-		true ->
-                    Req:respond({302, [{"Location", "user/" ++ Username}, CookieUsr, CookieSid], []});
-		false ->
-		    CookieRem = woomsg_cookie:get_cookie_of_remember(),
-                    Req:respond({302, [{"Location", "user/" ++ Username}, CookieUsr, CookieSid, CookieRem], []})
-            end    
+            CookieRem = woomsg_cookie:get_cookie_of_remember(Remember =:= ?REMEMBER_VAL),
+            Req:respond({302, [{"Location", "user/" ++ Username}, CookieUsr, CookieSid, CookieRem], []})
     end.
 
 %% 验证用户名和密码

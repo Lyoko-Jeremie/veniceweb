@@ -22,6 +22,8 @@ handle_request(Req, DocRoot) ->
 		    faq_controller:handle_get(Req, DocRoot);
 		"login" ->
 		    login_controller:handle_get(Req, DocRoot);
+                "logout" ->
+		    logout_controller:handle_get(Req, DocRoot);
 		"publictimeline" ->
 		    publictimeline_controller:handle_get(Req, DocRoot);
 		"setting" ->
@@ -41,6 +43,8 @@ handle_request(Req, DocRoot) ->
             case Path of
 		"login" ->
 		    login_controller:handle_post(Req, DocRoot);
+                "logout" ->
+		    logout_controller:handle_post(Req, DocRoot);
                 _ ->
                     Req:not_found()
             end;
