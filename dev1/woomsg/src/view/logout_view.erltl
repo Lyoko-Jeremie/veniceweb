@@ -1,9 +1,9 @@
-<%@ index(Username) %>
+<%@ index(Data) %>
 <html>
 
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-  <title>woomsg - upload</title>
+  <title>woomsg - logout</title>
   <link type="text/css" href="/css/core.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
@@ -41,35 +41,7 @@
 </head>
 
 <body>
-  <div id="container">
-    <div id="header">
-
-      <div id="header-logo">
-        <a href="/">
-          <img src="/image/woomsg-logo.png" onload="fixpng(this)"/>
-        </a>
-      </div>
-
-      <% display_header_nav(Username) %>
-
-      <div style="clear:both;"></div>
-    </div>
-
-    <div id="main">
-    </div>
-
-  </div>
+Data: <% Data %>
 </body>
 
 </html>
-
-<%@ display_header_nav(Username) %>
-<div id="header-nav">
-  <div id="nav-user">
-    <a class="nav" href="/user/<% Username %>">主页</a>
-    <a class="nav" href="/publictimeline">浏览</a>
-    <a class="nav" href="/upload">上传图片</a>
-    <a class="nav" href="/setting">设置</a>
-    <a class="nav" href="/logout">注销</a>
-  </div>       
-</div>
