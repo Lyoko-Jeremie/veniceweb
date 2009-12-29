@@ -55,7 +55,58 @@
       <div style="clear:both;"></div>
     </div>
 
-    <div id="main">
+    <div id="main" style="text-align: center;">
+      <div id="upload_form">
+
+        <div style="font-size: 24px; font-weight: bold; padding-bottom: 20px; text-align: center;">
+	  上传照片
+        </div>
+
+        <form enctype="multipart/form-data" action="/upload" method="post">
+          <div class="form-label">选择您要上传的图片</div>
+         
+          <div style="padding-left: 10px;">
+            <input class="upload-input" type="file" name="media"/>
+            <div class="form-hint">可以选择GIF, JPG, PNG格式的图片</div>
+          </div>
+
+          <div style="height: 15px;"></div>
+          <div class="form-label">给照片增加一条描述信息</div>
+          <div style="padding-left: 10px;">
+            <textarea class="upload-input" name="message" style="width: 480px; height: 50px;">
+            </textarea>
+          </div>
+
+          <div style="height: 15px;"></div>
+          <input style="font-size: 14px; "type="submit" value="上传"/>
+        </form>
+
+         <div style="padding: 25px; line-height: 20px; font-size: 16px;">
+          <div style="padding-bottom: 15px; font-size: 16px; font-weight: bold;">
+          您想通过手机直接发送照片到woomsg吗?
+          </div>
+          发送您的照片到
+          <span style="padding: 4px; background-color: rgb(255, 249, 194); font-size: 16px; font-weight: blod; font-style: italic;">
+            woomsgdev.1234@woomsg.com
+          </span>
+          <br/>
+          <br/>
+          您可以用邮件的<span style="font-size: 16px; font-weight: bold;">主题(Subject)</span>来做为照片的描述信息
+        </div>
+
+      </div>
+    </div>
+
+    <div id="footer">
+      <div id="footer-tag">&copy; 2010 woomsg Inc, All Rights Reserved</div>
+      <div>
+        <a class="nav" href="/">主页</a>
+        <a class="nav" href="/">Blog</a>
+        <a class="nav" href="/">API</a>
+        <a class="nav" href="/">FAQ</a>
+        <a class="nav" href="/">服务条款</a>
+        <a class="nav" href="/">联系我们</a>
+      </div>
     </div>
 
   </div>

@@ -1,0 +1,9 @@
+记录项目中的Bug
+
+
+1. #Title: setting导航菜单的位置问题:
+   #State: wont't fix
+   #Description:
+   在setting页面显示的时候, 右侧的导航菜单的位置会下滑.
+   这个问题在firefox 3.5中会出现, IE 8.0 正常, 目前定为
+   won't fix.
