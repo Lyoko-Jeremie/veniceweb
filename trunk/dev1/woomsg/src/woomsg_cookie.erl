@@ -27,7 +27,7 @@
 %% 参数: true | false
 get_cookie_of_remember(State) when State ->
     mochiweb_cookies:cookie(?SES_REMEMBER, ?SES_REMEMBER_TRUE, []);
-get_cookie_of_remember(State) ->
+get_cookie_of_remember(_State) ->
     mochiweb_cookies:cookie(?SES_REMEMBER, ?SES_REMEMBER_FALSE, []).
 
 
@@ -70,14 +70,23 @@ check_session_remember(Req) ->
 %% 匹配返回: true
 %% 不匹配返回: false
 check_session_login(Req) ->
-    Username = Req:get_cookie_value(?SES_USERNAME),
-    check_session_login(Req, Username).
+    %% Username:string() | undefined
+    case Req:get_cookie_value(?SES_USERNAME) of
+        undefined ->
+	    false;
+	Username ->
+            check_session_login(Req, Username)
+    end.
 
 check_session_login(Req, Username) ->
-    Sid = Req:get_cookie_value(?SES_SESSION_ID),
-    case woomsg_session:get_sessionid(Username) of
-	[] ->
+    case Req:get_cookie_value(?SES_SESSION_ID) of
+        undefined ->
 	    false;
-         Val ->
-	    Sid =:= Val
+	Sid ->
+            case woomsg_session:get_sessionid(Username) of
+ 	        [] ->
+	            false;
+                Val ->
+	            Sid =:= Val
+            end
     end.

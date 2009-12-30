@@ -43,18 +43,7 @@
 <body>
   <div id="container">
     
-    <div id="header">
-    
-      <div id="header-logo">
-        <a href="/">
-          <img src="/image/woomsg-logo.png" onload="fixpng(this)"/>
-        </a>
-      </div>
-
-      <% display_header_nav(State, Username) %>
-
-      <div style="clear:both;"></div>
-    </div>
+    <% header_view_in:index(State, Username)  %>
 
     <div id="main">
 
@@ -145,51 +134,3 @@
 
 
 </html>
-
-
-<%@ display_header_nav(login, Username) %>
-<div id="header-nav">
-  <div id="nav-user">
-    <a class="nav" href="/user/<% Username %>">主页</a>
-    <a class="nav" href="/publictimeline">浏览</a>
-    <a class="nav" href="/upload">上传图片</a>
-    <a class="nav" href="/setting">设置</a>
-    <a class="nav" href="/logout">注销</a>
-  </div>       
-</div>
-<%@ display_header_nav(rem_false, Username)%>
-<div id="header-nav">
-  <div id="nav-login">
-    <form action="/login" method="post">
-      <div id="nav-login-inputs">
-        <input class="nav-input" type="text" onclick="" onfocus="" value=<% Username %> name="username"/>
-	<input class="nav-input" type="password" onclick="" onfocus="" value="woomsg password" name="password"/>
-	<br/>
-	<input style="margin: 3px;" type="checkbox" value="1" name="remember"/>
-	<span style="color: 3198D3; font-size: 10px;">记住用户名</span>
-      </div>
-
-      <div id="nav-login-button">
-        <input type="image" src="/image/button-login.gif" />
-      </div>	  
-    </form>
-  </div>
-</div>
-<%@ display_header_nav(rem_true, Username) %>
-<div id="header-nav">
-  <div id="nav-login">
-    <form action="/login" method="post">
-      <div id="nav-login-inputs">
-        <input class="nav-input" type="text" onclick="" onfocus="" value=<% Username %> name="username"/>
-	<input class="nav-input" type="password" onclick="" onfocus="" value="woomsg password" name="password"/>
-	<br/>
-	<input style="margin: 3px;" type="checkbox" checked="true" value="1" name="remember"/>
-	<span style="color: 3198D3; font-size: 10px;">记住用户名</span>
-      </div>
-
-      <div id="nav-login-button">
-        <input type="image" src="/image/button-login.gif" />
-      </div>	  
-    </form>
-  </div>
-</div>
