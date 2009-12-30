@@ -18,6 +18,8 @@ handle_request(Req, DocRoot) ->
 		    index_controller:handle_get(Req, DocRoot);
                 "api" ->
 		    api_controller:handle_get(Req, DocRoot);
+                "blog" ->
+		    blog_controller:handle_get(Req, DocRoot);
 		"faq" ->
 		    faq_controller:handle_get(Req, DocRoot);
 		"login" ->
@@ -26,6 +28,8 @@ handle_request(Req, DocRoot) ->
 		    logout_controller:handle_get(Req, DocRoot);
 		"publictimeline" ->
 		    publictimeline_controller:handle_get(Req, DocRoot);
+		"service" ->
+		    service_controller:handle_get(Req, DocRoot);
 		"setting" ->
 		    setting_controller:handle_get(Req, DocRoot);
 		"support" ->
