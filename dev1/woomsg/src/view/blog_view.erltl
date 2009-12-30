@@ -1,9 +1,9 @@
-<%@ index(State, UrlUsername, Username) %>
+<%@ index(Data) %>
 <html>
 
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-  <title>woomsg - <% UrlUsername %></title>
+  <title>woomsg - blog</title>
   <link type="text/css" href="/css/core.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
@@ -41,58 +41,6 @@
 </head>
 
 <body>
-
-  <div id="container">
-
-    <div id="header">
-
-      <div id="header-logo">
-        <a href="/">
-          <img src="/image/woomsg-logo.png" onload="fixpng(this)"/>
-        </a>
-      </div>
-
-      <% display_header_nav(State, UrlUsername, Username) %>
-
-      <div style="clear:both;"></div>
-    </div>
-    
-    <div id="main">
-    </div>  
-    
-    <% footer_view_in:index() %>
-
-  </div>
 </body>
 
 </html>
-
-
-<%@ display_header_nav(logout, _UrlUsername, Username) %>
-<div id="header-nav">
-  <div id="nav-login">
-    <form action="/login" method="post">
-      <div id="nav-login-inputs">
-        <input class="nav-input" type="text" onclick="" onfocus="" value="请输入用户名" name="username"/>
-	<input class="nav-input" type="password" onclick="" onfocus="" value="woomsg password" name="password"/>
-	<br/>
-	<input style="margin: 3px;" type="checkbox" value="1" name="remember"/>
-	<span style="color: 3198D3; font-size: 10px;">记住用户名</span>
-      </div>
-
-      <div id="nav-login-button">
-        <input type="image" src="/image/button-login.gif" />
-      </div>	  
-    </form>
-  </div>
-</div>
-<%@ display_header_nav(_Status, _UrlUsername,  Username) %>
-<div id="header-nav">
-  <div id="nav-user">
-    <a class="nav" href="/user/<% Username %>">主页</a>
-    <a class="nav" href="/publictimeline">浏览</a>
-    <a class="nav" href="/upload">上传图片</a>
-    <a class="nav" href="/setting">设置</a>
-    <a class="nav" href="/logout">注销</a>
-  </div>       
-</div>

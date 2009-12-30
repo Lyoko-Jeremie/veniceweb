@@ -137,17 +137,7 @@
       </div>
     </div>
 
-    <div id="footer">
-      <div id="footer-tag">&copy; 2010 woomsg Inc, All Rights Reserved</div>
-      <div>
-        <a class="nav" href="/">主页</a>
-        <a class="nav" href="/">Blog</a>
-        <a class="nav" href="/">API</a>
-        <a class="nav" href="/">FAQ</a>
-        <a class="nav" href="/">服务条款</a>
-        <a class="nav" href="/">联系我们</a>
-      </div>
-    </div>
+    <% footer_view_in:index() %>
 
   </div>
 
