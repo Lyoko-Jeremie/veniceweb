@@ -49,6 +49,8 @@ handle_request(Req, DocRoot) ->
 		    login_controller:handle_post(Req, DocRoot);
                 "logout" ->
 		    logout_controller:handle_post(Req, DocRoot);
+                "upload" ->
+		    upload_controller:handle_post(Req, DocRoot);
                 _ ->
                     Req:not_found()
             end;
