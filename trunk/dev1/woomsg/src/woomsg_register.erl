@@ -6,6 +6,8 @@
 %% 判断用户是否已经注册
 %% 注册过: 返回true
 %% 未注册: 返回false
+is_registered([]) ->
+    false;
 is_registered(Username) ->
     woomsg_user:is_exist(Username).
 

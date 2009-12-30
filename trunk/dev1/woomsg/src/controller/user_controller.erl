@@ -1,46 +1,59 @@
 -module(user_controller).
 -export([handle_get/2, handle_post/2]).
 
+-define(DEF_USERNAME, <<"请输入用户名">>).
+
 %% 五种逻辑情况:
 %% <1> 访问的当前用户不存在
-%% <2> 用户没有登录, 访问页面
-%% <3> 用户登录, 访问自己的页面
-%% <4> 用户登录, 访问自己following的人的页面
-%% <5> 用户登录, 访问陌生人的页面
-%% 
-%% CookieUsr是当前登录的用户, 
+%% <2> 用户登录, 访问自己的页面
+%%     用户登录, 访问自己following的人的页面
+%%     用户登录, 访问陌生人的页面
+%% <3> 用户没登录
+%%
 %% UrlUsername是当前访问的用户.  /user/Username
-%% <1> 直接重定向到主页
-%% <2> {logout, Username, undefined}
-%% <3> {login_myself, Username, CookieUsr}
-%% <4> {login_following, Username, CookieUsr}
-%% <5> {login_no_following, Username, CookieUsr}
+%%
+%% 传递给view的参数:
+%% {login, Username, ext_myself, UrlUsername}
+%% {login, Username, ext_following, UrlUsername}
+%% {login, Username, ext_no_following, UrlUsername}
+%% {logout_remember, ?DEF_USERNAME, undefined, UrlUsername}
+%% {logout_remember, Username, undefined, UrlUsername}
+%% {logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername}
 handle_get(Req, _DocRoot) ->
     UrlUsername = parse_username_from_url(Req),
     case woomsg_register:is_registered(UrlUsername) of
 	true ->
-	    case woomsg_login:auth(Req) of
-	        {login, CookieUsr} ->
-		    case UrlUsername =:= CookieUsr of
+            case woomsg_common:user_state(Req) of
+                {login, Username} ->
+	            %% <2> 用户登录
+                    case Username =:= UrlUsername of
 		        true ->
-			    %% <3> 用户登录, 访问自己的页面
-                            Data = user_view:index(login_myself, UrlUsername, CookieUsr),
+			%% 2.1 用户登录, 访问自己的页面
+		            Data = user_view:index(login, Username, ext_myself, UrlUsername),
                             Req:respond({200, [{"Content-Type","text/html"}], Data});
-			false ->
-			    case woomsg_following:is_following(CookieUsr, UrlUsername) of
+                        false ->
+			    case woomsg_following:is_following(Username, UrlUsername) of
 			        true ->
-				    %% <4> 用户登录, 访问自己following的人的页面
-                                    Data = user_view:index(login_following, UrlUsername, CookieUsr),
+				    %% 2.2 用户登录, 访问自己following人的页面
+		                    Data = user_view:index(login, Username, ext_following, UrlUsername),
                                     Req:respond({200, [{"Content-Type","text/html"}], Data});
 				false ->
-				    %% <5> 用户登录, 访问陌生人页面
-                                    Data = user_view:index(login_no_following, UrlUsername, CookieUsr),
+				    %% 2.3 用户登录, 访问陌生人人的页面
+		                    Data = user_view:index(login, Username, ext_no_following, UrlUsername),
                                     Req:respond({200, [{"Content-Type","text/html"}], Data})
-                            end
+			    end
                     end;
-		{logout, CookieUsr} ->
-		    %% <2> 用户没有登录, 访问页面
-                    Data = user_view:index(logout, UrlUsername, CookieUsr),
+	        {logout_remember, undefined} ->
+	            %% 用户没登录
+		    Data = user_view:index(logout_remember, ?DEF_USERNAME, undefined, UrlUsername),
+                    Req:respond({200, [{"Content-Type","text/html"}], Data});
+                {logout_remember, Username} ->
+	            %% 用户没登录
+		    Data = user_view:index(logout_remember, Username, undefined, UrlUsername),
+                    Req:respond({200, [{"Content-Type","text/html"}], Data});
+		{logout_no_remember, undefined} ->
+	            %% 用户没登录
+		    Data = user_view:index(logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername),
                     Req:respond({200, [{"Content-Type","text/html"}], Data})
             end;
 	false ->
@@ -54,16 +67,29 @@ handle_post(_Req, _DocRoot) ->
     ok.
 
 %% 解析出URL中的用户名: Username
+%% 返回:
+%% []
+%% Username
+%% Username?key=val   (错误的URL)
 parse_username_from_url(Req) ->
     "/" ++ Path = Req:get(path),
-    %% erlang:length("user/") = 5
-    %% user/Username/xxx -> Username/xxx
-    PathSuffix = lists:sublist(Path, 6, erlang:length(Path) - 5),
+    case Path of
+        "user" ->
+	    [];
+	"user/" ->
+	    [];
+        _ ->	
+            %% erlang:length("user/") = 5
+            %% user/Username/xxx -> Username/xxx
+            PathSuffix = lists:sublist(Path, 6, erlang:length(Path) - 5),
+            
+            %% Username/xxx     -> Username
+            %% Username         -> Username
+            %% Username?key=val -> Username?key=val (错误的用户名)
+            %%
+            %% 注意: 
+            %% Usename?key=val这种形式的URL将返回错误的用户名
+            %% 我们在设计中避免使用这样的URL
+            woomsg_util:list_index_prefix($/, PathSuffix)
+    end.
     
-    %% Username/xxx -> Username
-    %% Username     -> Username
-    %%
-    %% 注意: 
-    %% Usename?key=val这种形式的URL将返回错误的用户名
-    %% 我们在设计中避免使用这样的URL
-    woomsg_util:list_index_prefix($/, PathSuffix).
