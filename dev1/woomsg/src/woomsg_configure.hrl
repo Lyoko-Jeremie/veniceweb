@@ -9,12 +9,12 @@
 -define(IMG_TYPE_PNG, ".png").
 -define(IMG_TYPE_GIF, ".gif").
 
--define(PHOTO_SIZES, ["mini","normal", "ori"]).
--define(PHOTO_SIZE_MINI, "mini").
--define(PHOTO_SIZE_NORMAL, "normal").
+-define(PHOTO_SIZES, ["ori", "mini","normal"]).
+-define(PHOTO_SIZE_MINI, "mini").     %% 48 X 48
+-define(PHOTO_SIZE_NORMAL, "normal"). %% 72 X 72
 -define(PHOTO_SIZE_ORI, "ori").
 
--define(PIC_SIZES, ["square", "thumb", "small", "mediu", "ori"]).
+-define(PIC_SIZES, ["ori", "square", "thumb", "small", "mediu"]).
 -define(PIC_SIZE_MINI, "square"). %% 75 X 75
 -define(PIC_SIZE_THUMB, "thumb"). %% 150 X Y
 -define(PIC_SIZE_SMALL, "small"). %% 240 X Y

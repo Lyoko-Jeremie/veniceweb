@@ -69,6 +69,7 @@ Session状态信息
 
 username:    用户名
 session_id:  当前的session id
+create_date: session更新的时间.
 
 8. #nfs_cache# (set)
 (一对一关系)

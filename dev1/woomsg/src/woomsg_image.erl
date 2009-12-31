@@ -1,17 +1,41 @@
 -module(woomsg_image).
--export([convert_pic/3,
-	convert/5]).
+-export([convert_photo/3,
+         convert_pic/3,
+	 convert/5]).
 
-
+%% 根据SourceFile, 产生不同尺寸的头像图片.
+%%
 %% SourceFilename:
-%% /pic/node1/path-guid/large/pic-guid.jpg
+%% /photo/node1/path-guid/ori/pic-guid.jpg
+%% Path: /photo/node1/path-guid
+%% Guid: pic-guid
+%% Type: ".jpg"
+%%
+%% Type: ".png" | ".gif" | ".jpeg"
+convert_photo(Path, Guid, Type) ->
+    SourceFilename = Path ++ "/ori/" ++ Guid ++ Type,
+    ResSquare = convert(SourceFilename, Path ++ "/mini/" ++ Guid ++ Type, 48, 48, true),
+    ResThumb = convert(SourceFilename, Path ++ "/normal/" ++ Guid ++ Type, 72, 72, true),
+    if
+        ResSquare =/= true ->
+            false;
+	ResThumb =/= true ->
+            false;
+        true ->
+            true
+    end.
+
+%% 根据SourceFile, 产生不同尺寸的图片.
+%%
+%% SourceFilename:
+%% /pic/node1/path-guid/ori/pic-guid.jpg
 %% Path: /pic/node1/path-guid
 %% Guid: pic-guid
-%% Type: .jpg
+%% Type: ".jpg"
 %%
 %% Type: ".png" | ".gif" | ".jpeg"
 convert_pic(Path, Guid, Type) ->
-    SourceFilename = Path ++ "/large/" ++ Guid ++ Type,
+    SourceFilename = Path ++ "/ori/" ++ Guid ++ Type,
     ResSquare = convert(SourceFilename, Path ++ "/square/" ++ Guid ++ Type, 75, 75, true),
     ResThumb = convert(SourceFilename, Path ++ "/thumb/" ++ Guid ++ Type, 150, 150, false),
     ResSmall = convert(SourceFilename, Path ++ "/small/" ++ Guid ++ Type, 240, 240, false),

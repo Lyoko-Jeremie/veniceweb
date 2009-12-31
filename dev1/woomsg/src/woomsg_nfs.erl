@@ -7,28 +7,35 @@
 %%
 %% NFS_PREFIX: 
 %% /home/woomsg/fs
-%%                /photo 存放头像
+%%                /photo 存放头像 
 %%                /pic   存放图片
 %%              
+%%                (三个子目录)
 %%                /photo/sys/path-guid/mini     - 系统头像
 %%                /photo/sys/path-guid/normal   - 系统头像
+%%                /photo/sys/path-guid/ori      - 系统头像原始版(空目录)
+%%
+%%                (三个子目录)
 %%                /photo/nodeX/path-guid/mini   - 用户上传的头像
 %%                /photo/nodeX/path-guid/normal - 用户上传的头像
+%%                /photo/nodeX/path-guid/ori    - 用户上传的头像的原始图
 %%
+%%                (五个子目录)
 %%                /pic/nodeX/path-guid/square   - 用户上传的照片
 %%                /pic/nodeX/path-guid/thumb    - 用户上传的照片
 %%                /pic/nodeX/path-guid/small    - 用户上传的照片
 %%                /pic/nodeX/path-guid/mediu    - 用户上传的照片
-%%                /pic/nodeX/path-guid/large    - 用户上传的照片
+%%                /pic/nodeX/path-guid/orib     - 用户上传的照片
+%%
 %% 头像路径:
 %%  Path:  /photo/nodeX/path-guid
-%%  Size:  mini | normal
+%%  Size:  mini | normal | ori
 %%  Type:  ".gif" | ".jpg" | ".png"
 %%  ?NFS_PREFIX ++ Path ++ "/" ++ Size ++ "/" ++ Guid ++ Type
 %%
 %% 图片路径:
 %%  Path:  /pic/nodeX/path-guid
-%%  Size:  square | thumb | small | mediu | large
+%%  Size:  square | thumb | small | mediu | ori
 %%  Type:  ".gif" | ".jpg" | ".png"
 %%  ?NFS_PREFIX ++ Path ++ "/" ++ Size ++ "/" ++ Guid ++ Type
 %%
@@ -37,6 +44,8 @@
 %% 创建一个存放Photo的文件夹
 %% /home/woomsg/fs
 %%               /photo/Node/NewGUID
+%%
+%% (PHOTO_SIZES - 子目录)
 %% 注意:
 %%   Node必须是存在的Node, 否则返回{error, enoent}
 %% 如果成功返回: {ok, /photo/Node/NewGUID}
@@ -66,6 +75,8 @@ make_dir_photo(Node) ->
 %% 创建一个存放Pic的文件夹
 %% /home/woomsg/fs
 %%               /pic/Node/NewGUID
+%%
+%% (PIC_SIZES - 子目录)
 %% 注意:
 %%   Node必须是存在的Node, 否则返回{error, enoent}
 %% 如果成功返回: {ok, /pic/Node/NewGUID}
