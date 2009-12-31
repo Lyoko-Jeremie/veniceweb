@@ -1,13 +1,13 @@
 -module(woomsg_guid).
 -export([get_random_string/1,
-         get_pic_guid/0,
+         get_image_guid/0,
          get_session_guid/0,
          get_path_guid/0,
          get_guid_by_datetime/1,
          get_guid_by_date/1,
          get_guid_by_time/1]).
 
--define(PIC_GUID_SUFFIX, 12).
+-define(IMAGE_GUID_SUFFIX, 12).
 -define(SESSION_GUID_SUFFIX, 6).
 -define(PATH_GUID_SUFFIX, 6).
 
@@ -38,8 +38,8 @@ get_random_string(Len) ->
     Res.
 
 %% 产生图片的GUID
-get_pic_guid() ->
-   get_guid_by_time(?PIC_GUID_SUFFIX).
+get_image_guid() ->
+   get_guid_by_time(?IMAGE_GUID_SUFFIX).
 
 %% 产成Session的GUID
 get_session_guid() ->
