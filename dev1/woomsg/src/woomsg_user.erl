@@ -35,7 +35,7 @@ new_user(Username, Password, Email, PhotoGuid, PhotoPath, PhotoType) ->
     CreateDate = woomsg_datetime:get_datetime(),
     F = fun() ->
 	    mnesia:write({user, Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, CreateDate}),
-            mnesia:write({user_ext, Username, "", "", "", "", ""})
+            mnesia:write({user_ext, Username, "", "", "", "", "", true})
 	end,
     case mnesia:transaction(F) of
 	{atomic, ok} ->
@@ -60,28 +60,28 @@ get_user(Username) ->
 
 %% 获取用户的扩展信息
 %% 失败返回: []
-%% 成功返回: {Username, Fullname, Sex, Location, Web, Describe}
+%% 成功返回: {Username, Fullname, Sex, Location, Web, Describe, Public}
 get_user_ext(Username) ->
     F = fun() ->
 	    mnesia:read({user_ext, Username})
 	end,
     case mnesia:transaction(F) of
-        {atomic, [{user_ext, Username, Fullname, Sex, Location, Web, Describe}]} ->
-	    {Username, Fullname, Sex, Location, Web, Describe};
+        {atomic, [{user_ext, Username, Fullname, Sex, Location, Web, Describe, Public}]} ->
+	    {Username, Fullname, Sex, Location, Web, Describe, Public};
 	_ ->
 	    []
     end.
 
 %% 获取用户的所有信息(基本信息 + 扩展信息)
 %% 失败返回: []
-%% 成功返回: {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe}
+%% 成功返回: {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe, Public}
 get_user_all(Username) ->
     F = fun() ->
             case mnesia:read({user, Username}) of
 	        [{user, Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, _CreateData}] ->
 	            case mnesia:read({user_ext, Username}) of
-                        [{user_ext, Username, Fullname, Sex, Location, Web, Describe}] ->
-	                    {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe};
+                        [{user_ext, Username, Fullname, Sex, Location, Web, Describe, Public}] ->
+	                    {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe, Public};
 	                _ ->
 	                    []
                     end;
@@ -90,8 +90,8 @@ get_user_all(Username) ->
             end
         end,
     case mnesia:transaction(F) of
-        {atomic, {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe}} ->
-	    {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe};
+        {atomic, {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe, Public}} ->
+	    {Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, Fullname, Sex, Location, Web, Describe, Public};
 	_ ->
 	    []
     end.

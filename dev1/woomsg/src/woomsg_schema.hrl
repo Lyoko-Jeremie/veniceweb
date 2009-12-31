@@ -16,7 +16,8 @@
 	  sex,
 	  location,
 	  web,
-	  describe
+	  describe,
+          public
 	}).
 
 -record(following, {
