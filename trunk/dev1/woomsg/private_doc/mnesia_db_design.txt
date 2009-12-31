@@ -22,6 +22,8 @@ sex:         性别
 location:    个人地址
 web:         个人网站
 describe:    描述
+public:      隐私( true | false ), 
+             默认为true
 
 3. #following# (bag)
 (一对多关系)
