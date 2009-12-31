@@ -12,8 +12,9 @@ set_logout(Username) ->
 %% 成功返回: ok
 %% 失败返回: error
 set_session(Username, SessionId) ->
+    CreateDate = woomsg_datetime:get_datetime(),
     F = fun() ->
-	    mnesia:write({session, Username, SessionId})
+	    mnesia:write({session, Username, SessionId, CreateDate})
 	end,
     case mnesia:transaction(F) of
 	{atomic, ok} ->
@@ -30,7 +31,7 @@ get_sessionid(Username) ->
 	    mnesia:read({session, Username})
 	end,
     case mnesia:transaction(F) of
-	{atomic, [{session, Username, SessionId}]} ->
+	{atomic, [{session, Username, SessionId, _CreateData}]} ->
 	    SessionId;
 	_ ->
 	    []

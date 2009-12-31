@@ -32,8 +32,8 @@ is_exist(Username) ->
 %% 成功返回: ok
 %% 失败返回: error
 new_user(Username, Password, Email, PhotoGuid, PhotoPath, PhotoType) ->
+    CreateDate = woomsg_datetime:get_datetime(),
     F = fun() ->
-	    CreateDate = woomsg_datetime:get_datetime(),
 	    mnesia:write({user, Username, Password, Email, PhotoGuid, PhotoPath, PhotoType, CreateDate}),
             mnesia:write({user_ext, Username, "", "", "", "", ""})
 	end,

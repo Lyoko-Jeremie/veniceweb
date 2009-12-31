@@ -52,7 +52,8 @@
 
 -record(session, {
            username,
-	   session_id
+	   session_id,
+	   create_date
        }).
 
 -record(nfs_cache, {

@@ -12,13 +12,15 @@
    ---
    guid: pic-guid
    path: /photo/sys/path-guid
-   type: jpg
+   type: ".jpg" | ".gif" | ".png"
    ---
-   size: mini | normal
+   size: mini | normal | ori
                   /photo/sys/path-guid/mini/pic-guid.jpg
                   /photo/sys/path-guid/normal/pic-guid.jpg
+                  /photo/sys/path-guid/ori/
    mini:    48x48  
    normal:  72x72  
+   ori:     x X y
 
 2. 首页的大图片
    550x400
@@ -27,7 +29,7 @@
    node: node1
          node2 
          ...
-   size: square | thumb | small | mediu | large
+   size: square | thumb | small | mediu | ori
 
    /pic/node1/path-guid/square/pic-guid.jpg
 
@@ -36,7 +38,7 @@
    150 x Y   - thumb: 用户主页上显示的图片         
    240 x Y   - small: 小型图片                     
    500 x Y   - mediu: 中型图片                     
-   X x Y     - large: 大型图片 图片的原始尺寸      
+   X x Y     - ori:   原始图片 图片的原始尺寸      
 
    
     
