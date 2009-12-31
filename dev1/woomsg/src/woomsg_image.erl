@@ -1,4 +1,5 @@
 -module(woomsg_image).
+-include("woomsg_configure.hrl").
 -export([convert_photo/3,
          convert_pic/3,
 	 convert/5]).
@@ -6,14 +7,14 @@
 %% 根据SourceFile, 产生不同尺寸的头像图片.
 %%
 %% SourceFilename:
-%% /photo/node1/path-guid/ori/pic-guid.jpg
+%% NFS_PREFIX/photo/node1/path-guid/ori/pic-guid.jpg
 %% Path: /photo/node1/path-guid
 %% Guid: pic-guid
 %% Type: ".jpg"
 %%
-%% Type: ".png" | ".gif" | ".jpeg"
+%% Type: ".png" | ".gif" | ".jpeg" | ".bmp"
 convert_photo(Path, Guid, Type) ->
-    SourceFilename = Path ++ "/ori/" ++ Guid ++ Type,
+    SourceFilename = ?NFS_PREFIX ++ Path ++ "/ori/" ++ Guid ++ Type,
     ResSquare = convert(SourceFilename, Path ++ "/mini/" ++ Guid ++ Type, 48, 48, true),
     ResThumb = convert(SourceFilename, Path ++ "/normal/" ++ Guid ++ Type, 72, 72, true),
     if
@@ -28,14 +29,14 @@ convert_photo(Path, Guid, Type) ->
 %% 根据SourceFile, 产生不同尺寸的图片.
 %%
 %% SourceFilename:
-%% /pic/node1/path-guid/ori/pic-guid.jpg
+%% NFS_PREFIX/pic/node1/path-guid/ori/pic-guid.jpg
 %% Path: /pic/node1/path-guid
 %% Guid: pic-guid
 %% Type: ".jpg"
 %%
-%% Type: ".png" | ".gif" | ".jpeg"
+%% Type: ".png" | ".gif" | ".jpeg" | ".bmp"
 convert_pic(Path, Guid, Type) ->
-    SourceFilename = Path ++ "/ori/" ++ Guid ++ Type,
+    SourceFilename = ?NFS_PREFIX ++ Path ++ "/ori/" ++ Guid ++ Type,
     ResSquare = convert(SourceFilename, Path ++ "/square/" ++ Guid ++ Type, 75, 75, true),
     ResThumb = convert(SourceFilename, Path ++ "/thumb/" ++ Guid ++ Type, 150, 150, false),
     ResSmall = convert(SourceFilename, Path ++ "/small/" ++ Guid ++ Type, 240, 240, false),

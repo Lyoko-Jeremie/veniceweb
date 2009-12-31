@@ -1,7 +1,8 @@
 -module(woomsg_upload).
+-include("woomsg_configure.hrl").
 -export([parse_form/1, parse_form/2]).
 
--record(state, {filename, file, type, key, value}).
+-record(state, {filename, file, path, guid, type, key, value}).
 
 parse_form(Req) ->
     parse_form(Req, false).
@@ -33,6 +34,7 @@ parse_form(Req, Debug) ->
 %% jpeg -  {"content-type",{"image/jpeg",[]}}
 %% png  -  {"content-type",{"image/png",[]}}
 %% gif  -  {"content-type",{"image/gif",[]}}
+%% bmp  -  {"content-type",{"image/bmp",[]}}
 callback(Next, State, Acc, Debug) ->
     case Next of
         {headers, Headers} ->
@@ -123,19 +125,39 @@ callback(Next, State, Acc, Debug) ->
 	    fun(N) -> callback(N, State, Acc, Debug) end
     end.
 
+%% Internal APIs:
+
+%% 绝对路径: ?NFS_PREFIX ++ State#path ++ "/ori/" State#guid ++ State#type
+update_state_photo(State) ->
+    NewState = State#state{path = woomsg_nfs_cache:get_photo_path(),
+                           guid = woomsg_guid:get_image_guid(),
+		 	   filename = ?NFS_PREFIX ++ State#state.path ++ "/ori/" ++ State#state.guid ++ State#state.type},
+    NewState.
+
+%% 绝对路径: ?NFS_PREFIX ++ State#path ++ "/ori/" State#guid ++ State#type
+update_state_pic(State) ->
+    NewState = State#state{path = woomsg_nfs_cache:get_pic_path(),
+                           guid = woomsg_guid:get_image_guid(),
+		 	   filename = ?NFS_PREFIX ++ State#state.path ++ "/ori/" ++ State#state.guid ++ State#state.type},
+    NewState.
+
+%%
 %% 解析Headers中的文件类型
 %% jpeg
 %% png
 %% gif
+%% bmp
 %% unknown
 verify_type_in_header(Headers) ->
     case proplists:get_value("content-type", Headers) of
         {"image/jpeg", _} ->
-            jpeg;
+            ".jpeg";
 	{"image/png", _} ->
-	    png;
+	    ".png";
 	{"image/gif", _} ->
-	    gif;
+	    ".gif";
+	{"image/bmp", _} ->
+	    ".gif";
 	_ ->
 	    unknown
     end.

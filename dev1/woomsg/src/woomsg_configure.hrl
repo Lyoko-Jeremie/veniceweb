@@ -4,10 +4,11 @@
 -define(DEFAULT_PHOTO_PATH, "/photo/sys/path-guid").
 -define(DEFAULT_PHOTO_TYPE, ".jpg").
 
--define(IMG_TYPES, [".jpg", ".png", ".gif"]).
+-define(IMG_TYPES, [".jpg", ".png", ".gif", ".bmp"]).
 -define(IMG_TYPE_JPG, ".jpg").
 -define(IMG_TYPE_PNG, ".png").
 -define(IMG_TYPE_GIF, ".gif").
+-define(IMG_TYPE_BMP, ".bmp").
 
 -define(PHOTO_SIZES, ["ori", "mini","normal"]).
 -define(PHOTO_SIZE_MINI, "mini").     %% 48 X 48

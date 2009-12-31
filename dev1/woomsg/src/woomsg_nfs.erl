@@ -30,13 +30,13 @@
 %% 头像路径:
 %%  Path:  /photo/nodeX/path-guid
 %%  Size:  mini | normal | ori
-%%  Type:  ".gif" | ".jpg" | ".png"
+%%  Type:  ".gif" | ".jpg" | ".png" | ".bmp"
 %%  ?NFS_PREFIX ++ Path ++ "/" ++ Size ++ "/" ++ Guid ++ Type
 %%
 %% 图片路径:
 %%  Path:  /pic/nodeX/path-guid
 %%  Size:  square | thumb | small | mediu | ori
-%%  Type:  ".gif" | ".jpg" | ".png"
+%%  Type:  ".gif" | ".jpg" | ".png" | ".bmp"
 %%  ?NFS_PREFIX ++ Path ++ "/" ++ Size ++ "/" ++ Guid ++ Type
 %%
 
