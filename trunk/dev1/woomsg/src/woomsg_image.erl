@@ -14,9 +14,10 @@
 %%
 %% Type: ".png" | ".gif" | ".jpeg" | ".bmp"
 convert_photo(Path, Guid, Type) ->
-    SourceFilename = ?NFS_PREFIX ++ Path ++ "/ori/" ++ Guid ++ Type,
-    ResSquare = convert(SourceFilename, Path ++ "/mini/" ++ Guid ++ Type, 48, 48, true),
-    ResThumb = convert(SourceFilename, Path ++ "/normal/" ++ Guid ++ Type, 72, 72, true),
+    NFSPath = ?NFS_PREFIX ++ Path,
+    SourceFilename = NFSPath ++ "/ori/" ++ Guid ++ Type,
+    ResSquare = convert(SourceFilename, NFSPath ++ "/mini/" ++ Guid ++ Type, 48, 48, true),
+    ResThumb = convert(SourceFilename, NFSPath ++ "/normal/" ++ Guid ++ Type, 72, 72, true),
     if
         ResSquare =/= true ->
             false;
@@ -36,11 +37,12 @@ convert_photo(Path, Guid, Type) ->
 %%
 %% Type: ".png" | ".gif" | ".jpeg" | ".bmp"
 convert_pic(Path, Guid, Type) ->
-    SourceFilename = ?NFS_PREFIX ++ Path ++ "/ori/" ++ Guid ++ Type,
-    ResSquare = convert(SourceFilename, Path ++ "/square/" ++ Guid ++ Type, 75, 75, true),
-    ResThumb = convert(SourceFilename, Path ++ "/thumb/" ++ Guid ++ Type, 150, 150, false),
-    ResSmall = convert(SourceFilename, Path ++ "/small/" ++ Guid ++ Type, 240, 240, false),
-    ResMediu = convert(SourceFilename, Path ++ "/mediu/" ++ Guid ++ Type, 500, 500, false),
+    NFSPath = ?NFS_PREFIX ++ Path,
+    SourceFilename = NFSPath ++ "/ori/" ++ Guid ++ Type,
+    ResSquare = convert(SourceFilename, NFSPath ++ "/square/" ++ Guid ++ Type, 75, 75, true),
+    ResThumb = convert(SourceFilename, NFSPath ++ "/thumb/" ++ Guid ++ Type, 150, 150, false),
+    ResSmall = convert(SourceFilename, NFSPath ++ "/small/" ++ Guid ++ Type, 240, 240, false),
+    ResMediu = convert(SourceFilename, NFSPath ++ "/mediu/" ++ Guid ++ Type, 500, 500, false),
     if
         ResSquare =/= true ->
             false;

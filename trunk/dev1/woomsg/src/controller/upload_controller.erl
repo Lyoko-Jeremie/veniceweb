@@ -21,8 +21,18 @@ handle_get(Req, _DocRoot) ->
 handle_post(Req, _DocRoot) ->
     case woomsg_common:user_state(Req) of
         {login, Username} ->
-            Res = woomsg_upload:parse_form(Req, true),
-	    io:format("Upload-Res: ~p~n", [Res]),
+            case woomsg_upload:parse_form_pic(Req, true) of
+	        [{Path, Guid, Type}, {text, "message", _Message}] ->
+	            case woomsg_image:convert_pic(Path, Guid, Type) of
+		        true ->
+			    io:format("Convert pic success~~n", []);
+			false ->
+			    io:format("Convert pic error!~n", [])
+                    end;
+		_ ->
+		    %% TODO: 错误处理
+	            io:format("Upload pic error!~n", [])
+            end,
             Data = upload_view:index(login, Username),
             Req:respond({200, [{"Content-Type", "text/html"}], Data});
         {logout_remember, undefined} ->
