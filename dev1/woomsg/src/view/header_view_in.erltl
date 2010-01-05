@@ -3,7 +3,7 @@
     
   <div id="header-logo">
     <a href="/">
-      <img src="/image/woomsg-logo.png" onload="fixpng(this)"/>
+      <img src="/static/image/woomsg-logo.png" onload="fixpng(this)"/>
     </a>
   </div>
 
@@ -35,7 +35,7 @@
       </div>
 
       <div id="nav-login-button">
-        <input type="image" src="/image/button-login.gif" />
+        <input type="image" src="/static/image/button-login.gif" />
       </div>	  
     </form>
   </div>
@@ -53,7 +53,7 @@
       </div>
 
       <div id="nav-login-button">
-        <input type="image" src="/image/button-login.gif" />
+        <input type="image" src="/static/image/button-login.gif" />
       </div>	  
     </form>
   </div>
