@@ -1,4 +1,5 @@
 -module(woomsg_router).
+-include("woomsg_configure.hrl").
 -export([handle_request/2]).
 
 
@@ -26,6 +27,8 @@ handle_request(Req, DocRoot) ->
 		    login_controller:handle_get(Req, DocRoot);
                 "logout" ->
 		    logout_controller:handle_get(Req, DocRoot);
+                "image" ->
+		    image_controller:handle_get(Req, DocRoot);
 		"publictimeline" ->
 		    publictimeline_controller:handle_get(Req, DocRoot);
 		"service" ->
@@ -41,7 +44,7 @@ handle_request(Req, DocRoot) ->
 		"user" ->
 		    user_controller:handle_get(Req, DocRoot);
                 _ ->
-                    Req:serve_file(Path, DocRoot)
+                    Req:serve_file(Path, ?NFS_PREFIX)
             end;
         'POST' ->
             case Path of
