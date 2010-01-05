@@ -12,7 +12,7 @@ a.nav {
 
 body {
   background-color: #E2F2FB;
-  background-image: url(/image/bg.gif);
+  background-image: url(/static/image/bg.gif);
   background-repeat: repeat-x;
   font-family: verdana,arial,helvetica,sans-serif;
   text-align: center; /* IE6 need this */
@@ -52,7 +52,7 @@ ol, ul {
 }
 
 #nav-login {
-  background-image: url(/image/nav-login-bg.gif);
+  background-image: url(/static/image/nav-login-bg.gif);
   margin: 15px 0 0;
   height: 62px;
   width: 536px;

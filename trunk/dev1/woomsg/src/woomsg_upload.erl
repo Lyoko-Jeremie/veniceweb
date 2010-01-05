@@ -174,7 +174,7 @@ update_state_pic(State) ->
 verify_type_in_header(Headers) ->
     case proplists:get_value("content-type", Headers) of
         {"image/jpeg", _} ->
-            ".jpeg";
+            ".jpg";
 	{"image/png", _} ->
 	    ".png";
 	{"image/gif", _} ->
