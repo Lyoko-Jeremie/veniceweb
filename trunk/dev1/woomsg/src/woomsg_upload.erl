@@ -65,9 +65,11 @@ callback(Next, State, Acc, Debug, UpdateStateCallback) ->
 	        true ->
 		    io:format("Headers: ~p~n", [Headers]),
 		    io:format("NewState: ~p~n", [NewState]),
-                    io:format("NewAcc: ~p~n", [Acc])
-	    end,
-	    fun(N) -> callback(N, NewState, Acc, Debug, UpdateStateCallback) end;
+                    io:format("NewAcc: ~p~n", [Acc]),
+	            fun(N) -> callback(N, NewState, Acc, Debug, UpdateStateCallback) end;
+		false ->
+	            fun(N) -> callback(N, NewState, Acc, Debug, UpdateStateCallback) end
+	    end;
 	{body, Body} ->
 	    if
 	        State#state.filename =/= undefined ->
@@ -114,9 +116,11 @@ callback(Next, State, Acc, Debug, UpdateStateCallback) ->
 	        true ->
 		    io:format("Body: ~p~n", ["---"]),
 		    io:format("NewState: ~p~n", [NewState]),
-		    io:format("NewAcc: ~p~n", [NewAcc])
-            end,
-            fun(N) -> callback(N, NewState, NewAcc, Debug, UpdateStateCallback) end;
+		    io:format("NewAcc: ~p~n", [NewAcc]),
+                    fun(N) -> callback(N, NewState, NewAcc, Debug, UpdateStateCallback) end;
+		false ->
+                    fun(N) -> callback(N, NewState, NewAcc, Debug, UpdateStateCallback) end
+            end;
 	body_end ->
 	    if
 	        State#state.file =/= undefined ->
@@ -129,9 +133,11 @@ callback(Next, State, Acc, Debug, UpdateStateCallback) ->
 	        true ->
 		    io:format("Body_End: ~n", []),
 		    io:format("NewState: ~p~n", [#state{}]),
-		    io:format("NewAcc: ~p~n", [NewAcc])
-	    end,
-	    fun(N) -> callback(N, #state{}, NewAcc, Debug, UpdateStateCallback) end;
+		    io:format("NewAcc: ~p~n", [NewAcc]),
+	            fun(N) -> callback(N, #state{}, NewAcc, Debug, UpdateStateCallback) end;
+		false ->
+	            fun(N) -> callback(N, #state{}, NewAcc, Debug, UpdateStateCallback) end
+	    end;
 	eof ->
 	    lists:reverse(Acc);
 	_ ->
