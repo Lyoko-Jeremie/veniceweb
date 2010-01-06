@@ -1,9 +1,9 @@
 -module(woomsg_router).
 -include("woomsg_configure.hrl").
--export([handle_request/2]).
+-export([handle_request/1]).
 
 
-handle_request(Req, DocRoot) ->
+handle_request(Req) ->
     "/" ++ Path = Req:get(path),
     case Req:get(method) of
         Method when Method =:= 'GET'; Method =:= 'HEAD' ->
@@ -14,46 +14,50 @@ handle_request(Req, DocRoot) ->
             PrefixPath = woomsg_util:list_index_prefix($/, Path),
             case PrefixPath of
 		"" ->
-		    index_controller:handle_get(Req, DocRoot);
+		    index_controller:handle_get(Req);
 		"index" ->
-		    index_controller:handle_get(Req, DocRoot);
+		    index_controller:handle_get(Req);
                 "api" ->
-		    api_controller:handle_get(Req, DocRoot);
+		    api_controller:handle_get(Req);
                 "blog" ->
-		    blog_controller:handle_get(Req, DocRoot);
+		    blog_controller:handle_get(Req);
 		"faq" ->
-		    faq_controller:handle_get(Req, DocRoot);
+		    faq_controller:handle_get(Req);
 		"login" ->
-		    login_controller:handle_get(Req, DocRoot);
+		    login_controller:handle_get(Req);
                 "logout" ->
-		    logout_controller:handle_get(Req, DocRoot);
+		    logout_controller:handle_get(Req);
                 "image" ->
-		    image_controller:handle_get(Req, DocRoot);
+		    image_controller:handle_get(Req);
 		"publictimeline" ->
-		    publictimeline_controller:handle_get(Req, DocRoot);
+		    publictimeline_controller:handle_get(Req);
+		"register" ->
+		    register_controller:handle_get(Req);
 		"service" ->
-		    service_controller:handle_get(Req, DocRoot);
+		    service_controller:handle_get(Req);
 		"setting" ->
-		    setting_controller:handle_get(Req, DocRoot);
+		    setting_controller:handle_get(Req);
 		"support" ->
-		    support_controller:handle_get(Req, DocRoot);
+		    support_controller:handle_get(Req);
 		"tag" ->
-		    tag_controller:handle_get(Req, DocRoot);
+		    tag_controller:handle_get(Req);
 		"upload" ->
-		    upload_controller:handle_get(Req, DocRoot);
+		    upload_controller:handle_get(Req);
 		"user" ->
-		    user_controller:handle_get(Req, DocRoot);
+		    user_controller:handle_get(Req);
                 _ ->
                     Req:serve_file(Path, ?NFS_PREFIX)
             end;
         'POST' ->
             case Path of
 		"login" ->
-		    login_controller:handle_post(Req, DocRoot);
+		    login_controller:handle_post(Req);
                 "logout" ->
-		    logout_controller:handle_post(Req, DocRoot);
+		    logout_controller:handle_post(Req);
+                "register" ->
+		    register_controller:handle_post(Req);
                 "upload" ->
-		    upload_controller:handle_post(Req, DocRoot);
+		    upload_controller:handle_post(Req);
                 _ ->
                     Req:not_found()
             end;

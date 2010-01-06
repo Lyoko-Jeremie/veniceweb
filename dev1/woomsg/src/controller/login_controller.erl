@@ -1,5 +1,5 @@
 -module(login_controller).
--export([handle_get/2, handle_post/2]).
+-export([handle_get/1, handle_post/1]).
 
 -define(USERNAME_KEY, "username").
 -define(PASSWORD_KEY, "password").
@@ -7,14 +7,14 @@
 
 -define(REMEMBER_VAL, "1").
 
-handle_get(Req, _DocRoot) ->
+handle_get(Req) ->
     Data = login_view:index("test data"),
     Req:respond({200, [{"Content-Type","text/html"}], Data}).
 
 %% PostPair - format:
 %% [{"username","username"},{"password",[]},{"x","71"},{"y","19"}] 
 %% [{"username","username"}, {"password","woomsg password"}, {"remember","1"}, {"x","56"}, {"y","33"}] 
-handle_post(Req, _DocRoot) ->
+handle_post(Req) ->
     PostPair = Req:parse_post(),
     Username = proplists:get_value(?USERNAME_KEY, PostPair),
     Password = proplists:get_value(?PASSWORD_KEY, PostPair),
