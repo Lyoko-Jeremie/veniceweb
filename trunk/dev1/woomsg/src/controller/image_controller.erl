@@ -1,8 +1,8 @@
 -module(image_controller).
 -include("../woomsg_configure.hrl").
--export([handle_get/2, handle_post/2]).
+-export([handle_get/1, handle_post/1]).
 
-handle_get(Req, _DocRoot) ->
+handle_get(Req) ->
     case parse_size_from_url(Req) of
 	{Size, Guid} ->
 	    case woomsg_pic:get_pic(Guid) of
@@ -18,7 +18,7 @@ handle_get(Req, _DocRoot) ->
 	    Req:not_found()
     end.
 
-handle_post(_Req, _DocRoot) ->
+handle_post(_Req) ->
     ok.
 
 

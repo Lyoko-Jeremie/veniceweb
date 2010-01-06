@@ -1,9 +1,9 @@
 -module(publictimeline_controller).
--export([handle_get/2, handle_post/2]).
+-export([handle_get/1, handle_post/1]).
 
 -define(DEF_USERNAME, <<"请输入用户名">>).
 
-handle_get(Req, _DocRoot) ->
+handle_get(Req) ->
     Data = case woomsg_common:user_state(Req) of
                     {login, Username} ->
                         publictimeline_view:index(login, Username);
@@ -16,6 +16,6 @@ handle_get(Req, _DocRoot) ->
              end,
     Req:respond({200, [{"Content-Type","text/html"}], Data}).
 
-handle_post(_Req, _DocRoot) ->
+handle_post(_Req) ->
     ok.
 

@@ -20,8 +20,8 @@ start(Options) ->
 stop() ->
     mochiweb_http:stop(?MODULE).
 
-loop(Req, DocRoot) ->
-    woomsg_router:handle_request(Req, DocRoot).
+loop(Req, _DocRoot) ->
+    woomsg_router:handle_request(Req).
 
 %% Internal API
 

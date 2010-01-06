@@ -1,5 +1,5 @@
 -module(user_controller).
--export([handle_get/2, handle_post/2]).
+-export([handle_get/1, handle_post/1]).
 
 -define(DEF_USERNAME, <<"请输入用户名">>).
 
@@ -19,7 +19,7 @@
 %% {logout_remember, ?DEF_USERNAME, undefined, UrlUsername}
 %% {logout_remember, Username, undefined, UrlUsername}
 %% {logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername}
-handle_get(Req, _DocRoot) ->
+handle_get(Req) ->
     UrlUsername = parse_username_from_url(Req),
     case woomsg_register:is_registered(UrlUsername) of
 	true ->
@@ -63,7 +63,7 @@ handle_get(Req, _DocRoot) ->
     end.
 
 
-handle_post(_Req, _DocRoot) ->
+handle_post(_Req) ->
     ok.
 
 %% 解析出URL中的用户名: Username

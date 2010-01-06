@@ -3,7 +3,7 @@
 
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-  <title>woomsg - faq</title>
+  <title>woomsg - register</title>
   <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
@@ -41,6 +41,7 @@
 </head>
 
 <body>
+Data: <% Data %>
 </body>
 
 </html>
