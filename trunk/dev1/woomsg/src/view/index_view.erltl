@@ -77,10 +77,13 @@
           点击下面的链接, 马上创建一个WOOMSG帐户
         </div>
 
-        <div style="padding-top: 30px; padding-left: 50px;">
+        <div style="padding-top: 20px;">
           <a href="/register">
 	    <img src="/static/image/button-reg.gif"/>
           </a>
+          <div>
+	    <img src="/static/image/reg-logo.gif"/>
+          </div>
         </div>
  
       </div>
