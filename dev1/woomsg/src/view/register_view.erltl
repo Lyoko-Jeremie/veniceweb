@@ -47,9 +47,41 @@
     <div id="main">
       <center>
         <div style="clear: both;"></div>
-        <div style="padding: 30px; margin-top: 15px; background-color: rgb(255, 255, 255); width: 600px;">
+        <div style="padding: 30px 50px 10px; width: 600px; text-align: left;">
+          <div class="reg-box">
+            <div id="version"></div>
+            <div style="padding-top: 30px; float:left; font-size: 16px; font-weight: bold; color:#0B3A5E">
+                注册免费的WOOMSG帐户
+            </div>
+            <div style="clear: both;"></div>
+
+            <br/><br/>
+            <form>
+              <label class="reg-label">用户名（用户登录, 4 - 32位数字, 字母或者下滑线的组合）</label>
+              <br/>
+              <input class="reg-input" type="text"/>
+              <br/><br/>
+              <label class="reg-label">昵称</label>
+              <br/>
+              <input class="reg-input" type="text"/>
+              <br/><br/>
+              <label class="reg-label">密码（6到32位字母, 数字或者特殊字符的组合）</label>
+              <br/>
+              <input class="reg-input" type="password"/>
+              <br/><br/>
+              <label class="reg-label">再次输入密码</label>
+              <br/>
+              <input class="reg-input" type="password"/>
+              <br/><br/>
+              <label class="reg-label">邮箱（忘记密码时, 可以找回密码）</label>
+              <br/>
+              <input class="reg-input" type="text"/>
+              <br/><br/>
+              
+            </form>
+          </div> 
         </div>
-      <center>
+      </center>
     </div>
 
     <% footer_view_in:index() %>
