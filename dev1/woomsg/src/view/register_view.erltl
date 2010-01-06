@@ -1,4 +1,4 @@
-<%@ index(Data) %>
+<%@ index(State, Username) %>
 <html>
 
 <head>
@@ -41,7 +41,20 @@
 </head>
 
 <body>
-Data: <% Data %>
+  <div id="container">
+    <% header_view_in:index(State, Username) %>
+
+    <div id="main">
+      <center>
+        <div style="clear: both;"></div>
+        <div style="padding: 30px; margin-top: 15px; background-color: rgb(255, 255, 255); width: 600px;">
+        </div>
+      <center>
+    </div>
+
+    <% footer_view_in:index() %>
+  </div>
+
 </body>
 
 </html>
