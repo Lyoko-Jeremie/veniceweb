@@ -1,0 +1,71 @@
+介绍JSON
+
+资源:
+<1> IBM开发者社区一篇入门文章
+http://www.ibm.com/developerworks/cn/web/wa-lo-json/?ca=drs-tp3308
+
+1.  数据类型:
+<1> object
+{} 包含一系列无序的 Key-Value 键值对表示的
+
+{"key1":value1, "key2":value2}
+
+例如(value可以嵌套object):
+{"city":"Beijing", "street":"Chaoyang Road", "postcode":100025}
+{"name":"Mark", "address":
+    {"city":"Beijing", "street":"Chaoyang Road", "postcode":100025}
+}
+
+<2> array
+[value1, value2]
+
+例如:
+["abc", 12345, true, null]
+
+<3> value
+string
+number
+object
+array
+true
+false
+null
+
+<4> string
+除了字符 "，\，/ 和一些控制符（\b，\f，\n，\r，\t）需要编码外，
+其他 Unicode 字符可以直接输出.
+
+转义字符
+\\
+\/
+\"
+\b
+\f
+\n
+\r
+\t
+\u
+
+例如:
+"abc"
+
+<5> number
+12345(整数)
+-3.9e10 (浮点数)
+
+2. 客户端Javascript如何处理json?
+只需将其赋值给一个 JavaScript 变量，就可以立刻使用该变量并更新页面中的信息
+
+function handleJson() {
+  var j = {"name":"Mark", "address":
+              {"city":"Beijing", "street":"Chaoyang Road", "postcode":100025}
+          };
+  jarr = ["abc", true, null, {"name":"username"}];
+  alert(j.name);
+  alert(j.address.city);
+  alert(jarr[0]);
+  alert(jarr[3].name);
+}
+
+3. Erlang服务器端如何处理json?
+使用mochijson2来编码和解码.
