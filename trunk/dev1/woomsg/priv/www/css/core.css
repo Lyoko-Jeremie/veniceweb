@@ -36,14 +36,15 @@ ol, ul {
   border: 5px solid #CCE9FF;
 }
 
-.reg-box {
+.set-box {
   background:#DBEBF7 none repeat scroll 0 0;
   border:1px solid #0B3A5E;
   color:#0B3A5E;
   padding:15px 15px 25px;
 }
 .reg-label {
-  font-size: 10px;
+  font-size: 14px;
+  float: left;
 }
 .reg-input {
   border:1px solid #CAC8C8;
@@ -94,6 +95,12 @@ ol, ul {
   float: left;
   padding: 10px 0 0 15px;
   width: 100px;
+}
+
+#nav-login-ajax {
+  float: left;
+  padding: 20px 0 0 15px;
+  display: none;
 }
 
 .nav-input {
