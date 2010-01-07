@@ -26,6 +26,7 @@ handle_get(Req) ->
             case woomsg_common:user_state(Req) of
                 {login, Username} ->
 	            %% <2> 用户登录
+		    io:format("user-login~n", []),
                     case Username =:= UrlUsername of
 		        true ->
 			%% 2.1 用户登录, 访问自己的页面

@@ -12,6 +12,20 @@
   <div style="clear:both;"></div>
 </div>
 
+<%@ display_header_nav(register_page, _Username) %>
+<div id="header-nav">
+  <div id="nav-user">
+    <a class="nav" href="/">主页</a>
+    <a class="nav" href="/login">登录</a>
+  </div>       
+</div>
+<%@ display_header_nav(login_page, _Username) %>
+<div id="header-nav">
+  <div id="nav-user">
+    <a class="nav" href="/">主页</a>
+    <a class="nav" href="/register">注册</a>
+  </div>       
+</div>
 <%@ display_header_nav(login, Username) %>
 <div id="header-nav">
   <div id="nav-user">
@@ -25,7 +39,7 @@
 <%@ display_header_nav(logout_remember, Username) %>
 <div id="header-nav">
   <div id="nav-login">
-    <form action="/login" method="post">
+    <form id="header_login_form" action="" onsubmit="header_login(); return false;">
       <div id="nav-login-inputs">
         <input class="nav-input" type="text" onclick="" onfocus="" value=<% Username %> name="username"/>
 	<input class="nav-input" type="password" onclick="" onfocus="" value="woomsg password" name="password"/>
@@ -36,14 +50,19 @@
 
       <div id="nav-login-button">
         <input type="image" src="/static/image/button-login.gif" />
-      </div>	  
+      </div>	
+
+      <div id="nav-login-ajax">
+        <img src="/static/image/ajax-bert.gif"/>
+      </div>  
+
     </form>
   </div>
 </div>
 <%@ display_header_nav(logout_no_remember, Username) %>
 <div id="header-nav">
   <div id="nav-login">
-    <form action="/login" method="post">
+    <form id="header_login_form" action="" onsubmit="header_login(); return false;">
       <div id="nav-login-inputs">
         <input class="nav-input" type="text" onclick="" onfocus="" value=<% Username %> name="username"/>
 	<input class="nav-input" type="password" onclick="" onfocus="" value="woomsg password" name="password"/>
@@ -54,7 +73,12 @@
 
       <div id="nav-login-button">
         <input type="image" src="/static/image/button-login.gif" />
-      </div>	  
+      </div>
+
+      <div id="nav-login-ajax">
+        <img src="/static/image/ajax-bert.gif"/>
+      </div>
+	  
     </form>
   </div>
 </div>

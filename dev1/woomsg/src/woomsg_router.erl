@@ -5,13 +5,13 @@
 
 handle_request(Req) ->
     "/" ++ Path = Req:get(path),
+    %% 解析出Path的前缀:
+    %% E.g. 
+    %% login/user -> login
+    %% login      -> login
+    PrefixPath = woomsg_util:list_index_prefix($/, Path),
     case Req:get(method) of
         Method when Method =:= 'GET'; Method =:= 'HEAD' ->
-            %% 解析出Path的前缀:
-	    %% E.g. 
-	    %% login/user -> login
-	    %% login      -> login
-            PrefixPath = woomsg_util:list_index_prefix($/, Path),
             case PrefixPath of
 		"" ->
 		    index_controller:handle_get(Req);
@@ -49,7 +49,7 @@ handle_request(Req) ->
                     Req:serve_file(Path, ?NFS_PREFIX)
             end;
         'POST' ->
-            case Path of
+            case PrefixPath of
 		"login" ->
 		    login_controller:handle_post(Req);
                 "logout" ->

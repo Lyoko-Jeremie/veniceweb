@@ -26,14 +26,14 @@
 %% 产生发送给客户端的Cookie: - ses_remember
 %% 参数: true | false
 get_cookie_of_remember(State) when State ->
-    mochiweb_cookies:cookie(?SES_REMEMBER, ?SES_REMEMBER_TRUE, []);
+    mochiweb_cookies:cookie(?SES_REMEMBER, ?SES_REMEMBER_TRUE, [{path, "/"}]);
 get_cookie_of_remember(_State) ->
-    mochiweb_cookies:cookie(?SES_REMEMBER, ?SES_REMEMBER_FALSE, []).
+    mochiweb_cookies:cookie(?SES_REMEMBER, ?SES_REMEMBER_FALSE, [{path, "/"}]).
 
 
 %% 产生发送给客户端的Cookie: - ses_username
 get_cookie_of_username(Username) ->
-    mochiweb_cookies:cookie(?SES_USERNAME, Username, []).
+    mochiweb_cookies:cookie(?SES_USERNAME, Username, [{path, "/"}]).
 
 %% 产生发送给客户端的cookie: - ses_session_id, 并更新session表
 %% 成功返回: cookie
@@ -42,7 +42,7 @@ get_cookie_of_sessionid(Username) ->
     SessionId = woomsg_guid:get_session_guid(),
     case woomsg_session:set_session(Username, SessionId) of
         ok ->
-	    mochiweb_cookies:cookie(?SES_SESSION_ID, SessionId, []);
+	    mochiweb_cookies:cookie(?SES_SESSION_ID, SessionId, [{path, "/"}]);
 	_ ->
 	    []
     end.
