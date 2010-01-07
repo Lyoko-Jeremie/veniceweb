@@ -60,7 +60,7 @@
             <div style="clear: both;"></div>
             <br/><br/>
 
-            <form id="login_form" onsubmit="login_user(); return false;">
+            <form id="login_form" action="" onsubmit="do_login(); return false;">
               <span class="reg-label">用户名</span>
               <br/>
 	      <div style="clear:both;"></div>
@@ -70,8 +70,11 @@
               <br/>
 	      <div style="clear:both;"></div>
               <input class="reg-input" type="password" name="password" value=""/>
-              <br/><br/>
-
+              <br/>
+              <div style="clear:both;"></div>
+              <input style="float: left; margin-top: 3px;" type="checkbox" name="remember" value="1"/>
+              <span style="float: left; padding-left: 5px; font-size: 10px; padding-top: 5px;">记住用户</span>
+              <div style="clear:both;"></div>
               <div style="padding: 30px 10px 0px 0px; float: left">
                 <input type="image" src="/static/image/joinnow.gif">
               </div>
