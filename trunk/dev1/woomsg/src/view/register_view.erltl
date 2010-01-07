@@ -5,6 +5,7 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
   <title>woomsg - register</title>
   <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
+  <link type="text/css" href="/static/css/ui.achtung-min.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
   <script language="javascript" type="text/javascript">
@@ -38,46 +39,57 @@
   </script>
   <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
   <script type="text/javascript" src="/static/js/core.js"></script>
+  <script type="text/javascript" src="/static/js/register.js"></script>
+  <script type="text/javascript" src="/static/js/ui.achtung-min.js"></script>
 </head>
 
 <body>
   <div id="container">
+
     <% header_view_in:index(State, Username) %>
 
     <div id="main">
       <center>
         <div style="clear: both;"></div>
         <div style="padding: 30px 50px 10px; width: 600px; text-align: left;">
-          <div class="reg-box">
-            <div id="version"></div>
-            <div style="padding-top: 30px; float:left; font-size: 16px; font-weight: bold; color:#0B3A5E">
+          <div class="set-box">
+            <div id="version-logo"></div>
+            <div style="padding-top: 30px; float:left; font-size: 20px; font-weight: bold; color:#0B3A5E">
                 注册免费的WOOMSG帐户
             </div>
             <div style="clear: both;"></div>
 
             <br/><br/>
-            <form>
-              <label class="reg-label">用户名（用户登录, 4 - 32位数字, 字母或者下滑线的组合）</label>
+            <form id="register_form" onsubmit="register_user(); return false;" action="">
+              <span class="reg-label">用户名（用户登录, 4到24位字母, 数字或者下划线的组合）</span>
               <br/>
-              <input class="reg-input" type="text"/>
+	      <div style="clear:both;"></div>
+              <input class="reg-input" type="text" name="username" value=""/>
               <br/><br/>
-              <label class="reg-label">昵称</label>
+              <span class="reg-label">密码（6到32位字母, 数字或者特殊字符的组合）</span>
               <br/>
-              <input class="reg-input" type="text"/>
+	      <div style="clear:both;"></div>
+              <input class="reg-input" type="password" name="password" value=""/>
               <br/><br/>
-              <label class="reg-label">密码（6到32位字母, 数字或者特殊字符的组合）</label>
-              <br/>
-              <input class="reg-input" type="password"/>
+              <span class="reg-label">再次输入密码 </span>
+	      <br/>
+	      <div style="clear:both;"></div>
+              <input class="reg-input" type="password" name="password_again" value=""/>
               <br/><br/>
-              <label class="reg-label">再次输入密码</label>
-              <br/>
-              <input class="reg-input" type="password"/>
+              <span class="reg-label">邮箱（密码遗忘时, 用于找回密码）</span>
+	      <br/>
+	      <div style="clear:both;"></div>
+              <input class="reg-input" type="text" name="email" value=""/>
               <br/><br/>
-              <label class="reg-label">邮箱（忘记密码时, 可以找回密码）</label>
-              <br/>
-              <input class="reg-input" type="text"/>
-              <br/><br/>
-              
+ 
+              <div style="padding: 30px 10px 0px 0px; float: left">
+                <input type="image" src="/static/image/joinnow.gif">
+              </div>
+              <div id="register_ajax" style="padding:37px 0px 0px; display: none;">
+                <img src="/static/image/ajax-arrows.gif"/>
+              </div>
+              <div style="clear: both;"></div>
+               
             </form>
           </div> 
         </div>

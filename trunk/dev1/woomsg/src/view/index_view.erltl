@@ -5,6 +5,7 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
   <title>WooMsg</title>
   <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
+   <link type="text/css" href="/static/css/ui.achtung-min.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
   <script language="javascript" type="text/javascript">
@@ -37,7 +38,9 @@
     }
   </script>
   <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
+  <script type="text/javascript" src="/static/js/ui.achtung-min.js"></script>
   <script type="text/javascript" src="/static/js/core.js"></script>
+
 </head>
 
 <body>
