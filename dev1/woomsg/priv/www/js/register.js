@@ -14,6 +14,12 @@ function validate_register_user(data) {
 	       className:'achtungFail'});
     clear_register_form();
   }
+  /**
+   * 登录成功, 跳转到login页面
+   */
+  else if (data.result == "ok") {
+    location.href = "login";
+  }
   
 }
 

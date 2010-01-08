@@ -46,7 +46,7 @@
 <body>
 
   <div id="container">
-    <% header_view_in:index(State, Username) %>
+    <% header_view_in:index(login_page, undefined) %>
 
     <div id="main">
       <center>
@@ -60,30 +60,7 @@
             <div style="clear: both;"></div>
             <br/><br/>
 
-            <form id="login_form" action="" onsubmit="do_login(); return false;">
-              <span class="reg-label">用户名</span>
-              <br/>
-	      <div style="clear:both;"></div>
-              <input class="reg-input" type="text" name="username" value=""/>
-              <br/><br/>
-              <span class="reg-label">密码</span>
-              <br/>
-	      <div style="clear:both;"></div>
-              <input class="reg-input" type="password" name="password" value=""/>
-              <br/>
-              <div style="clear:both;"></div>
-              <input style="float: left; margin-top: 3px;" type="checkbox" name="remember" value="1"/>
-              <span style="float: left; padding-left: 5px; font-size: 10px; padding-top: 5px;">记住用户</span>
-              <div style="clear:both;"></div>
-              <div style="padding: 30px 10px 0px 0px; float: left">
-                <input type="image" src="/static/image/joinnow.gif">
-              </div>
-              <div id="login_ajax" style="padding:37px 0px 0px; display: none;">
-                <img src="/static/image/ajax-arrows.gif"/>
-              </div>
-              <div style="clear: both;"></div>
-               
-            </form>
+            <% display_login_form(State, Username) %>
 
           </div>
         </div>
@@ -96,3 +73,52 @@
 </body>
 
 </html>
+
+<%@ display_login_form(logout_remember, Username) %>
+<form id="login_form" action="" onsubmit="do_login(); return false;">
+  <span class="reg-label">用户名</span>
+  <br/>
+  <div style="clear:both;"></div>
+  <input class="reg-input" type="text" value=<% Username %> name="username"/>
+  <br/><br/>
+  <span class="reg-label">密码</span>
+  <br/>
+  <div style="clear:both;"></div>
+  <input class="reg-input" type="password" name="password" value=""/>
+  <br/>
+  <div style="clear:both;"></div>
+  <input style="float: left; margin-top: 3px;" type="checkbox" name="remember" checked="true" value="1"/>
+  <span style="float: left; padding-left: 5px; font-size: 10px; padding-top: 5px;">记住用户</span>
+  <div style="clear:both;"></div>
+  <div style="padding: 30px 10px 0px 0px; float: left">
+    <input type="image" src="/static/image/joinnow.gif">
+  </div>
+  <div id="login_ajax" style="padding:37px 0px 0px; display: none;">
+    <img src="/static/image/ajax-arrows.gif"/>
+  </div>
+  <div style="clear: both;"></div>
+</form>
+<%@ display_login_form(logout_no_remember, Username) %>
+<form id="login_form" action="" onsubmit="do_login(); return false;">
+  <span class="reg-label">用户名</span>
+  <br/>
+  <div style="clear:both;"></div>
+  <input class="reg-input" type="text" value=<% Username %> name="username"/>
+  <br/><br/>
+  <span class="reg-label">密码</span>
+  <br/>
+  <div style="clear:both;"></div>
+  <input class="reg-input" type="password" name="password" value=""/>
+  <br/>
+  <div style="clear:both;"></div>
+  <input style="float: left; margin-top: 3px;" type="checkbox" name="remember" value="1"/>
+  <span style="float: left; padding-left: 5px; font-size: 10px; padding-top: 5px;">记住用户</span>
+  <div style="clear:both;"></div>
+  <div style="padding: 30px 10px 0px 0px; float: left">
+    <input type="image" src="/static/image/joinnow.gif">
+  </div>
+  <div id="login_ajax" style="padding:37px 0px 0px; display: none;">
+    <img src="/static/image/ajax-arrows.gif"/>
+  </div>
+  <div style="clear: both;"></div>
+</form>
