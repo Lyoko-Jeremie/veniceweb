@@ -1,18 +1,27 @@
 <%@index(State, Username) %>
 <div id="header">
     
-  <div id="header-logo">
-    <a href="/">
-      <img src="/static/image/woomsg-logo.png" onload="fixpng(this)"/>
-    </a>
-  </div>
+  <% display_header_logo(State, Username) %>
 
   <% display_header_nav(State, Username) %>
 
   <div style="clear:both;"></div>
 </div>
 
-<%@ display_header_nav(register_page, _Username) %>
+<%@ display_header_logo(login, Username) %>
+<div id="header-logo">
+  <a href="/user/<% Username %>">
+    <img src="/static/image/woomsg-logo.png" onload="fixpng(this)"/>
+  </a>
+</div>
+<%@ display_header_logo(_State, _Username) %>
+<div id="header-logo">
+  <a href="/">
+    <img src="/static/image/woomsg-logo.png" onload="fixpng(this)"/>
+  </a>
+</div>
+
+<%@ display_header_nav(register_page, undefined) %>
 <div id="header-nav">
   <div id="nav-user">
     <a class="nav" href="/">主页</a>

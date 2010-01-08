@@ -22,10 +22,21 @@
 -define(ERROR_REGISTER_FAILED, <<"注册失败">>).
 -define(ERROR_UNKNOWN, <<"未知的错误">>).
 
+-define(DEF_USERNAME, <<"请输入用户名">>).
 
 handle_get(Req) ->
-    Data = register_view:index(register_page, undefined),
-    Req:respond({200, [{"Content-Type", "text/html"}], Data}).
+     Data = case woomsg_common:user_state(Req) of
+	       {login, Username} ->
+                   %% 已经登录, 跳转到用户主页
+	           Req:respond({302, [{"Location", "/user/"++ Username}], []});
+	       {logout_remember, undefined} ->
+		   register_view:index(logout_remember, ?DEF_USERNAME);
+	       {logout_remember, Username} ->
+	           register_view:index(logout_remember, Username);
+	       {logout_no_remember, undefined} ->
+	           register_view:index(logout_no_remember, ?DEF_USERNAME)
+           end,
+    Req:respond({200, [{"Content-Type","text/html"}], Data}).
 
 %% 处理用户注册的Ajax请求
 %% 以JSON的形式返回给客户端数据

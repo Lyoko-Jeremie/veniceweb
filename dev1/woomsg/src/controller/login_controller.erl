@@ -26,7 +26,7 @@ handle_get(Req) ->
     Data = case woomsg_common:user_state(Req) of
 	       {login, Username} ->
                    %% 已经登录, 跳转到用户主页
-	           Req:respond({302, [{"Location", "user/"++ Username}], []});
+	           Req:respond({302, [{"Location", "/user/"++ Username}], []});
 	       {logout_remember, undefined} ->
 		   login_view:index(logout_remember, ?DEF_USERNAME);
 	       {logout_remember, Username} ->
