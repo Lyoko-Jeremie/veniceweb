@@ -46,7 +46,7 @@
 <body>
   <div id="container">
 
-    <% header_view_in:index(State, Username) %>
+    <% header_view_in:index(register_page, undefined) %>
 
     <div id="main">
       <center>
