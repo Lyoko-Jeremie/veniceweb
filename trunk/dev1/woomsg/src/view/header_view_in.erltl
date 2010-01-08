@@ -19,7 +19,7 @@
     <a class="nav" href="/login">登录</a>
   </div>       
 </div>
-<%@ display_header_nav(login_page, _Username) %>
+<%@ display_header_nav(login_page, undefined) %>
 <div id="header-nav">
   <div id="nav-user">
     <a class="nav" href="/">主页</a>

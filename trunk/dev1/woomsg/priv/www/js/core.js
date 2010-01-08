@@ -30,14 +30,16 @@ function header_login() {
 }
 
 function validate_header_login(data) {
-  $('#nav-login-button').show();
-  $('#nav-login-ajax').hide();
   if(data.result == "error") {
+    $('#nav-login-button').show();
+    $('#nav-login-ajax').hide();
     $.achtung({message:data.content, 
                timeout:3,
 	       className:'achtungFail'});
   } 
- 
+  /**
+   * 登录成功, 直接跳转
+   */
   else if (data.result == "ok") {
     location.href = "user/" + data.content;
   }
