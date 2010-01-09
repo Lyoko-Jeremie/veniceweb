@@ -1,0 +1,17 @@
+ 记录开发中遇到的问题:
+
+
+1. IE 6/7/8下div的默认高度
+   即使是空的div, 例如
+   <div height=1px; background-color:#FFFFFF></div>
+   这个div在Firefox下显示是一条线,但在IE下显示不是, 默认有一定的高度.
+
+   workaround:
+   增加font-size: 1px属性可以修复这个问题, 在IE下也显示一条线.
+   <div font-size: 1px; height: 1px; background-color:#FFFFFF></div>
+
+2. Javascript发送请求的时候, 一定使用绝对路径, 不要使用相对路径
+   $.post('login/ajax', ....)   - 错误的使用方式, 在子模块中使用会出现问题.
+   $.post('/login/ajax', ....)  - 正确的使用方式.
+
+
