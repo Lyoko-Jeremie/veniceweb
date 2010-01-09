@@ -5,6 +5,7 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
   <title>欢迎来到<% UrlUsername %>的主页</title>
   <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
+  <link type="text/css" href="/static/css/ui.achtung-min.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
   <script language="javascript" type="text/javascript">
@@ -37,6 +38,7 @@
     }
   </script>
   <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
+  <script type="text/javascript" src="/static/js/ui.achtung-min.js"></script>
   <script type="text/javascript" src="/static/js/core.js"></script>
 </head>
 
@@ -72,7 +74,7 @@
               <% UrlDescribe %>
             </div>
 
-            <div style="height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
+            <div style="font-size: 1px; height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
 
             <div style="margin-bottom: 10px; font-size: 14px;">
               <span style="font-weight: bold; font-size: 14px;">名字:</span>
@@ -89,7 +91,7 @@
               <% UrlSex %>
             </div>
 
-            <div style="height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
+            <div style="font-size: 1px; height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
 
             <div style="margin-bottom: 10px; font-size: 14px;">
               <span style="font-weight: bold; font-size: 14px;">地址:</span>
@@ -101,7 +103,7 @@
               <% UrlWeb %>
             </div>
 
-            <div style="height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
+            <div style="font-size: 1px; height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
 
             <div style="margin-bottom: 10px; font-size: 14px;">
               <span style="font-weight: bold; font-size: 14px;">评论:</span>

@@ -26,7 +26,7 @@ $(document).ready(function() {
 function header_login() {
   $('#nav-login-button').hide();
   $('#nav-login-ajax').show();
-  $.post("login/ajax", $('#header_login_form').serialize(), validate_header_login, "json");
+  $.post("/login/ajax", $('#header_login_form').serialize(), validate_header_login, "json");
 }
 
 function validate_header_login(data) {

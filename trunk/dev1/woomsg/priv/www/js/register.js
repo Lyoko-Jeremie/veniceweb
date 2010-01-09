@@ -17,7 +17,7 @@ $(document).ready(function() {
 function register_user() {
   $('#reg-button-done').hide();
   $('#register-ajax').show();
-  $.post("register/ajax", $('#register_form').serialize(), validate_register_user, "json");
+  $.post("/register/ajax", $('#register_form').serialize(), validate_register_user, "json");
 }
 
 function validate_register_user(data) {
