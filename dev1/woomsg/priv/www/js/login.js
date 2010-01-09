@@ -17,7 +17,7 @@ $(document).ready(function() {
 function do_login() {
   $('#login-button-done').hide();
   $('#login-ajax').show();
-  $.post("login/ajax", $('#login_form').serialize(), validate_do_login, "json");
+  $.post("/login/ajax", $('#login_form').serialize(), validate_do_login, "json");
 }
 
 
