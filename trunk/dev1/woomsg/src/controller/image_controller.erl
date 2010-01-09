@@ -7,9 +7,9 @@ handle_get(Req) ->
 	{Size, Guid} ->
 	    case woomsg_pic:get_pic(Guid) of
 	        {Guid, _Owner, Path, Type, _Msg, _Count, _Dig, _TagList, _Spam, _CreateDate} ->
-		    "/" ++ PicSrc = Path ++ "/" ++ Size ++ "/" ++ Guid ++ Type,
-		    Req:serve_file(PicSrc, ?NFS_PREFIX);
-		    %%Req:serve_file("test/mini-pic.jpg", ?NFS_PREFIX);
+		    %%"/" ++ PicSrc = Path ++ "/" ++ Size ++ "/" ++ Guid ++ Type,
+		    "/" ++ PicSrc = woomsg_image:get_image_path(Path, Guid, Type, Size),
+                    Req:serve_file(PicSrc, ?NFS_PREFIX);
 		_ ->
 		    Req:not_found()
             end;

@@ -36,22 +36,48 @@ ol, ul {
   border: 5px solid #CCE9FF;
 }
 
-.set-box {
+.set-box-old {
   background:#DBEBF7 none repeat scroll 0 0;
   border:1px solid #0B3A5E;
   color:#0B3A5E;
   padding:15px 15px 25px;
 }
-.reg-label {
+
+.reg-label-old {
   font-size: 14px;
   float: left;
 }
-.reg-input {
+.reg-input-old {
   border:1px solid #CAC8C8;
   color:#0B3A5E;
   font-size: 14px;
   padding:3px;
   width:298px;
+}
+
+.set-box {
+  background: #CCE9EF none repeat scroll 0 0;
+  padding: 15px 15px 25px;
+}
+
+.reg-label {
+  font-size: 14px;
+  color: #000000;
+  float: left;
+}
+.reg-input {
+  border:3px solid #C2E0F2;
+  color:#3198D3;
+  font-size: 14px;
+  font-weight: bold;
+  padding:3px;
+  width:298px;
+}
+
+#register-ajax {
+  float: left;
+  display: none;
+  padding: 30px 10px 0px 0px;
 }
 
 #version-logo {

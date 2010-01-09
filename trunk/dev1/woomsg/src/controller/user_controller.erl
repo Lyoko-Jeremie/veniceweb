@@ -13,16 +13,20 @@
 %% UrlUsername是当前访问的用户.  /user/Username
 %%
 %% 传递给view的参数:
-%% {login, Username, ext_myself, UrlUsername}
-%% {login, Username, ext_following, UrlUsername}
-%% {login, Username, ext_no_following, UrlUsername}
-%% {logout_remember, ?DEF_USERNAME, undefined, UrlUsername}
-%% {logout_remember, Username, undefined, UrlUsername}
-%% {logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername}
+%% {login, Username, ext_myself, UrlUsername, UrlUserInfo}
+%% {login, Username, ext_following, UrlUsername, UrlUserInfo}
+%% {login, Username, ext_no_following, UrlUsername, UrlUserInfo}
+%% {logout_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo}
+%% {logout_remember, Username, undefined, UrlUsername, UrlUserInfo}
+%% {logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo}
 handle_get(Req) ->
     UrlUsername = parse_username_from_url(Req),
-    case woomsg_register:is_registered(UrlUsername) of
-	true ->
+    case woomsg_user:get_user_all(UrlUsername) of
+        [] ->
+	    %% <1> 正在访问一个不存在的用户, 跳转到主页
+            %% TODO: 单独的用户不存在页面
+            Req:respond({302, [{"Location", "/"}], []});
+	UrlUserInfo ->
             case woomsg_common:user_state(Req) of
                 {login, Username} ->
 	            %% <2> 用户登录
@@ -30,37 +34,33 @@ handle_get(Req) ->
                     case Username =:= UrlUsername of
 		        true ->
 			%% 2.1 用户登录, 访问自己的页面
-		            Data = user_view:index(login, Username, ext_myself, UrlUsername),
+		            Data = user_view:index(login, Username, ext_myself, UrlUsername, UrlUserInfo),
                             Req:respond({200, [{"Content-Type","text/html"}], Data});
                         false ->
 			    case woomsg_following:is_following(Username, UrlUsername) of
 			        true ->
 				    %% 2.2 用户登录, 访问自己following人的页面
-		                    Data = user_view:index(login, Username, ext_following, UrlUsername),
+		                    Data = user_view:index(login, Username, ext_following, UrlUsername, UrlUserInfo),
                                     Req:respond({200, [{"Content-Type","text/html"}], Data});
 				false ->
 				    %% 2.3 用户登录, 访问陌生人人的页面
-		                    Data = user_view:index(login, Username, ext_no_following, UrlUsername),
+		                    Data = user_view:index(login, Username, ext_no_following, UrlUsername, UrlUserInfo),
                                     Req:respond({200, [{"Content-Type","text/html"}], Data})
 			    end
                     end;
 	        {logout_remember, undefined} ->
 	            %% 用户没登录
-		    Data = user_view:index(logout_remember, ?DEF_USERNAME, undefined, UrlUsername),
+		    Data = user_view:index(logout_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo),
                     Req:respond({200, [{"Content-Type","text/html"}], Data});
                 {logout_remember, Username} ->
 	            %% 用户没登录
-		    Data = user_view:index(logout_remember, Username, undefined, UrlUsername),
+		    Data = user_view:index(logout_remember, Username, undefined, UrlUsername, UrlUserInfo),
                     Req:respond({200, [{"Content-Type","text/html"}], Data});
 		{logout_no_remember, undefined} ->
 	            %% 用户没登录
-		    Data = user_view:index(logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername),
+		    Data = user_view:index(logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo),
                     Req:respond({200, [{"Content-Type","text/html"}], Data})
-            end;
-	false ->
-	    %% <1> 正在访问一个不存在的用户, 跳转到主页
-            %% TODO: 单独的用户不存在页面
-            Req:respond({302, [{"Location", "/"}], []})
+            end
     end.
 
 
