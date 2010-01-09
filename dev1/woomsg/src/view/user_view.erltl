@@ -1,9 +1,9 @@
-<%@ index(State, Username, ExtState, UrlUsername) %>
+<%@ index(State, Username, ExtState, UrlUsername, {UrlUsername, _, _, UrlPhotoGuid, UrlPhotoPath, UrlPhotoType, UrlFullname, UrlSex, UrlLocation, UrlWeb, UrlDescribe, UrlPublic}) %>
 <html>
 
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-  <title>woomsg - <% UrlUsername %></title>
+  <title>欢迎来到<% UrlUsername %>的主页</title>
   <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
@@ -47,6 +47,77 @@
     <% header_view_in:index(State, Username) %>
     
     <div id="main">
+
+      <div id="profile-main">
+
+        <div id="profile-photos">
+
+          <div id="profile-header">
+            <div id="profile-avatar">
+              <img class="avatar" width="72" height="72" src="<% woomsg_image:get_image_path(UrlPhotoPath, UrlPhotoGuid, UrlPhotoType, "normal") %>"/>           
+            </div>
+            <div id="profile-username">
+              <a class="nav" href="/user/<% UrlUsername %>" style="font-size: 14px;"><% UrlUsername %></a>
+            </div>
+            <div style="clear: both;"></div>
+          </div>
+
+        </div>
+        
+        <div id="profile-info">
+          <div id="profile-about">
+            
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">关于:</span>
+              <% UrlDescribe %>
+            </div>
+
+            <div style="height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
+
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">名字:</span>
+              <% UrlUsername %>
+            </div>
+
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">全名:</span>
+              <% UrlFullname %>
+            </div>
+
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">性别:</span>
+              <% UrlSex %>
+            </div>
+
+            <div style="height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
+
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">地址:</span>
+              <% UrlLocation %>
+            </div>
+
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">网站:</span>
+              <% UrlWeb %>
+            </div>
+
+            <div style="height: 1px; background-color: rgb(184, 221, 242); margin-bottom: 10px;"></div>
+
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">评论:</span>
+            </div>
+
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              <span style="font-weight: bold; font-size: 14px;">标签:</span>
+            </div>
+            
+          </div>
+        </div>
+
+        <div style="clear: both;"></div>
+
+      </div>
+
     </div>  
     
     <% footer_view_in:index() %>

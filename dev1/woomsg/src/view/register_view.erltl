@@ -54,7 +54,7 @@
         <div style="padding: 30px 50px 10px; width: 600px; text-align: left;">
           <div class="set-box">
             <div id="version-logo"></div>
-            <div style="padding-top: 30px; float:left; font-size: 20px; font-weight: bold; color:#0B3A5E">
+            <div style="padding-top: 30px; float:left; font-size: 20px; font-weight: bold; color:#000000">
                 注册免费的WOOMSG帐户
             </div>
             <div style="clear: both;"></div>
@@ -82,11 +82,11 @@
               <input class="reg-input" type="text" name="email" value=""/>
               <br/><br/>
  
-              <div style="padding: 30px 10px 0px 0px; float: left">
-                <input type="image" src="/static/image/joinnow.gif">
+              <div id="reg-button-done" style="padding: 30px 10px 0px 0px; float: left">
+                <input type="image" src="/static/image/button-reg-done.gif">
               </div>
-              <div id="register_ajax" style="padding:37px 0px 0px; display: none;">
-                <img src="/static/image/ajax-arrows.gif"/>
+              <div id="register-ajax" style="padding: 45px 0px 0px; float: left; display: none;">
+                <img src="/static/image/ajax-bert-green.gif"/>
               </div>
               <div style="clear: both;"></div>
                

@@ -1,14 +1,29 @@
+$(document).ready(function() {
+
+  $('div#reg-button-done>input').hover(
+    function() {
+      $(this).attr("src", "/static/image/button-reg-hover-done.gif");
+    },
+    function() {
+      $(this).attr("src", "/static/image/button-reg-done.gif");
+    }
+  );
+
+})
+
 /**
  * 用户注册
  */
 function register_user() {
-  $('#register_ajax').show();
+  $('#reg-button-done').hide();
+  $('#register-ajax').show();
   $.post("register/ajax", $('#register_form').serialize(), validate_register_user, "json");
 }
 
 function validate_register_user(data) {
-  $('#register_ajax').hide();
   if(data.result == "error") {
+    $('#reg-button-done').show();
+    $('#register-ajax').hide();
     $.achtung({message:data.content,
 	       timeout:3,
 	       className:'achtungFail'});

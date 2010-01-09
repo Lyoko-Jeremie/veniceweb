@@ -1,8 +1,15 @@
 -module(woomsg_image).
 -include("woomsg_configure.hrl").
--export([convert_photo/3,
+-export([get_image_path/4,
+         convert_photo/3,
          convert_pic/3,
 	 convert/5]).
+
+%% 适用于pic和photo
+%% pic-Size: "ori" | "square" | "thumb" | "small" | "mediu"
+%% photo-size: "ori" | "mini" | "normal"
+get_image_path(Path, Guid, Type, Size) ->
+    Path ++ "/" ++ Size ++ "/" ++ Guid ++ Type.
 
 %% 根据SourceFile, 产生不同尺寸的头像图片.
 %%
