@@ -37,6 +37,8 @@ handle_request(Req) ->
 		    service_controller:handle_get(Req);
 		"setting" ->
 		    setting_controller:handle_get(Req);
+		"showpic" ->
+		    showpic_controller:handle_get(Req);
 		"support" ->
 		    support_controller:handle_get(Req);
 		"tag" ->
@@ -50,6 +52,10 @@ handle_request(Req) ->
             end;
         'POST' ->
             case PrefixPath of
+                "comment" ->
+		    comment_controller:handle_post(Req);
+                "following" ->
+		    following_controller:handle_post(Req);
 		"login" ->
 		    login_controller:handle_post(Req);
                 "logout" ->

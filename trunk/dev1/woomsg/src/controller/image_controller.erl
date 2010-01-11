@@ -22,7 +22,7 @@ handle_post(_Req) ->
     ok.
 
 
-%% URL: pic/<Size>/Guid
+%% URL: image/<Size>/Guid
 parse_size_from_url(Req) ->
     "/" ++ Path = Req:get(path),
     case string:tokens(Path, "/") of

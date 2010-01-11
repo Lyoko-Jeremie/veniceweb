@@ -40,6 +40,7 @@
   <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
   <script type="text/javascript" src="/static/js/ui.achtung-min.js"></script>
   <script type="text/javascript" src="/static/js/core.js"></script>
+  <script type="text/javascript" src="/static/js/user.js"></script>
 </head>
 
 <body>
@@ -54,15 +55,81 @@
 
         <div id="profile-photos">
 
-          <div id="profile-header">
-            <div id="profile-avatar">
-              <img class="avatar" width="72" height="72" src="<% woomsg_image:get_image_path(UrlPhotoPath, UrlPhotoGuid, UrlPhotoType, "normal") %>"/>           
+          <% display_profile_header(State, ExtState, UrlUsername, UrlPhotoPath, UrlPhotoGuid, UrlPhotoType) %>
+
+          <div class="profile-photo-wrapper">
+            
+            <div class="profile-photo">
+              <div class="profile-photo-img">
+	        <a href="">
+                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/126269074580266fNysgH2o9GT7.jpg"/>
+                </a>
+              </div>
+              <div class="profile-photo-message">
+              这是这张照片的评论
+              </div>
+              <div class="profile-photo-info">
+                45天前
+              </div>
             </div>
-            <div id="profile-username">
-              <a class="nav" href="/user/<% UrlUsername %>" style="font-size: 14px;"><% UrlUsername %></a>
-            </div>
-            <div style="clear: both;"></div>
           </div>
+
+          <div class="profile-photo-wrapper">
+            
+            <div class="profile-photo">
+              <div class="profile-photo-img">
+	        <a href="">
+                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/1262757664444240tItOLqNDPee1.png"/>
+                </a>
+              </div>
+              <div class="profile-photo-message">
+              这是这张照片的评论
+              </div>
+              <div class="profile-photo-info">
+                45天前
+              </div>
+
+            </div>
+          </div>
+          
+          <div class="profile-photo-wrapper">
+            
+             <div class="profile-photo">
+              <div class="profile-photo-img">
+	        <a href="">
+                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/1262757664444240tItOLqNDPee1.png"/>
+                </a>
+              </div>
+              <div class="profile-photo-message">
+              这是这张照片的评论
+              </div>
+              <div class="profile-photo-info">
+                45天前
+              </div>
+
+	      <div style="clear:both;"></div>
+            </div>
+          </div>
+
+          <div class="profile-photo-wrapper">
+            
+            <div class="profile-photo">
+              <div class="profile-photo-img">
+	        <a href="">
+                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/1262757664444240tItOLqNDPee1.png"/>
+                </a>
+              </div>
+              <div class="profile-photo-message">
+              这是这张照片的评论
+              </div>
+              <div class="profile-photo-info">
+                45天前
+              </div>
+
+	      <div style="clear:both;"></div>
+            </div>
+          </div>
+            
 
         </div>
         
@@ -128,5 +195,48 @@
 </body>
 
 </html>
+
+
+<%@ display_profile_header(login, ext_myself, UrlUsername, UrlPhotoPath, UrlPhotoGuid, UrlPhotoType) %>
+<div id="profile-header">
+  <div id="profile-avatar">
+   <img class="avatar" width="72" height="72" src="<% woomsg_image:get_image_path(UrlPhotoPath, UrlPhotoGuid, UrlPhotoType, "normal") %>"/>           
+  </div>
+  <div id="profile-username">
+   <a class="nav" href="/user/<% UrlUsername %>" style="font-size: 14px;"><% UrlUsername %></a>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+<%@ display_profile_header(login, ext_following, UrlUsername, UrlPhotoPath, UrlPhotoGuid, UrlPhotoType) %>
+<div id="profile-header">
+  <div id="profile-avatar">
+   <img class="avatar" width="72" height="72" src="<% woomsg_image:get_image_path(UrlPhotoPath, UrlPhotoGuid, UrlPhotoType, "normal") %>"/>           
+  </div>
+  <div id="profile-username">
+   <a class="nav" href="" onclick="remove_following('<% UrlUsername %>'); return false;" style="font-size: 14px;">取消关注:<% UrlUsername %></a>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+<%@ display_profile_header(login, ext_no_following, UrlUsername, UrlPhotoPath, UrlPhotoGuid, UrlPhotoType) %>
+<div id="profile-header">
+  <div id="profile-avatar">
+   <img class="avatar" width="72" height="72" src="<% woomsg_image:get_image_path(UrlPhotoPath, UrlPhotoGuid, UrlPhotoType, "normal") %>"/>           
+  </div>
+  <div id="profile-username">
+   <a class="nav" href="" onclick="add_following('<% UrlUsername %>'); return false;" style="font-size: 14px;">关注:<% UrlUsername %></a>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+<%@ display_profile_header(_, _, UrlUsername, UrlPhotoPath, UrlPhotoGuid, UrlPhotoType) %>
+<div id="profile-header">
+  <div id="profile-avatar">
+   <img class="avatar" width="72" height="72" src="<% woomsg_image:get_image_path(UrlPhotoPath, UrlPhotoGuid, UrlPhotoType, "normal") %>"/>           
+  </div>
+  <div id="profile-username">
+   <a class="nav" href="/user/<% UrlUsername %>" style="font-size: 14px;"><% UrlUsername %></a>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+
 
 
