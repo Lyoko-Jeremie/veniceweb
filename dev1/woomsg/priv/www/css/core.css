@@ -223,32 +223,88 @@ ol, ul {
   width: 400px;
 }
 
-.profile-photo-info {
-  padding: 0 4px 4px 0;
-  text-align: right;
+.profile-photo-wrapper {
+  margin-left: 10px;
+  width: 260px;
+  float: left;
 }
 
 .profile-photo {
-  background-color: #FFFFFF;
   margin: 0 0 15px 15px;
-  padding: 10px;
+  padding: 5px;
 }
 
 .profile-photo-img {
   float: left;
-  width: 165px;
+  width: 240px;
 }
 
 .profile-photo-message {
   float: left;
   font-size: 14px;
-  width: 400px;
+  width: 260px;
+  padding-top: 5px;
+}
+
+.profile-photo-info {
+  float: left;
+  font-size: 14px;
+  width: 260px;
+  padding-top: 5px;
 }
 
 #profile-about {
   background-color: #CCE9FF;
   padding: 10px;
   width: 275px;
+}
+
+#photo-view {
+  float: left;
+  width: 600px;
+}
+
+#photo-sidebar {
+  float: right;
+  width: 300px;
+}
+
+#photo {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#photo-control {
+  text-align: right;
+}
+
+#photo-message {
+ padding: 7px 0 0 7px;
+ text-align: left;
+}
+
+.photo-ori {
+  border:10px solid #FFFFFF
+}
+
+#photo-comments-form {
+  background-color:#FFFFFF;
+  margin-bottom:10px;
+  padding:7px;
+}
+
+.photo-comment {
+  clear:both;
+  margin-bottom:7px;
+}
+
+.leave-message {
+  border:3px solid #C2E0F2;
+  color:#3198D3;
+  font-size:14px;
+  font-weight:bold;
+  padding:3px;
+  width: 580px;
 }
 
 #upload_form {

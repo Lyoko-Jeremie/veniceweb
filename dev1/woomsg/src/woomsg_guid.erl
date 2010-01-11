@@ -1,5 +1,6 @@
 -module(woomsg_guid).
 -export([get_random_string/1,
+         get_comment_guid/0,
          get_image_guid/0,
          get_session_guid/0,
          get_path_guid/0,
@@ -7,6 +8,7 @@
          get_guid_by_date/1,
          get_guid_by_time/1]).
 
+-define(COMMENT_GUID_SUFFIX, 6).
 -define(IMAGE_GUID_SUFFIX, 12).
 -define(SESSION_GUID_SUFFIX, 6).
 -define(PATH_GUID_SUFFIX, 6).
@@ -36,6 +38,10 @@ get_random_string(Len) ->
 		    element(Idx, Chars)
 	    end, lists:seq(1, Len)),
     Res.
+
+%% 产生评论的GUID
+get_comment_guid() ->
+   get_guid_by_time(?COMMENT_GUID_SUFFIX).
 
 %% 产生图片的GUID
 get_image_guid() ->

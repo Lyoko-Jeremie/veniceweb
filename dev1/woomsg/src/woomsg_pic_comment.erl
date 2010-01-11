@@ -2,6 +2,7 @@
 -export([new_pic_comment/4,
          get_comment/1,
          delete_pic_comment/1,
+         safe_delete_pic_comment/2,
          get_comment_all/1,
          get_comment_limit/2,
 	 get_comment_limit/3]).
@@ -67,6 +68,40 @@ delete_pic_comment(Guid) ->
 			_ ->
 			    error
                     end;
+		_ ->
+		    error
+	    end
+	end,
+    case mnesia:transaction(F) of
+	{atomic, ok} ->
+	    ok;
+	_ ->
+	    error
+    end.
+
+%% 删除一条评论
+%% (在删除之前会先确认评论的拥有者, 也就是只有评论的拥有者才能删除该评论)
+%% (会自动更新pic表中图片的评论条数)
+%% 成功返回: ok
+%% 失败返回: error | {error, permission_error}
+safe_delete_pic_comment(Guid, Owner) ->
+    F = fun() ->
+            case mnesia:read({pic_comment, Guid}) of
+                [{pic_comment, Guid, PicGuid, Owner, _Comment, _CreateDate}] ->
+	            case mnesia:delete({pic_comment, Guid}) of
+		        ok ->
+		            %%更新pic表中的评论
+		            case mnesia:read({pic, PicGuid}) of
+		                [{pic, PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
+		                    mnesia:write({pic, PicGuid, Owner, Path, Type, Msg, Count - 1, Dig, TagList, Spam, CreateDate});
+			        _ ->
+			            error
+                            end;
+			_ ->
+			    error
+                    end;
+		[{pic_comment, Guid, PicGuid, _Owner, _Comment, _CreateDate}] ->
+		    {error, permission_error};
 		_ ->
 		    error
 	    end
