@@ -1,5 +1,5 @@
 -module(woomsg_pic_comment).
--export([new_pic_comment/4,
+-export([new_pic_comment/4, new_pic_comment/5,
          get_comment/1,
          delete_pic_comment/1,
          safe_delete_pic_comment/2,
@@ -27,6 +27,13 @@ get_comment(Guid) ->
 %% 失败返回: error
 new_pic_comment(Guid, PicGuid, Owner, Comment) ->
     CreateDate = woomsg_datetime:get_datetime(),
+    new_pic_comment(Guid, PicGuid, Owner, Comment, CreateDate).
+
+%% 增加一条评论:
+%% (会自动更新pic表中图片的评论条数)
+%% 成功返回: ok
+%% 失败返回: error
+new_pic_comment(Guid, PicGuid, Owner, Comment, CreateDate) ->
     F = fun() ->
             case mnesia:write({pic_comment, Guid, PicGuid, Owner, Comment, CreateDate}) of
                 ok ->
@@ -100,7 +107,7 @@ safe_delete_pic_comment(Guid, Owner) ->
 			_ ->
 			    error
                     end;
-		[{pic_comment, Guid, PicGuid, _Owner, _Comment, _CreateDate}] ->
+		[{pic_comment, Guid, _PicGuid, _Owner, _Comment, _CreateDate}] ->
 		    {error, permission_error};
 		_ ->
 		    error

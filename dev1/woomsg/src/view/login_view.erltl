@@ -4,8 +4,8 @@
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
   <title>woomsg - login</title>
-  <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
   <link type="text/css" href="/static/css/ui.achtung-min.css" rel="stylesheet"/>
+  <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
   <script language="javascript" type="text/javascript">

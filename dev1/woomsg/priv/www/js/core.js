@@ -1,48 +1,12 @@
-$(document).ready(function() {
-
-  $('div#nav-login-button > input').hover(
-    function() {
-      $(this).attr("src", "/static/image/button-login-hover.gif");
-    },
-    function() {
-      $(this).attr("src", "/static/image/button-login.gif");
-    }
-  );
-
-  $('a#nav-reg-button>img').hover(
-    function() {
-      $(this).attr("src", "/static/image/button-reg-hover.gif");
-    },
-    function() {
-      $(this).attr("src", "/static/image/button-reg.gif");
-    }
-  );
-
-})
-
 /*
- * 用户登录
+ *  判断输入的数据是否为空, 空则返回true
  */
-function header_login() {
-  $('#nav-login-button').hide();
-  $('#nav-login-ajax').show();
-  $.post("/login/ajax", $('#header_login_form').serialize(), validate_header_login, "json");
-}
-
-function validate_header_login(data) {
-  if(data.result == "error") {
-    $('#nav-login-button').show();
-    $('#nav-login-ajax').hide();
-    $.achtung({message:data.content, 
-               timeout:3,
-	       className:'achtungFail'});
-  } 
-  /**
-   * 登录成功, 直接跳转
-   */
-  else if (data.result == "ok") {
-    location.href = "user/" + data.content;
-  }
+function check_empty(text) {
+  var value = text.replace(/(^\s*)|(\s*$)/g, ""); 
+  if(value == null || value == "") {
+    return true;
+     } 
+    return false;
 }
 
 /*
@@ -75,6 +39,53 @@ function eraseCookie(name) {
 } 
 
 
+
+$(document).ready(function() {
+
+  $('div#nav-login-button > input').hover(
+    function() {
+      $(this).attr("src", "/static/image/button-login-hover.gif");
+    },
+    function() {
+      $(this).attr("src", "/static/image/button-login.gif");
+    }
+  );
+
+  $('a#nav-reg-button>img').hover(
+    function() {
+      $(this).attr("src", "/static/image/button-reg-hover.gif");
+    },
+    function() {
+      $(this).attr("src", "/static/image/button-reg.gif");
+    }
+  );
+
+})
+
+/*
+ *  户登录
+ */
+function header_login() {
+  $('#nav-login-button').hide();
+  $('#nav-login-ajax').show();
+  $.post("/login/ajax", $('#header_login_form').serialize(), validate_header_login, "json");
+}
+
+function validate_header_login(data) {
+  if(data.result == "error") {
+    $('#nav-login-button').show();
+    $('#nav-login-ajax').hide();
+    $.achtung({message:data.content, 
+               timeout:3,
+	       className:'achtungFail'});
+  } 
+  /**
+   * 登录成功, 直接跳转
+   */
+  else if (data.result == "ok") {
+    location.href = "user/" + data.content;
+  }
+}
 
 
 

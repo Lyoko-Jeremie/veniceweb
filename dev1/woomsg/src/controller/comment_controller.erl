@@ -38,7 +38,11 @@ handle_get(_Req) ->
 %%  "content": ?ERROR_XXXX}
 %%
 %% {"result": "ok",
-%%  "content": Username}   
+%%  "content": {"guid":"xxx",
+%% 		"username":"xxx",
+%%		"comment":"xxx",
+%%		"photosrc":"xxx"
+%%		"createdate":"xxx"}}   
 %%
 %% <2> 删除请求 
 %% 请求的URL:
@@ -49,7 +53,7 @@ handle_get(_Req) ->
 %%  "content": ?ERROR_XXXX}
 %%
 %% {"result": "ok",
-%%  "content": Username}   
+%%  "content": CommentGuid}   
 %%
 handle_post(Req) ->
     "/" ++ Path = Req:get(path),
@@ -63,12 +67,24 @@ handle_post(Req) ->
                     case validate_post_data_add(PostData) of
 		        {ok, PicGuid, PicComment} ->
 			    %% 添加评论的核心逻辑
+			    %%
 			    CommentGuid = woomsg_guid:get_comment_guid(),
-			    case woomsg_pic_comment:new_pic_comment(CommentGuid, PicGuid, Username, PicComment) of
+                            CommentCreateDate = woomsg_datetime:get_datetime(),
+			    
+			    case woomsg_pic_comment:new_pic_comment(CommentGuid, PicGuid, Username, PicComment, CommentCreateDate) of
 				ok ->
+				    {Username, _Pwd, _Email, UPhotoGuid, UPhotoPath, UPhotoType} = woomsg_user:get_user(Username),
+				    FmtCommentCreateDate = woomsg_datetime:get_fmt_since_datetime_string(CommentCreateDate),
+				    PhotoSrc = woomsg_image:get_image_path(UPhotoPath, UPhotoGuid, UPhotoType, "mini"),
 				    Data = mochijson2:encode({struct,
 			   	                              [{?RESULT_KEY, ?RESULT_OK},
-				                               {?CONTENT_KEY, ?ERROR_ADD_COMMENT_SUCCESS}]}),
+				                               {?CONTENT_KEY, 
+                                                                 {struct, 
+                                                                  [{<<"guid">>, list_to_binary(CommentGuid)},
+								   {<<"username">>, list_to_binary(Username)},
+								   {<<"comment">>, list_to_binary(PicComment)},
+								   {<<"photosrc">>, list_to_binary(PhotoSrc)},
+								   {<<"createdate">>, list_to_binary(FmtCommentCreateDate)}]}}]}),
 	                            Req:respond({200, [{"Content-Type", "text/plain"}], Data});
 				error ->
 				    Data = mochijson2:encode({struct,
@@ -113,7 +129,7 @@ handle_post(Req) ->
 				ok ->
 				    Data = mochijson2:encode({struct,
 			   	                              [{?RESULT_KEY, ?RESULT_OK},
-				                               {?CONTENT_KEY, ?ERROR_REMOVE_COMMENT_SUCCESS}]}),
+				                               {?CONTENT_KEY, list_to_binary(CommentGuid)}]}),
 	                            Req:respond({200, [{"Content-Type", "text/plain"}], Data});
 				{error, permission_error} ->
 				    Data = mochijson2:encode({struct,

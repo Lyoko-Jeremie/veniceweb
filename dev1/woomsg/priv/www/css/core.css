@@ -298,6 +298,36 @@ ol, ul {
   margin-bottom:7px;
 }
 
+.photo-comment-avatar {
+  float: left;
+  width: 65px;
+}
+
+.photo-comment-body {
+  float: left;
+  width: 530px;
+}
+
+.photo-comment-info {
+  float: left;
+  width: 400px;
+  font-size:14px;
+  padding-bottom:4px;
+}
+
+.photo-comment-date {
+  padding-left: 6px;
+  color:#555555;
+  font-size:12px;
+}
+
+.photo-comment-message {
+  background-color:#FFFFFF;
+  font-size:14px;
+  padding:10px;
+  clear: both;
+}
+
 .leave-message {
   border:3px solid #C2E0F2;
   color:#3198D3;
