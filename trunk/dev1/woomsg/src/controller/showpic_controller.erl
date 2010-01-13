@@ -11,22 +11,28 @@ handle_get(Req) ->
 	    Req:respond({302, [{"Location", "/"}], []});
 	{PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate} ->
 	    PhotoInfo = {PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate},
+            CommentList = get_comment_list(PicGuid, Count),
 	    case woomsg_common:user_state(Req) of
 		{login, Username} ->
 		    %% 用户登录
-		    Data = showpic_view:index(login, Username, PhotoInfo),
+		    %% (格式化评论信息)
+		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, Username),
+		    Data = showpic_view:index(login, Username, PhotoInfo, ResCommentList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data});
 		{logout_remember, undefined} ->
 		    %% 用户没登录
-		    Data = showpic_view:index(logout_remember, ?DEF_USERNAME, PhotoInfo),
+		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, undefined),
+		    Data = showpic_view:index(logout_remember, ?DEF_USERNAME, PhotoInfo, ResCommentList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data});
 		{logout_remember, Username} ->
 		    %% 用户没登录
-		    Data = showpic_view:index(logout_remember, Username, PhotoInfo),
+		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, Username),
+		    Data = showpic_view:index(logout_remember, Username, PhotoInfo, ResCommentList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data});
 		{logout_no_remember, undefined} ->
 		    %% 用户没登录
-		    Data = showpic_view:index(logout_no_remember, ?DEF_USERNAME, PhotoInfo),
+		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, undefined),
+		    Data = showpic_view:index(logout_no_remember, ?DEF_USERNAME, PhotoInfo, ResCommentList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data})
             end
     end.
@@ -58,3 +64,18 @@ parse_guid_from_url(Req) ->
             woomsg_util:list_index_prefix($/, PathSuffix)
     end.
     
+%% 获取照片的评论
+get_comment_list(PicGuid, Count) ->
+    case Count =:= 0 of
+        true ->
+	    {0, []};
+	false ->
+	    case woomsg_pic_comment:get_comment_all(PicGuid) of
+	        {0, []} ->
+	            {0, []};
+	        {Count, CommentList} ->
+	            {Count, CommentList};
+	        _ ->
+	            {0, []}
+	    end
+     end.

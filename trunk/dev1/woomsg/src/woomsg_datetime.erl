@@ -9,6 +9,7 @@
 	 get_time_from_datetime/1,
          get_seconds_since_datetime/1,
          get_fmt_since_datetime/1,
+         get_fmt_since_datetime_string/1,
 	 is_same_date/2,
          compare_datetime/2]).
 
@@ -61,6 +62,22 @@ get_seconds_since_datetime(Datetime) ->
     NowSec = calendar:datetime_to_gregorian_seconds(calendar:local_time()),
     DatetimeSec = calendar:datetime_to_gregorian_seconds(Datetime),
     NowSec - DatetimeSec.
+
+%% 返回string()形式的日期
+get_fmt_since_datetime_string(Datetime) ->
+    Diff = get_seconds_since_datetime(Datetime),
+    Res = 
+        if
+            Diff < 60 ->
+	        io_lib:format("~p秒前",[Diff]);
+ 	    Diff < 3600 ->
+	        io_lib:format("~p分钟前", [round(Diff/60)]);
+	    Diff < 86400 ->
+	        io_lib:format("~p小时前", [round(Diff/3600)]);
+	    true ->
+	        io_lib:format("~p天前", [round(Diff/86400)])
+        end,
+    Res.
 
 %% 返回
 %%   {second_ago, Val}
