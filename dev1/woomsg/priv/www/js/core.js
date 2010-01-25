@@ -10,6 +10,21 @@ function check_empty(text) {
 }
 
 /*
+ * 提示信息窗口
+ */
+function show_message(text) {
+  $.achtung({message:text, 
+             timeout:3,
+	     className:'achtungSuccess'});
+}
+
+function show_error(text) {
+  $.achtung({message:text, 
+             timeout:3,
+	     className:'achtungFail'});
+}
+
+/*
  * Cookie Helpers
  */
 function createCookie(name,value,days)
@@ -75,9 +90,7 @@ function validate_header_login(data) {
   if(data.result == "error") {
     $('#nav-login-button').show();
     $('#nav-login-ajax').hide();
-    $.achtung({message:data.content, 
-               timeout:3,
-	       className:'achtungFail'});
+    show_error(data.content);
   } 
   /**
    * 登录成功, 直接跳转

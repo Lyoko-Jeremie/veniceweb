@@ -223,34 +223,26 @@ ol, ul {
   width: 400px;
 }
 
-.profile-photo-wrapper {
-  margin-left: 10px;
-  width: 260px;
-  float: left;
+.profile-photo-info {
+  padding: 0 4px 4px 0;
+  text-align: right;
 }
 
 .profile-photo {
+  background-color: #FFFFFF;
   margin: 0 0 15px 15px;
-  padding: 5px;
+  padding: 10px;
 }
 
 .profile-photo-img {
   float: left;
-  width: 240px;
+  width: 165px;
 }
 
 .profile-photo-message {
   float: left;
   font-size: 14px;
-  width: 260px;
-  padding-top: 5px;
-}
-
-.profile-photo-info {
-  float: left;
-  font-size: 14px;
-  width: 260px;
-  padding-top: 5px;
+  width: 400px;
 }
 
 #profile-about {

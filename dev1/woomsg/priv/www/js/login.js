@@ -26,9 +26,7 @@ function validate_do_login(data) {
     $('#login-button-done').show();
     $('#login-ajax').hide()
     clear_login_form();
-    $.achtung({message:data.content,
-	       timeout:3,
-	       className:'achtungFail'});
+    show_error(data.content);
   }
   else if(data.result == "ok") {
     location.href = "user/" + data.content;

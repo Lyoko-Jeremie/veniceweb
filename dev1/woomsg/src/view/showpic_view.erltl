@@ -99,7 +99,7 @@
 <%@ display_photo_comments({_CommentCount, CommentList}) %>
 <% [ display_photo_comment_item(Item) || Item <- CommentList ]  %>
 
-<%@ display_photo_comment_item({false, Guid, PicGuid, Owner, PhotoGuid, PhotoPath, PhotoType, Comment, FormatCreateDate}) %>
+<%@ display_photo_comment_item({pic_comment, false, Guid, PicGuid, Owner, PhotoGuid, PhotoPath, PhotoType, Comment, FormatCreateDate}) %>
 <div id="<% Guid %>" class="photo-comment">
   <div class="photo-comment-avatar">
     <img class="avatar" height="48" width="48" src="<% woomsg_image:get_image_path(PhotoPath, PhotoGuid, PhotoType, "mini") %>"/>
@@ -119,7 +119,7 @@
 
   <div style="clear:both;"></div>
 </div>
-<%@ display_photo_comment_item({true, Guid, PicGuid, Owner, PhotoGuid, PhotoPath, PhotoType, Comment, FormatCreateDate}) %>
+<%@ display_photo_comment_item({pic_comment, true, Guid, PicGuid, Owner, PhotoGuid, PhotoPath, PhotoType, Comment, FormatCreateDate}) %>
 <div id="<% Guid %>" class="photo-comment">
   <div class="photo-comment-avatar">
     <img class="avatar" height="48" width="48" src="<% woomsg_image:get_image_path(PhotoPath, PhotoGuid, PhotoType, "mini") %>"/>
@@ -144,13 +144,3 @@
   <div style="clear:both;"></div>
 </div>
 
-<%@ display_datetime({second_ago, Val}) %>
-<% Val %>秒前
-<%@ display_datetime({minute_ago, Val}) %>
-<% Val %>分钟前
-<%@ display_datetime({hour_ago, Val}) %>
-<% Val %>小时前
-<%@ display_datetime({day_ago, Val}) %>
-<% Val %>天前
-<%@ display_datetime(_) %>
-<% "" %>

@@ -24,9 +24,7 @@ function validate_register_user(data) {
   if(data.result == "error") {
     $('#reg-button-done').show();
     $('#register-ajax').hide();
-    $.achtung({message:data.content,
-	       timeout:3,
-	       className:'achtungFail'});
+    show_error(data.content);
     clear_register_form();
   }
   /**

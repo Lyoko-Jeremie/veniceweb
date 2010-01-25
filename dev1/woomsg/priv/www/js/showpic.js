@@ -1,14 +1,10 @@
-
-
 /*
  * add comment
  */
 function add_comment(picguid) {
   piccomment = $('.leave-message').val();
   if(check_empty(piccomment)) {
-    $.achtung({message:"评论不能为空",
-	       timeout:3,
-	       className:'achtungFail'});
+    show_error("评论不能为空");
   }
   else {
     $.post("/comment/add/ajax", {"pic-guid":picguid,
@@ -20,15 +16,11 @@ function add_comment(picguid) {
 function validate_add_comment(data) {
   if(data.result == "error") {
     $('.leave-message').val('');
-    $.achtung({message:data.content,
-	       timeout:3,
-	       className:'achtungFail'});
+    show_error(data.content);
   }
   else if(data.result == "ok") {
     $('.leave-message').val('');
-    $.achtung({message:"添加评论成功",
-	       timeout:3,
-	       className:'achtungSuccess'});
+    show_message("添加评论成功");
     $('#photo-comments-form').after(new_comment_div(data.content.guid,
 						    data.content.username,
                                                     data.content.comment,
@@ -68,14 +60,10 @@ function remove_comment(guid) {
 
 function validate_remove_comment(data) {
   if(data.result == "error") {
-    $.achtung({message:data.content,
-	       timeout:3,
-	       className:'achtungFail'});
+    show_error(data.content);
   }
   else if(data.result == "ok") {
-    $.achtung({message:"删除评论成功",
-	       timeout:3,
-	       className:'achtungSuccess'});
+    show_message("删除评论成功");
     removediv = '#' + data.content;
     $(removediv).remove();
   }

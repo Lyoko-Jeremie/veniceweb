@@ -28,6 +28,7 @@ mkdir $1/fs/photo/sys
 mkdir $1/fs/photo/sys/path-guid
 mkdir $1/fs/photo/sys/path-guid/mini
 mkdir $1/fs/photo/sys/path-guid/normal
+mkdir $1/fs/photo/sys/path-guid/ori
 
 echo "create pic"
 mkdir $1/fs/pic
@@ -35,4 +36,8 @@ mkdir $1/fs/pic/node1
 mkdir $1/fs/pic/node2
 mkdir $1/fs/pic/node3
 mkdir $1/fs/pic/node4
+
+echo "create static"
+mkdir $1/fs/static
+
 echo "complete!"

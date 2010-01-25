@@ -1,10 +1,62 @@
 -module(woomsg_pic).
 -export([new_pic/5,
          get_pic/1,
+         get_pic_all/1,
+         get_pic_limit/2,
+         get_pic_limit/3,
          delete_pic/1,
          inc_count/1, inc_count/2, dec_count/1, dec_count/2,
          inc_dig/1, inc_dig/2, dec_dig/1, dec_dig/2,
          set_spam/2]).
+
+%% pic 是一个: 11 tuple
+%% {pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}
+
+%% 根据照片的Owner来查找照片
+%% 如果存在: 返回{count, PicList}
+%%   Pic = {pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}
+%% 如果没有: {0, []}
+get_pic_all(Owner) ->
+    F = fun() ->
+            mnesia:index_read(pic, Owner, owner)
+        end,
+    case mnesia:transaction(F) of
+	{atomic, []} ->
+	    {0, []};
+	{atomic, ValList} when is_list(ValList) ->
+	    {erlang:length(ValList), ValList};
+	_ ->
+	    {0, []}
+    end.
+
+get_pic_limit(Owner, Len) ->
+    get_pic_limit(Owner, 1, Len).
+
+%% 实现了SQL中的Limit功能:
+%% {Start从1开始}
+%% 成功返回:                 {count, Pic:list()}     
+%% 如果结果为空:             {0, []}
+%% Start大于结果的最大长度:  {out_of_index, []}
+%% 发生错误:                 {error, []}
+get_pic_limit(Owner, Start, Len) ->
+    F = fun() ->
+	    mnesia:index_read(pic, Owner, owner)
+        end,
+    case mnesia:transaction(F) of
+        {atomic, []} ->
+	    {0, []};
+        {atomic, ValList} when is_list(ValList) ->
+            case erlang:length(ValList) < Start of
+                true ->
+		    {out_of_index, []};
+		false ->
+		    ResList = lists:sublist(ValList, Start, Len),
+		    {erlang:length(ResList), ResList}
+            end;
+	_ ->
+	    {error, []}
+    end.
+
 
 %% 使用建议:
 %% <1>不建议单独使用inc_count/1, inc_count/2, dec_count/1, dec_count/2
@@ -20,7 +72,7 @@ get_pic(Guid) ->
 	end,
     case mnesia:transaction(F) of
 	{atomic, [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}]} ->
-	    {Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate};
+	    {pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate};
 	_ ->
 	    []
     end.
@@ -39,6 +91,7 @@ new_pic(Guid, Owner, Path, Type, Msg) ->
 	_ ->
 	    error
     end.
+
 %% TODO: 这个函数存在Bug, 需要修正
 %%        
 %% 删除一张照片:
@@ -64,11 +117,10 @@ delete_pic(Guid) ->
 					  end, ValList),
 			    ok;
 			_ ->
-			    error
+			    mnesia:abort(error)
                     end;
 		_ ->
-                    io:format("delete error~n", []),
-		    error
+		    mnesia:abort(error)
             end
 	end,
     case mnesia:transaction(F) of
@@ -90,7 +142,7 @@ inc_count(Guid, Num) ->
 	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
 		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count + Num, Dig, TagList, Spam, CreateDate});
 	        _ ->
-		    error
+		    mnesia:abort(error)
             end
 	end,
     case mnesia:transaction(F) of
@@ -118,7 +170,7 @@ dec_count(Guid, Num) ->
                             mnesia:write({pic, Guid, Owner, Path, Type, Msg, 0, Dig, TagList, Spam, CreateDate})
                     end; 
 	        _ ->
-		    error
+		    mnesia:abort(error)
             end
 	end,
     case mnesia:transaction(F) of
@@ -140,7 +192,7 @@ inc_dig(Guid, Num) ->
 	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
 		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig + Num, TagList, Spam, CreateDate});
 	        _ ->
-		    error
+		    mnesia:abort(error)
             end
 	end,
     case mnesia:transaction(F) of
@@ -168,7 +220,7 @@ dec_dig(Guid, Num) ->
                             mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, 0, TagList, Spam, CreateDate})
                     end; 
 	        _ ->
-		    error
+		    mnesia:abort(error)
             end
 	end,
     case mnesia:transaction(F) of
@@ -195,7 +247,7 @@ set_spam(Guid, ArgSpam) ->
 	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, _Spam, CreateDate}] ->
                      mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, ResSpam, CreateDate});
 	        _ ->
-		    error
+		    mnesia:abort(error)
             end
 	end,
     case mnesia:transaction(F) of
