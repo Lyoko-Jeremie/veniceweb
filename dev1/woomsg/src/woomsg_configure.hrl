@@ -1,4 +1,4 @@
--define(NFS_PREFIX, "/home/woomsg/fs").
+-define(NFS_PREFIX, "/home/woomsgadmin/webroot/fs").
 
 -define(DEFAULT_PHOTO_GUID, "default-photo-guid").
 -define(DEFAULT_PHOTO_PATH, "/photo/sys/path-guid").
