@@ -60,6 +60,8 @@ handle_request(Req) ->
 		    login_controller:handle_post(Req);
                 "logout" ->
 		    logout_controller:handle_post(Req);
+                "pic" ->
+		    pic_controller:handle_post(Req);
                 "register" ->
 		    register_controller:handle_post(Req);
                 "upload" ->

@@ -1,4 +1,4 @@
-<%@ index(State, Username, ExtState, UrlUsername, {UrlUsername, _, _, UrlPhotoGuid, UrlPhotoPath, UrlPhotoType, UrlFullname, UrlSex, UrlLocation, UrlWeb, UrlDescribe, UrlPublic}) %>
+<%@ index(State, Username, ExtState, UrlUsername, {UrlUsername, _, _, UrlPhotoGuid, UrlPhotoPath, UrlPhotoType, UrlFullname, UrlSex, UrlLocation, UrlWeb, UrlDescribe, UrlPublic}, {PageState, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}}) %>
 <html>
 
 <head>
@@ -56,80 +56,7 @@
         <div id="profile-photos">
 
           <% display_profile_header(State, ExtState, UrlUsername, UrlPhotoPath, UrlPhotoGuid, UrlPhotoType) %>
-
-          <div class="profile-photo-wrapper">
-            
-            <div class="profile-photo">
-              <div class="profile-photo-img">
-	        <a href="">
-                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/126269074580266fNysgH2o9GT7.jpg"/>
-                </a>
-              </div>
-              <div class="profile-photo-message">
-              这是这张照片的评论
-              </div>
-              <div class="profile-photo-info">
-                45天前
-              </div>
-            </div>
-          </div>
-
-          <div class="profile-photo-wrapper">
-            
-            <div class="profile-photo">
-              <div class="profile-photo-img">
-	        <a href="">
-                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/1262757664444240tItOLqNDPee1.png"/>
-                </a>
-              </div>
-              <div class="profile-photo-message">
-              这是这张照片的评论
-              </div>
-              <div class="profile-photo-info">
-                45天前
-              </div>
-
-            </div>
-          </div>
-          
-          <div class="profile-photo-wrapper">
-            
-             <div class="profile-photo">
-              <div class="profile-photo-img">
-	        <a href="">
-                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/1262757664444240tItOLqNDPee1.png"/>
-                </a>
-              </div>
-              <div class="profile-photo-message">
-              这是这张照片的评论
-              </div>
-              <div class="profile-photo-info">
-                45天前
-              </div>
-
-	      <div style="clear:both;"></div>
-            </div>
-          </div>
-
-          <div class="profile-photo-wrapper">
-            
-            <div class="profile-photo">
-              <div class="profile-photo-img">
-	        <a href="">
-                  <img wdith="240" src="/pic/node1/201014gBl4J4/small/1262757664444240tItOLqNDPee1.png"/>
-                </a>
-              </div>
-              <div class="profile-photo-message">
-              这是这张照片的评论
-              </div>
-              <div class="profile-photo-info">
-                45天前
-              </div>
-
-	      <div style="clear:both;"></div>
-            </div>
-          </div>
-            
+          <% display_photos(UrlUsername, PageState, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
 
         </div>
         
@@ -238,5 +165,77 @@
   <div style="clear: both;"></div>
 </div>
 
+
+<%@ display_photos(UrlUsername, fpage, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
+<% display_photos(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
+<%@ display_photos(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext, {0, PicList}) %>
+<% "" %>
+<% display_page(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext) %>
+<%@ display_photos(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
+<% [display_photo_item(Item) || Item <- PicList] %>
+<% display_page(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext) %>
+
+
+<%@ display_page(UrlUsername, PageState, PageIndex, no_prev, no_next) %>
+<% "" %>
+<%@ display_page(UrlUsername, PageState, PageIndex, no_prev, next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/user/<% UrlUsername %>/<% atom_to_list(PageState) %>/<% integer_to_list(PageIndex + 1) %>">
+   下一页&gt&gt
+  </a>
+</div>
+<%@ display_page(UrlUsername, PageState, PageIndex, prev, no_next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/user/<% UrlUsername %>/<% atom_to_list(PageState) %>/<% integer_to_list(PageIndex - 1) %>">
+   &lt&lt上一页
+  </a>
+</div>
+<%@ display_page(UrlUsername, PageState, PageIndex, prev, next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/user/<% UrlUsername %>/<% atom_to_list(PageState) %>/<% integer_to_list(PageIndex - 1) %>">
+   &lt&lt上一页
+  </a>
+  <a class="nav" href="/user/<% UrlUsername %>/<% atom_to_list(PageState) %>/<% integer_to_list(PageIndex + 1) %> ">
+   下一页&gt&gt
+  </a>
+</div>
+
+<%@ display_photo_item({pic, true, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
+<div id="<% Guid %>">
+<div class="profile-photo-info">
+  <% FormatCreateDate %>
+  <form action="" onsubmit="remove_pic('<% Guid %>')" style="display: inline;">
+    <input type="image" src="/static/image/icon_trash.gif"/>
+  </form>
+</div>
+<div class="profile-photo">
+  <div class="profile-photo-img">
+    <a href="/showpic/<% Guid %>">
+      <img src="<% woomsg_image:get_image_path(Path, Guid, Type, "thumb") %>"/>
+    </a>
+  </div>
+  <div class="profile-photo-message">
+    <% Msg %>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+</div>
+<%@ display_photo_item({pic, false, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
+<div id="<% Guid %>">
+<div class="profile-photo-info">
+  <% FormatCreateDate %>
+</div>
+<div class="profile-photo">
+  <div class="profile-photo-img">
+    <a href="/showpic/<% Guid %>">
+      <img src="<% woomsg_image:get_image_path(Path, Guid, Type, "thumb") %>"/>
+    </a>
+  </div>
+  <div class="profile-photo-message">
+    <% Msg %>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+</div>
 
 

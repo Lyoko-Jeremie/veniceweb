@@ -2,8 +2,18 @@
 
 
 1. #Title: setting导航菜单的位置问题:
-   #State: wont't fix
+   #State: won't fix
    #Description:
    在setting页面显示的时候, 右侧的导航菜单的位置会下滑.
    这个问题在firefox 3.5中会出现, IE 8.0 正常, 目前定为
    won't fix.
+
+2. #Title: IE图片上传错误, 显示图片格式不能识别
+   #State: Active
+   #Description:
+   在IE下upload页面的照片上传功能出错, 提示照片的格式不能识别.
+
+
+3. #Title: 
+   #State: Active
+   #Description:

@@ -9,7 +9,7 @@ handle_get(Req) ->
 	[] ->
 	    %% 照片不存在, 返回到主页
 	    Req:respond({302, [{"Location", "/"}], []});
-	{PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate} ->
+	{pic, PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate} ->
 	    PhotoInfo = {PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate},
             CommentList = get_comment_list(PicGuid, Count),
 	    case woomsg_common:user_state(Req) of
