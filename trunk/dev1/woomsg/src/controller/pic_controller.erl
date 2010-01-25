@@ -42,6 +42,7 @@ handle_post(Req) ->
 		    case validate_post_data_remove(PostData) of
 			{ok, PicGuid} ->
 			    %% ;
+			    ok;
 			{error, unknown} ->
 			    Data = mochijson2:encode({struct,
 			   	              [{?RESULT_KEY, ?RESULT_ERROR},
