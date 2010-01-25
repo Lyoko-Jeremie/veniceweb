@@ -18,8 +18,21 @@ sudo yum install java-1.6.0
 sudo yum install m4
 sudo yum install gcc
 sudo yum install gcc-c++
-sudo yum install emacs-nox (没有X的支持)
-sudo yum install emacs
+
+Ubuntu
+sudo apt-get install libncurses5-dev
+sudo apt-get install openssl
+sudo apt-get install libcurl3-openssl-dev
+sudo apt-get install libkrb5-dev
+sudo apt-get install unixODBC
+sudo apt-get install unixODBC-dev
+sudo apt-get install sun-java6-jdk
+sudo apt-get install m4
+sudo apt-get install gcc
+sudo apt-get install g++
+sudo apt-get install libwxgtk2.8-dev 
+sudo apt-get install freeglut3-dev
+
 
 下载erlang的源代码: http://www.erlang.org
 tar -xzvf otp_src_R13B01.tar.gz
