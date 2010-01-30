@@ -7,8 +7,6 @@
    重构woomsg_pic和woomsg_pic_comment模块, 提高性能, 
    并提供按照创建时间CreateDate排序返回结果的Limit功能.
    
-   
-
 2. State: Active - Closed
    Date: 2010/1/15 - 2010/1/24
    Description:
@@ -21,17 +19,45 @@
    分析twoorl的用户登录逻辑, 对比目前woomsg使用的cookie
    逻辑.
 
-4. State: Active
-   Date: 2010/1/24
+4. State: Active - Closed
+   Date: 2010/1/24 - 2010/1/26
    Description:
    完成user页面的照片删除逻辑, 使用Ajax的方式删除, 类似
    showpic页面评论的删除方式.
 
-5. State: Active
-   Date: 2010/1/25
+5. State: Active - Closed
+   Date: 2010/1/25 - 2010/1/25
    Description:
    把开发环境部署到ubuntu.
 
 6. State: Active
+   Date: 2010/1/26
+   Description:
+   新功能设计, 可以返回用户的所有关注者的图片, 格式化,
+   并提供limit功能供上层应用使用.
+
+7. State: Active
+   Date: 2010/1/26
+   Description:
+   重构图片上传页面upload.
+
+8. State: Active
+   Date: 2010/1/26
+   Description:
+   完成公共浏览区页面publictimeline页面.
+
+9. State: Active
+   Date: 2010/1/26
+   Description:
+   完成首页下面图片的随机显示, 和公共浏览区类似, 显示
+   最近的图片.
+
+10. State: Active
+   Date: 2010/1/27
+   Description:
+   完成首页的大图片的显示, 显示最近人气高的图片.
+
+11. State: Active
    Date: 2010/1/xx
    Description:
+   

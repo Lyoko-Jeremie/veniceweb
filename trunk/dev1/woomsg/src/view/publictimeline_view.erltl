@@ -1,4 +1,4 @@
-<%@ index(State, Username) %>
+<%@ index(State, Username, {PageState, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}}) %>
 <html>
 
 <head>
@@ -46,6 +46,17 @@
     <% header_view_in:index(State, Username) %>
 
     <div id="main">
+      <div style="float: left; width: 620px; padding-top: 15px;">
+        <div style="padding-top: 15px; padding-bottom: 15px; font-size: 22px; font-weight: bold;">
+          公共浏览区
+        </div>
+	
+	<% display_photos(PageState, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
+
+      </div>
+
+      <div style="clear:both;"></div>
+
     </div>
 
     <% footer_view_in:index() %>
@@ -54,3 +65,67 @@
 </body>
 
 </html>
+
+<%@ display_photos(PageState, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
+<% [display_photo_item(Item) || Item <- PicList] %>
+<% display_page(PageIndex, PageStatePrev, PageStateNext) %>
+
+<%@ display_page(PageIndex, no_prev, no_next) %>
+<% "" %>
+<%@ display_page(PageIndex, no_prev, next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/publictimeline/<% integer_to_list(PageIndex + 1) %>">
+   下一页&gt&gt
+  </a>
+</div>
+<%@ display_page(PageIndex, prev, no_next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/publictimeline/<% integer_to_list(PageIndex - 1) %>">
+   &lt&lt上一页
+  </a>
+</div>
+<%@ display_page(PageIndex, prev, next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/publictimeline/<% integer_to_list(PageIndex - 1) %>">
+   &lt&lt上一页
+  </a>
+  <a class="nav" href="/publictimeline/<% integer_to_list(PageIndex + 1) %>">
+   下一页&gt&gt
+  </a>
+</div>
+
+
+<%@ display_photo_item({pic, _IsOwner, Guid, Owner, PhotoGuid, PhotoPath, PhotoType, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
+<div id="<% Guid %>" style="padding-left: 5px; width: 600px; text-align: left; margin-top: 7px; margin-bottom: 7px;">
+  <table width="100%">
+    <tbody>
+      <tr>
+        <td width="55" style="vertical-align: top;">
+	  <img class="avatar" height="48" width="48" src="<% woomsg_image:get_image_path(PhotoPath, PhotoGuid, PhotoType, "mini") %>"/>
+        </td>
+        <td style="vertical-align: top;">
+          <div style="padding-bottom: 4px;">
+            &nbsp;
+            <a class="nav" href="/user/<% Owner %>"><% Owner %></a>
+            &nbsp;&nbsp;&nbsp;
+            <span style="color: rgb(85, 85, 85); font-size: 12px;">
+              <% FormatCreateDate %>
+            </span>
+          </div>
+          <div style="padding: 10px; background-color: rgb(255, 255, 255);">
+	    <div style="float: left; width: 165px;">
+	      <a href="/showpic/<% Guid %>" style="text-decoration:none;">
+                <img src="<% woomsg_image:get_image_path(Path, Guid, Type, "thumb") %>"/>
+              </a>
+	    </div>
+	    <div style="float:left; font-size: 14px; width: 350px;">
+              <% Msg %>
+	    </div>
+            <div style="clear: both;"></div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+

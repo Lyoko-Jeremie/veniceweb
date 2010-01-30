@@ -1,5 +1,7 @@
 -module(woomsg_pic).
--export([new_pic/5,
+-export([get_all/0,
+	 get_pic_all_by_owners/1,
+         new_pic/5,
          get_pic/1,
          get_pic_all/1,
          get_pic_limit/2,
@@ -11,6 +13,48 @@
 
 %% pic 是一个: 11 tuple
 %% {pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}
+
+%% 返回所有的照片
+%% 如果存在: 返回{count, PicList}
+%% 如果没有: {0, []}
+get_all() ->
+    F = fun() ->
+	    mnesia:match_object({pic, '_', '_', '_', '_', '_', '_', '_', '_', '_', '_'})
+	end,
+    case mnesia:transaction(F) of
+	{atomic, []} ->
+	    {0, []};
+	{atomic, ValList} when is_list(ValList) ->
+	    {erlang:length(ValList), ValList};
+	_ ->
+	    {0, []}
+    end.
+
+
+%% 根据用户名列表返回照片
+%% (Mnesia有没有更高效的方式实现SQL中的类似: select ... in 功能?)
+%%
+%% 如果存在: 返回{count, PicList}
+%% 如果没有: {0, []}
+get_pic_all_by_owners([]) ->
+    {0, []};
+get_pic_all_by_owners(Owners) when is_list(Owners) ->
+    F = fun() ->
+	    lists:foldl(fun(Owner, AccIn) ->
+			    %% index_read/3 将返回[]或者PicList
+			    mnesia:index_read(pic, Owner, owner) ++ AccIn
+			end, [], Owners)
+	end,
+    case mnesia:transaction(F) of
+	{atomic, []} ->
+	    {0, []};
+	 {atomic, ValList} when is_list(ValList) ->
+	    {erlang:length(ValList), ValList};
+	_ ->
+	    {0, []}
+    end;
+get_pic_all_by_owners(_) ->
+    {0, []}.
 
 %% 根据照片的Owner来查找照片
 %% 如果存在: 返回{count, PicList}
