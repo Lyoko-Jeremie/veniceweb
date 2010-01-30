@@ -107,7 +107,7 @@
 
   <div class="photo-comment-body">
     <div class="photo-comment-info">
-      <a class="nav" href="user/<% Owner %>"><% Owner %></a>   
+      <a class="nav" href="/user/<% Owner %>"><% Owner %></a>   
       <span class="photo-comment-date"><% FormatCreateDate %></span>
     </div>
     <div style="float: right; width:20px;">
@@ -128,7 +128,7 @@
  
   <div class="photo-comment-body">
     <div class="photo-comment-info">
-      <a class="nav" href="user/<% Owner %>"><% Owner %></a>
+      <a class="nav" href="/user/<% Owner %>"><% Owner %></a>
       <span class="photo-comment-date"><% FormatCreateDate %></span>
     </div>
     <div style="float: right; width=20px;">

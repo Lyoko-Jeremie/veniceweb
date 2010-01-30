@@ -166,13 +166,17 @@
 </div>
 
 
+<%@ display_photos(UrlUsername, fpage, PageIndex, PageStatePrev, PageStateNext, {0, PicList}) %>
+<% "" %>
+<% display_page(UrlUsername, fpage, PageIndex, PageStatePrev, PageStateNext) %>
 <%@ display_photos(UrlUsername, fpage, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
-<% display_photos(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
+<% [display_photo_fpage_item(Item) || Item <- PicList] %>
+<% display_page(UrlUsername, fpage, PageIndex, PageStatePrev, PageStateNext) %>
 <%@ display_photos(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext, {0, PicList}) %>
 <% "" %>
 <% display_page(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext) %>
 <%@ display_photos(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}) %>
-<% [display_photo_item(Item) || Item <- PicList] %>
+<% [display_photo_page_item(Item) || Item <- PicList] %>
 <% display_page(UrlUsername, page, PageIndex, PageStatePrev, PageStateNext) %>
 
 
@@ -200,11 +204,11 @@
   </a>
 </div>
 
-<%@ display_photo_item({pic, true, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
+<%@ display_photo_page_item({pic, true, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
 <div id="<% Guid %>">
 <div class="profile-photo-info">
   <% FormatCreateDate %>
-  <form action="" onsubmit="remove_pic('<% Guid %>')" style="display: inline;">
+  <form action="" onsubmit="remove_pic('<% Guid %>');return false;" style="display: inline;">
     <input type="image" src="/static/image/icon_trash.gif"/>
   </form>
 </div>
@@ -220,7 +224,7 @@
   <div style="clear: both;"></div>
 </div>
 </div>
-<%@ display_photo_item({pic, false, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
+<%@ display_photo_page_item({pic, false, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
 <div id="<% Guid %>">
 <div class="profile-photo-info">
   <% FormatCreateDate %>
@@ -236,6 +240,40 @@
   </div>
   <div style="clear: both;"></div>
 </div>
+</div>
+
+<%@ display_photo_fpage_item({pic, _IsOwner, Guid, Owner, PhotoGuid, PhotoPath, PhotoType, Path, Type, Msg, Count, Dig, TagList, Spam, FormatCreateDate}) %>
+<div id="<% Guid %>" style="padding-left: 5px; width: 600px; text-align: left; margin-top: 7px; margin-bottom: 7px;">
+  <table width="100%">
+    <tbody>
+      <tr>
+        <td width="55" style="vertical-align: top;">
+	  <img class="avatar" height="48" width="48" src="<% woomsg_image:get_image_path(PhotoPath, PhotoGuid, PhotoType, "mini") %>"/>
+        </td>
+        <td style="vertical-align: top;">
+          <div style="padding-bottom: 4px;">
+            &nbsp;
+            <a class="nav" href="/user/<% Owner %>"><% Owner %></a>
+            &nbsp;&nbsp;&nbsp;
+            <span style="color: rgb(85, 85, 85); font-size: 12px;">
+              <% FormatCreateDate %>
+            </span>
+          </div>
+          <div style="padding: 10px; background-color: rgb(255, 255, 255);">
+	    <div style="float: left; width: 165px;">
+	      <a href="/showpic/<% Guid %>" style="text-decoration:none;">
+                <img src="<% woomsg_image:get_image_path(Path, Guid, Type, "thumb") %>"/>
+              </a>
+	    </div>
+	    <div style="float:left; font-size: 14px; width: 350px;">
+              <% Msg %>
+	    </div>
+            <div style="clear: both;"></div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 

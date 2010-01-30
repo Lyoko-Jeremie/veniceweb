@@ -37,47 +37,26 @@ handle_get(Req) ->
                     case Username =:= UrlUsername of
 		        true ->
 			%% 2.1 用户登录, 访问自己的页面
-                            case UrlPageState of
-				{fpage, _N} ->
-				    %% TODO:
-				    %% 修改为follow的逻辑, 目前是参看自己的照片
-			            {PicCount, PicList} = woomsg_pic:get_pic_all(UrlUsername),
-			            {fpage, PageIndex, PageStatePrev, PageStateNext, PageStateStart} = cal_page(UrlPageState, PicCount),
-				    ResPicList = woomsg_pic_hook:process_pic_limit({PicCount, PicList}, Username, PageStateStart, ?DEF_PAGE_SIZE),
-		                    Data = user_view:index(login, Username, ext_myself, UrlUsername, UrlUserInfo, {page, PageIndex, PageStatePrev, PageStateNext, ResPicList}),
-                                    Req:respond({200, [{"Content-Type","text/html"}], Data});
-			        _ ->
-			            {PicCount, PicList} = woomsg_pic:get_pic_all(UrlUsername),
-			            {page, PageIndex, PageStatePrev, PageStateNext, PageStateStart} = cal_page(UrlPageState, PicCount),
-				    ResPicList = woomsg_pic_hook:process_pic_limit({PicCount, PicList}, Username, PageStateStart, ?DEF_PAGE_SIZE),
-				    io:format("~p:~p:~p:~p~n", [PageStatePrev, PageStateNext, PageStateStart, ResPicList]),
-		                    Data = user_view:index(login, Username, ext_myself, UrlUsername, UrlUserInfo, {page, PageIndex, PageStatePrev, PageStateNext, ResPicList}),
-                                    Req:respond({200, [{"Content-Type","text/html"}], Data})
-			    end;
+			    render_page(Req, login, Username, ext_myself, UrlUsername, UrlUserInfo, UrlPageState);
                         false ->
 			    case woomsg_following:is_following(Username, UrlUsername) of
 			        true ->
 				    %% 2.2 用户登录, 访问自己following人的页面
-		                    Data = user_view:index(login, Username, ext_following, UrlUsername, UrlUserInfo, undefined),
-                                    Req:respond({200, [{"Content-Type","text/html"}], Data});
+				    render_page(Req, login, Username, ext_following, UrlUsername, UrlUserInfo, UrlPageState);
 				false ->
 				    %% 2.3 用户登录, 访问陌生人人的页面
-		                    Data = user_view:index(login, Username, ext_no_following, UrlUsername, UrlUserInfo, undefined),
-                                    Req:respond({200, [{"Content-Type","text/html"}], Data})
+				    render_page(Req, login, Username, ext_no_following, UrlUsername, UrlUserInfo, UrlPageState)
 			    end
                     end;
 	        {logout_remember, undefined} ->
 	            %% 用户没登录
-		    Data = user_view:index(logout_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo, undefined),
-                    Req:respond({200, [{"Content-Type","text/html"}], Data});
+		    render_page(Req, logout_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo, UrlPageState);
                 {logout_remember, Username} ->
 	            %% 用户没登录
-		    Data = user_view:index(logout_remember, Username, undefined, UrlUsername, UrlUserInfo, undefined),
-                    Req:respond({200, [{"Content-Type","text/html"}], Data});
+		    render_page(Req, logout_remember, Username, undefined, UrlUsername, UrlUserInfo, UrlPageState);
 		{logout_no_remember, undefined} ->
 	            %% 用户没登录
-		    Data = user_view:index(logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo, undefined),
-                    Req:respond({200, [{"Content-Type","text/html"}], Data})
+		    render_page(Req, logout_no_remember, ?DEF_USERNAME, undefined, UrlUsername, UrlUserInfo, UrlPageState)
             end
     end.
 
@@ -87,6 +66,51 @@ handle_post(_Req) ->
 
 %% Internal APIs:
 %%
+
+render_page(Req, login, Username, ExtState, UrlUsername, UrlUserInfo, UrlPageState) ->
+    case UrlPageState of
+        {fpage, _N} ->
+	    {PicCount, PicList} = get_following_pic(UrlUsername),
+	    {fpage, PageIndex, PageStatePrev, PageStateNext, PageStateStart} = cal_page(UrlPageState, PicCount),
+	    ResPicList = woomsg_pic_hook:process_pic_limit_with_user_photo({PicCount, PicList}, Username, PageStateStart, ?DEF_PAGE_SIZE),
+	    Data = user_view:index(login, Username, ExtState, UrlUsername, UrlUserInfo, {fpage, PageIndex, PageStatePrev, PageStateNext, ResPicList}),
+            Req:respond({200, [{"Content-Type","text/html"}], Data});
+	_ ->
+	    {PicCount, PicList} = woomsg_pic:get_pic_all(UrlUsername),
+	    {page, PageIndex, PageStatePrev, PageStateNext, PageStateStart} = cal_page(UrlPageState, PicCount),
+	    ResPicList = woomsg_pic_hook:process_pic_limit({PicCount, PicList}, Username, PageStateStart, ?DEF_PAGE_SIZE),
+	    Data = user_view:index(login, Username, ExtState, UrlUsername, UrlUserInfo, {page, PageIndex, PageStatePrev, PageStateNext, ResPicList}),
+            Req:respond({200, [{"Content-Type","text/html"}], Data})
+    end;
+render_page(Req, LogoutState, Username, undefined, UrlUsername, UrlUserInfo, UrlPageState) ->
+    case UrlPageState of
+        {fpage, _N} ->
+	    {PicCount, PicList} = get_following_pic(UrlUsername),
+	    {fpage, PageIndex, PageStatePrev, PageStateNext, PageStateStart} = cal_page(UrlPageState, PicCount),
+	    ResPicList = woomsg_pic_hook:process_pic_limit_with_user_photo({PicCount, PicList}, undefined, PageStateStart, ?DEF_PAGE_SIZE),
+	    Data = user_view:index(LogoutState, Username, undefined, UrlUsername, UrlUserInfo, {fpage, PageIndex, PageStatePrev, PageStateNext, ResPicList}),
+            Req:respond({200, [{"Content-Type","text/html"}], Data});
+	_ ->
+	    {PicCount, PicList} = woomsg_pic:get_pic_all(UrlUsername),
+	    {page, PageIndex, PageStatePrev, PageStateNext, PageStateStart} = cal_page(UrlPageState, PicCount),
+	    ResPicList = woomsg_pic_hook:process_pic_limit({PicCount, PicList}, undefined, PageStateStart, ?DEF_PAGE_SIZE),
+	    Data = user_view:index(LogoutState, Username, undefined, UrlUsername, UrlUserInfo, {page, PageIndex, PageStatePrev, PageStateNext, ResPicList}),
+            Req:respond({200, [{"Content-Type","text/html"}], Data})
+    end.
+
+%% 返回用户Username关注者的照片集合:
+%% 返回值(和woomsg_pic:get_pic_all/1保持一致的返回值):
+%% {0, []}
+%% {Count, PicList}
+get_following_pic(Username) ->
+    case woomsg_following:get_following_all(Username) of
+	{0, []} ->
+	    {0, []};
+	{_Count, Followings} when is_list(Followings) ->
+	    woomsg_pic:get_pic_all_by_owners(Followings);
+	_ ->
+	    {0, []}
+    end.
 
 %% 分页计算:
 %% 返回结果:
