@@ -1,0 +1,61 @@
+<%@ index(State, Username, {PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}) %>
+<html>
+
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+  <title>woomsg - 查看完整的图片</title>
+  <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
+  <style type="text/css">
+  </style>
+  <script language="javascript" type="text/javascript">
+    function fixpng(o) {
+      var arVersion = navigator.appVersion.split("MSIE");
+      var version = parseFloat(arVersion[1]);
+      if((version >= 5.5) && (document.body.filters)) {
+        try {
+          var img = o;
+          var imgName = o.src.toUpperCase();
+          if (imgName.substring(imgName.length-3, imgName.length) == "PNG") {
+            var imgID = (img.id) ? "id='" + img.id + "' " : "";
+            var imgClass = (img.className) ? "class='" + img.className + "' " : "";
+            var imgTitle = (img.title) ? "title='" + img.title + "' " : "title='" + img.alt + "' ";
+            var imgStyle = "display:inline-block;" + img.style.cssText;
+            if (img.align == "left") 
+              imgStyle = "float:left;" + imgStyle;
+            if (img.align == "right") 
+              imgStyle = "float:right;" + imgStyle;
+            if (img.parentElement.href) 
+              imgStyle = "cursor:hand;" + imgStyle;   
+            
+            var strNewHTML = "<span " + imgID + imgClass + imgTitle
+                + " style=\"" + "width:" + img.width + "px; height:" + img.height + "px;" + imgStyle + ";" 
+                + "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader" 
+                + "(src=\'" + img.src + "\', sizingMethod='image');\"></span>"; img.outerHTML = strNewHTML;			
+            }
+          } catch (e){}
+        }
+    }
+  </script>
+  <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
+  <script type="text/javascript" src="/static/js/core.js"></script>
+</head>
+
+<body>
+  <div id="container">
+     <% header_view_in:index(State, Username) %>
+
+     <div id="main">
+        <div style="text-align: center; padding-bottom: 5px;">
+	  <a class="nav" href="/showpic/<% PicGuid %>">&lt&lt返回到显示图片页面</a>
+        </div>
+        <div style="text-align: center; padding-bottom: 12px;">
+	   <img class="photo-ori" src="<% woomsg_image:get_image_path(Path, PicGuid, Type, "ori") %>"/>
+	</div>
+       <div style="clear:both;"></div>
+     </div>
+
+     <% footer_view_in:index() %>
+  </div>
+</body>
+
+</html>

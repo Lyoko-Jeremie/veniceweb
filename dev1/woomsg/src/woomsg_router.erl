@@ -39,6 +39,8 @@ handle_request(Req) ->
 		    setting_controller:handle_get(Req);
 		"showpic" ->
 		    showpic_controller:handle_get(Req);
+		"showpicfull" ->
+		    showpicfull_controller:handle_get(Req);
 		"support" ->
 		    support_controller:handle_get(Req);
 		"tag" ->

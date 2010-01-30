@@ -30,8 +30,8 @@
    Description:
    把开发环境部署到ubuntu.
 
-6. State: Active
-   Date: 2010/1/26
+6. State: Active - Closed
+   Date: 2010/1/26 - 2010/1/30
    Description:
    新功能设计, 可以返回用户的所有关注者的图片, 格式化,
    并提供limit功能供上层应用使用.
@@ -41,8 +41,8 @@
    Description:
    重构图片上传页面upload.
 
-8. State: Active
-   Date: 2010/1/26
+8. State: Active - Closed
+   Date: 2010/1/26 - 2010/1/30
    Description:
    完成公共浏览区页面publictimeline页面.
 
@@ -58,6 +58,24 @@
    完成首页的大图片的显示, 显示最近人气高的图片.
 
 11. State: Active
+   Date: 2010/1/30
+   Description:
+   更新showpic页面, 完成一些美化, 辅助的功能, 增加tag,
+   外部链接, 大图等等.
+
+12. State: Active
+   Date: 2010/1/30
+   Description:
+   完成Tag页面, 实现根据tag搜索图片的功能.
+
+13. State: Active - Closed
+   Date: 2010/1/30 - 2010/1/30
+   Description:
+   完成showpic页面的评论的权限设置, 当用户没等录的时候, 提示用户登录.
+
+14. State: Active
    Date: 2010/1/xx
    Description:
+   
+
    
