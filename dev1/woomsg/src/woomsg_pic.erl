@@ -1,5 +1,6 @@
 -module(woomsg_pic).
 -export([get_all/0,
+	 get_pic_all_by_guids/1,
 	 get_pic_all_by_owners/1,
          new_pic/5,
          get_pic/1,
@@ -9,7 +10,9 @@
          delete_pic/1,
          inc_count/1, inc_count/2, dec_count/1, dec_count/2,
          inc_dig/1, inc_dig/2, dec_dig/1, dec_dig/2,
-         set_spam/2]).
+         set_spam/2,
+	 add_tag/2, add_tags/2, safe_add_tag/3, safe_add_tags/3,
+	 delete_tag/2, safe_delete_tag/3]).
 
 %% pic 是一个: 11 tuple
 %% {pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}
@@ -30,6 +33,30 @@ get_all() ->
 	    {0, []}
     end.
 
+%% 根据picguid列表返回照片
+%% (Mnesia有没有更高效的方式实现SQL中的类似: select ... in 功能?)
+%%
+%% 如果存在: 返回{count, PicList}
+%% 如果没有: {0, []}
+get_pic_all_by_guids([]) ->
+    {0, []};
+get_pic_all_by_guids(Guids) when is_list(Guids) ->
+    F = fun() ->
+	    lists:foldl(fun(Guid, AccIn) ->
+			    %% read/3 将返回[]或者PicList
+			    mnesia:read({pic, Guid}) ++ AccIn
+			end, [], Guids)
+	end,
+    case mnesia:transaction(F) of
+	{atomic, []} ->
+	    {0, []};
+	 {atomic, ValList} when is_list(ValList) ->
+	    {erlang:length(ValList), ValList};
+	_ ->
+	    {0, []}
+    end;
+get_pic_all_by_guids(_) ->
+    {0, []}.
 
 %% 根据用户名列表返回照片
 %% (Mnesia有没有更高效的方式实现SQL中的类似: select ... in 功能?)
@@ -297,6 +324,169 @@ set_spam(Guid, ArgSpam) ->
     case mnesia:transaction(F) of
         {atomic, ok} ->
 	    ok;
+	_ ->
+	    error
+    end.
+
+%% 增加一个tag
+%% 成功返回: ok
+%% 失败返回: error
+add_tag(Guid, Tag) ->
+    F = fun() ->
+	    case mnesia:read({pic, Guid}) of
+	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
+		    NewTagList = case lists:member(Tag, TagList) of
+				     true ->
+					 TagList;
+				     false ->
+					 [Tag | TagList]
+				 end,
+		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig, NewTagList, Spam, CreateDate});
+	        _ ->
+		    mnesia:abort(error)
+            end
+	end,
+    case mnesia:transaction(F) of
+        {atomic, ok} ->
+	    ok;
+	_ ->
+	    error
+    end.
+
+%% 增加多个tag
+%% 成功返回: ok
+%% 失败返回: error
+add_tags(Guid, Tags) when is_list(Tags) ->
+    F = fun() ->
+	    case mnesia:read({pic, Guid}) of
+	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
+		    NewTagList = lists:foldl(fun(Elem, AccIn) ->
+					         case lists:member(Elem, AccIn) of
+						     true ->
+							 AccIn;
+						     false ->
+							 [Elem | AccIn]
+						 end
+					     end, TagList, Tags),
+		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig, NewTagList, Spam, CreateDate});
+	        _ ->
+		    mnesia:abort(error)
+            end
+	end,
+    case mnesia:transaction(F) of
+        {atomic, ok} ->
+	    ok;
+	_ ->
+	    error
+    end;
+add_tags(_Guid, _Tag) ->
+    error.
+
+%% 增加一个tag
+%% 成功返回: ok
+%% 失败返回: error
+%%          {error, permission_error}
+safe_add_tag(Guid, Tag, Owner) ->
+    F = fun() ->
+	    case mnesia:read({pic, Guid}) of
+	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
+		    NewTagList = case lists:member(Tag, TagList) of
+				     true ->
+					 TagList;
+				     false ->
+					 [Tag | TagList]
+				 end,
+		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig, NewTagList, Spam, CreateDate});
+		[{pic, Guid, _Owner, _Path, _Type, _Msg, _Count, _Dig, _TagList, _Spam, _CreateDate}] ->
+		    mnesia:abort(add_permission_error);
+	        _ ->
+		    mnesia:abort(error)
+            end
+	end,
+    case mnesia:transaction(F) of
+        {atomic, ok} ->
+	    ok;
+	{aborted, add_permission_error} ->
+	    {error, permission_error};
+	_ ->
+	    error
+    end.
+
+%% 增加多个tag
+%% 成功返回: ok
+%% 失败返回: error
+%%          {error, permission_error}
+safe_add_tags(Guid, Tags, Owner) when is_list(Tags) ->
+    F = fun() ->
+	    case mnesia:read({pic, Guid}) of
+	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
+		    NewTagList = lists:foldl(fun(Elem, AccIn) ->
+					         case lists:member(Elem, AccIn) of
+						     true ->
+							 AccIn;
+						     false ->
+							 [Elem | AccIn]
+						 end
+					     end, TagList, Tags),
+		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig, NewTagList, Spam, CreateDate});
+		[{pic, Guid, _Owner, _Path, _Type, _Msg, _Count, _Dig, _TagList, _Spam, _CreateDate}] ->
+		    mnesia:abort(add_permission_error);
+	        _ ->
+		    mnesia:abort(error)
+            end
+	end,
+    case mnesia:transaction(F) of
+        {atomic, ok} ->
+	    ok;
+	{aborted, add_permission_error} ->
+	    {error, permission_error};
+	_ ->
+	    error
+    end;
+safe_add_tags(_Guid, _Tag, _Owner) ->
+    error.
+
+%% 删除一个tag
+%% 成功返回: ok
+%% 失败返回: error
+delete_tag(Guid, Tag) ->
+    F = fun() ->
+	    case mnesia:read({pic, Guid}) of
+	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
+		    NewTagList = lists:delete(Tag, TagList),
+		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig, NewTagList, Spam, CreateDate});
+	        _ ->
+		    mnesia:abort(error)
+            end
+	end,
+    case mnesia:transaction(F) of
+        {atomic, ok} ->
+	    ok;
+	_ ->
+	    error
+    end.
+
+%% 删除一个tag
+%% 成功返回: ok
+%% 失败返回: error
+%%          {error, permission_error}
+safe_delete_tag(Guid, Tag, Owner) ->
+    F = fun() ->
+	    case mnesia:read({pic, Guid}) of
+	        [{pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}] ->
+		    NewTagList = lists:delete(Tag, TagList),
+		    mnesia:write({pic, Guid, Owner, Path, Type, Msg, Count, Dig, NewTagList, Spam, CreateDate});
+		[{pic, _Guid, _Owner, _Path, _Type, _Msg, _Count, _Dig, _TagList, _Spam, _CreateDate}] ->
+		    mnesia:abort(delete_permission_error);
+	        _ ->
+		    mnesia:abort(error)
+            end
+	end,
+    case mnesia:transaction(F) of
+        {atomic, ok} ->
+	    ok;
+	{aborted, delete_permission_error} ->
+	    {error, permission_error};
 	_ ->
 	    error
     end.

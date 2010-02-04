@@ -94,6 +94,7 @@ delete_pic_comment(Guid) ->
 %% (会自动更新pic表中图片的评论条数)
 %% 成功返回: ok
 %% 失败返回: error 
+%%          {error, permission_error}
 safe_delete_pic_comment(Guid, Owner) ->
     F = fun() ->
             case mnesia:read({pic_comment, Guid}) of
@@ -119,6 +120,8 @@ safe_delete_pic_comment(Guid, Owner) ->
     case mnesia:transaction(F) of
 	{atomic, ok} ->
 	    ok;
+	{aborted, delete_permission_error} ->
+	    {error, permisson_error};
 	_ ->
 	    error
     end.

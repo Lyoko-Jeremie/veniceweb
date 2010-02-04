@@ -1,5 +1,7 @@
 记录开发任务
 
+Active Task:
+7, 9, 10, 14
 
 1. State: Active - Closed
    Date: 2010/1/14 - 2010/1/24
@@ -13,11 +15,13 @@
    把提示信息的显示提取到core.js中, 封装成通用的方法, 
    方便以后替换. (目前achtung在IE下显示效果不好)
 
-3. State: Active
-   Date: 2010/1/15
+3. State: Active - Closed
+   Date: 2010/1/15 - 2010/2/4
    Description:
    分析twoorl的用户登录逻辑, 对比目前woomsg使用的cookie
    逻辑.
+   和我们woomsg中使用的逻辑类似, 都是在cookie中记录sessionid来记录
+   用户的登录状态.
 
 4. State: Active - Closed
    Date: 2010/1/24 - 2010/1/26
@@ -57,14 +61,14 @@
    Description:
    完成首页的大图片的显示, 显示最近人气高的图片.
 
-11. State: Active
-   Date: 2010/1/30
+11. State: Active - Closed
+   Date: 2010/1/30 - 2010/2/4
    Description:
    更新showpic页面, 完成一些美化, 辅助的功能, 增加tag,
    外部链接, 大图等等.
 
-12. State: Active
-   Date: 2010/1/30
+12. State: Active - Closed
+   Date: 2010/1/30 - 2010/2/4
    Description:
    完成Tag页面, 实现根据tag搜索图片的功能.
 
@@ -74,7 +78,17 @@
    完成showpic页面的评论的权限设置, 当用户没等录的时候, 提示用户登录.
 
 14. State: Active
-   Date: 2010/1/xx
+   Date: 2010/2/3
+   Description:
+   修复bug, 当删除照片的时候, 应该同时更新pic_tag表格, 保证数据的一致性.
+
+15. State: Active
+   Date: 2010/2/xx
+   Description:
+
+
+15. State: Active
+   Date: 2010/2/xx
    Description:
    
 

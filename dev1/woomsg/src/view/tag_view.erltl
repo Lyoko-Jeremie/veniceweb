@@ -1,4 +1,4 @@
-<%@ index(Data) %>
+<%@ index(State, Username, Tag, {page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}}) %>
 <html>
 
 <head>
@@ -41,6 +41,64 @@
 </head>
 
 <body>
+  <div id="container">
+    <% header_view_in:index(State, Username) %>
+    
+    <div id="main">
+      <center>
+        <div style="font-size:18px;">
+          与标签<span style="font-size:18px; font-weight:bold;"><% Tag %></span>相关的照片
+        </div>
+     
+        <% display_all_photos(Tag, {page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}}) %>
+    
+      </center>
+    </div>
+
+    <% footer_view_in:index() %>
+  </div>
 </body>
 
 </html>
+
+
+<%@ display_all_photos(Tag, {page, PageIndex, PageStatePrev, PageStateNext, {0, []}}) %>
+<div style="padding-top:20px;">
+<% display_page(Tag, PageIndex, PageStatePrev, PageStateNext) %>
+</div>
+<%@ display_all_photos(Tag, {page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}}) %>
+<div style="padding-top:20px;">
+<% [display_all_photos_item(Item) || Item <- PicList] %>
+<% display_page(Tag, PageIndex, PageStatePrev, PageStateNext) %>
+</div>
+
+<%@ display_all_photos_item({pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}) %>
+<a href="/showpic/<% Guid %>" style="text-decoration:none;">
+  <img class="photo-mini" src="<% woomsg_image:get_image_path(Path, Guid, Type, "thumb") %>"/>
+</a>
+
+
+
+<%@ display_page(Tag, PageIndex, no_prev, no_next) %>
+<% "" %>
+<%@ display_page(Tag, PageIndex, no_prev, next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/tag/<% Tag %>/page/<% integer_to_list(PageIndex + 1) %>">
+   下一页&gt&gt
+  </a>
+</div>
+<%@ display_page(Tag, PageIndex, prev, no_next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/tag/<% Tag %>/page/<% integer_to_list(PageIndex - 1) %>">
+   &lt&lt上一页
+  </a>
+</div>
+<%@ display_page(Tag, PageIndex, prev, next) %>
+<div style="padding: 15px; text-align:right;">
+  <a class="nav" href="/tag/<% Tag %>/page/<% integer_to_list(PageIndex - 1) %>">
+   &lt&lt上一页
+  </a>
+  <a class="nav" href="/tag/<% Tag %>/page/<% integer_to_list(PageIndex + 1) %> ">
+   下一页&gt&gt
+  </a>
+</div>

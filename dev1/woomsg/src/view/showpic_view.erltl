@@ -1,4 +1,4 @@
-<%@ index(State, Username, {PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}, {CommentCount, CommentList}) %>
+<%@ index(State, Username, {PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}, {CommentCount, CommentList}, {Owner, PhotoGuid, PhotoPath, PhotoType}, {PicCount, PicList}) %>
 <html>
 
 <head>
@@ -38,6 +38,7 @@
     }
   </script>
   <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
+  <script type="text/javascript" src="/static/js/jquery.rotate.1-1.js"></script>
   <script type="text/javascript" src="/static/js/ui.achtung-min.js"></script>
   <script type="text/javascript" src="/static/js/core.js"></script>
   <script type="text/javascript" src="/static/js/showpic.js"></script>
@@ -56,8 +57,14 @@
 
           <div id="photo">
             <div id="photo-control">
+	      <a style="text-decoration: none;" href="#" onclick="$('#photo-display').rotateRight(); $('#photo-display').css('border','10px solid #FFFFFF'); return false;">
+	        <img src="/static/image/rotate-photo.gif">
+	      </a>
+	      <a style="text-decoration: none;" href="/showpicfull/<% PicGuid %>">
+                <img src="/static/image/view-full-size.gif">
+              </a>
             </div>
-	    <img class="photo-ori" src="<% woomsg_image:get_image_path(Path, PicGuid, Type, "mediu") %>"/>
+	    <img id="photo-display" style="border: 10px solid #FFFFFF" src="<% woomsg_image:get_image_path(Path, PicGuid, Type, "mediu") %>"/>
             <div id="photo-message">
              <% Msg %>
             </div>
@@ -71,6 +78,12 @@
         </div>
    
         <div id="photo-sidebar">
+	  <% display_view_photo_user(Owner, PhotoPath, PhotoGuid, PhotoType, CreateDate) %>
+          <% display_view_photo_more(Owner, PicCount, PicList)%> 
+	  <% display_embed_photo(PicGuid, Path, Type) %>
+          <% display_view_photo_tags(State, Username =:= Owner, PicGuid, TagList) %>
+
+	  <div style="clear: both;"></div>
         </div>
 
         <div style="clear:both;"></div>
@@ -148,4 +161,114 @@
 
   <div style="clear:both;"></div>
 </div>
+
+
+<%@ display_view_photo_user(Owner, undefined, undefined, undefined, _CreateDate) %>
+<% "" %>
+<%@ display_view_photo_user(Owner, PhotoPath, PhotoGuid, PhotoType, CreateDate) %>
+<div id="view-photo-user" style="margin: 0px 0px 20px 0px;">
+  <div id="photo-user-avatar" style="float: left; width: 65px;">
+    <img class="avatar" width="48" height="48" src="<% woomsg_image:get_image_path(PhotoPath, PhotoGuid, PhotoType, "mini") %>"/>
+  </div>
+  <div id="photo-info" style="float: left; font-size: 14px; font-weight: bold; width: 220px;">
+      <a class="nav" href="/user/<% Owner %>" style="font-size: 14px; font-weight: bold;" ><% Owner %></a>
+      发布于<% woomsg_datetime:get_fmt_since_datetime_string(CreateDate) %>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+
+<%@ display_view_photo_more(Owner, PicCount, PicList)%>
+<div id="view-photo-more" style="margin: 15px 0px 0px 0px;">
+  <div style="padding-bottom: 5px; font-size: 14px; font-weight: bold;">
+    更多<% Owner %>上传的照片
+  </div>
+  <% [display_view_photo_more_item(Item) || Item <- PicList] %>
+</div>
+<%@ display_view_photo_more_item({pic, Guid, _Owner, Path, Type, _Msg, _Count, _Dig, _TagList, _Spam, _CreateDate}) %>
+<a href="/showpic/<% Guid %>" style="text-decoration: none;">
+  <img class="photo-mini" src="<% woomsg_image:get_image_path(Path, Guid, Type, "square") %>"/>
+</a>
+
+<%@ display_embed_photo(PhotoGuid, PhotoPath, PhotoType) %>
+<div id="embed-photo" style="margin-top: 10px; margin-bottom: 20px;">
+  <a class="nav" style="text-decoration: none;" href="#" onclick="if($('#embedimg').css('display') == 'none') {$('#embedimg').show('fast')} else {$('#embedimg').hide('fast')}; return false;">
+    <img src="/static/image/embed-photo.gif">
+  </a>
+  <div id="embedimg" style="display:none; margin-top:5px; padding:7px; background-color:#FFFFFF;">
+    <div style="padding-top:5px; padding-bottom:5px; font-size:12px; font-weight:bold; line-height:15px; color:#555555; ">
+      复制&粘贴下面的HTML代码到您的网页中
+    </div>
+    <textarea wrap="virtual" onclick="this.select();" style="width:250px; height:60px; padding:2px; font-size:12px; overflow:hidden; border:1px solid #CCCCCC; border-top:2px solid #CCCCCC;"><a href="http://www.woomsg.com/showpic/<% PhotoGuid %>" title="在woomsg上分享您的照片"><img src="http://www.woomsg.com<% woomsg_image:get_image_path(PhotoPath, PhotoGuid, PhotoType, "thumb") %>"/></a></textarea>
+    <div style="padding-top:5px; font-size:12px; line-height:16px; color:#555555; ">
+      注意!根据图片的使用协议, 如果您在外部网站使用该图片, 必须链接回该图片在woomsg上的主页.
+    </div>
+  </div>
+</div>
+
+<%@ display_view_photo_tags(login, true, PicGuid, TagList) %>
+<div id="view-photo-tags" style="margin: 15px 0px 0px 0px;">
+  <div style="font-size: 14px; padding-bottom: 7px; font-weight: bold;">
+    标签
+    <span style="font-size: 12px; font-weight: normal;">
+    (<a href="#" class="nav" style="text-decoration:none; font-size: 12px;" onclick="if($('#addtags').css('display') == 'none') { $('#addtags').show('fast'); } else { $('#addtags').hide('fast'); } return false;">
+    添加标签
+    </a>)
+    </span>
+  </div>
+
+  <div id="addtags" style="display:none;padding:7px;background-color:#FFFFFF;">
+    <form onsubmit="add_tags('<% PicGuid %>'); return false;" action="">
+      <input id="pic-tags-id" type="text" name="pic-tags" style="font-size: 14px; width:200px;border:1px solid #CCCCCC;border-top:2px solid #CCCCCC;"/>
+      <input type="submit" value="添加"/>
+    </form>
+    <div style="padding-top:3px;font-size:12px;color:#555555;">
+      使用空格分割标签, 例如 海洋 旅游 朋友.
+    </div>
+  </div>
+
+  <% display_pic_tags_all(login, true, PicGuid, TagList) %>
+
+</div>
+<%@ display_view_photo_tags(_, _, PicGuid, TagList) %>
+<div id="view-photo-tags" style="margin: 15px 0px 0px 0px;">
+  <div style="font-size: 14px; padding-bottom: 7px; font-weight: bold;">
+    标签
+    <span style="font-size: 12px; font-weight: normal;">
+    </span>
+  </div>
+
+  <div id="addtags" style="display:none;padding:7px;background-color:#FFFFFF;">
+  </div>
+
+  <% display_pic_tags_all(undefined, undefined, PicGuid, TagList) %>
+
+</div>
+
+
+
+<%@ display_pic_tags_all(_, _, _PicGuid, []) %>
+<div id="scope-tags" style="padding-left: 10px;">
+</div>
+<%@ display_pic_tags_all(login, true, PicGuid, TagList) %>
+<div id="scope-tags" style="padding-left: 10px;">
+<% [ display_pic_tag_item(login, true, PicGuid, TagItem) || TagItem <- TagList] %>
+</div>
+<%@ display_pic_tags_all(_, _, PicGuid, TagList) %>
+<div id="scope-tags" style="padding-left: 10px;">
+<% [ display_pic_tag_item(undefined, undefined, PicGuid, TagItem) || TagItem <- TagList] %>
+</div>
+
+<%@ display_pic_tag_item(login, true, PicGuid, Tag) %>
+<span id="scope1-<% Tag %>" style="font-size:10px; color:#000000;">+</span>
+<a id="scope2-<% Tag %>" class="nav" style="font-size:12px; text-decoration:none;" href="/tag/<% Tag %>"><% Tag %></a>
+<span id="scope3-<% Tag %>" style="color:#4e4e4e; font-size:10px;">
+  <form onsubmit="remove_tag('<% PicGuid %>', '<% Tag %>'); return false;" action="" style="display:inline;">
+    <input type="image" src="/static/image/icon_trash.gif"/>
+  </form>
+</span>
+<%@ display_pic_tag_item(_, _, PicGuid, Tag) %>
+<span id="scope1-<% Tag %>" style="font-size:10px; color:#000000;">+</span>
+<a id="scope2-<% Tag %>" class="nav" style="font-size:12px; text-decoration:none;" href="/tag/<% Tag %>"><% Tag %></a>
+<span id="scope3-<% Tag %>" style="color:#4e4e4e; font-size:10px;">
+</span>
 
