@@ -11,28 +11,38 @@ handle_get(Req) ->
 	    Req:respond({302, [{"Location", "/"}], []});
 	{pic, PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate} ->
 	    PhotoInfo = {PicGuid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate},
+	    OwnerInfo = case woomsg_user:get_user(Owner) of
+			    [] ->
+				{Owner, undefined, undefined, undefined};
+			    {Owner, _Password, _Email, PhotoGuid ,PhotoPath, PhotoType} ->
+				{Owner, PhotoGuid, PhotoPath, PhotoType};
+			    _ ->
+				{Owner, undefined, undefined, undefined}
+			end,
             CommentList = get_comment_list(PicGuid, Count),
+	    {PicCount, PicList} = woomsg_pic:get_pic_all(Owner),
+	    ResPicList = woomsg_pic_hook:process_pic_simple_limit({PicCount, PicList}, 3),
 	    case woomsg_common:user_state(Req) of
 		{login, Username} ->
 		    %% 用户登录
 		    %% (格式化评论信息)
 		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, Username),
-		    Data = showpic_view:index(login, Username, PhotoInfo, ResCommentList),
+		    Data = showpic_view:index(login, Username, PhotoInfo, ResCommentList, OwnerInfo, ResPicList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data});
 		{logout_remember, undefined} ->
 		    %% 用户没登录
 		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, undefined),
-		    Data = showpic_view:index(logout_remember, ?DEF_USERNAME, PhotoInfo, ResCommentList),
+		    Data = showpic_view:index(logout_remember, ?DEF_USERNAME, PhotoInfo, ResCommentList, OwnerInfo, ResPicList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data});
 		{logout_remember, Username} ->
 		    %% 用户没登录
 		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, Username),
-		    Data = showpic_view:index(logout_remember, Username, PhotoInfo, ResCommentList),
+		    Data = showpic_view:index(logout_remember, Username, PhotoInfo, ResCommentList, OwnerInfo, ResPicList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data});
 		{logout_no_remember, undefined} ->
 		    %% 用户没登录
 		    ResCommentList = woomsg_comment_hook:process_comment(CommentList, undefined),
-		    Data = showpic_view:index(logout_no_remember, ?DEF_USERNAME, PhotoInfo, ResCommentList),
+		    Data = showpic_view:index(logout_no_remember, ?DEF_USERNAME, PhotoInfo, ResCommentList, OwnerInfo, ResPicList),
 		    Req:respond({200, [{"Content-Type", "text/html"}], Data})
             end
     end.

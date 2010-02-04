@@ -1,5 +1,6 @@
 -module(woomsg_pic_tag).
 -export([add_tag/2,
+	 add_tags/2,
          remove_tag/2,
          get_guid_all/1,
          get_guid_limit/2,
@@ -18,6 +19,24 @@ add_tag(Tag, Guid) ->
 	_ ->
 	    error
     end.
+
+%% 添加多条记录
+%% 成功返回: ok
+%% 失败返回: error
+add_tags(Tags, Guid) when is_list(Tags) ->
+    F = fun() ->
+	    lists:foreach(fun(Elem) ->
+			      mnesia:write({pic_tag, Elem, Guid})
+			  end, Tags)
+	end,
+    case mnesia:transaction(F) of
+	{atomic, ok} ->
+	    ok;
+	_ ->
+	    error
+    end;
+add_tags(_Tags, _Guid) ->
+    error.
 
 %% 删除一个{Tag, Guid}Object
 %% 成功返回: ok

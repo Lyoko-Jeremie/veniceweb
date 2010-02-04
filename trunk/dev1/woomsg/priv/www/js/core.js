@@ -96,7 +96,7 @@ function validate_header_login(data) {
    * 登录成功, 直接跳转
    */
   else if (data.result == "ok") {
-    location.href = "user/" + data.content;
+    location.href = "/user/" + data.content;
   }
 }
 

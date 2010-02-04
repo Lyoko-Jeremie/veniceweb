@@ -23,12 +23,14 @@ handle_request(Req) ->
 		    blog_controller:handle_get(Req);
 		"faq" ->
 		    faq_controller:handle_get(Req);
+                "image" ->
+		    image_controller:handle_get(Req);
 		"login" ->
 		    login_controller:handle_get(Req);
                 "logout" ->
 		    logout_controller:handle_get(Req);
-                "image" ->
-		    image_controller:handle_get(Req);
+		"nopage" ->
+		    nopage_controller:handle_get(Req);
 		"publictimeline" ->
 		    publictimeline_controller:handle_get(Req);
 		"register" ->
@@ -66,6 +68,8 @@ handle_request(Req) ->
 		    pic_controller:handle_post(Req);
                 "register" ->
 		    register_controller:handle_post(Req);
+		"tag" ->
+		    tag_controller:handle_post(Req);
                 "upload" ->
 		    upload_controller:handle_post(Req);
                 _ ->
