@@ -1,0 +1,31 @@
+介绍Erlang如何通过Port和Driver与外部通讯
+
+1. 端口Port给Erlang于外界通讯提供了一种机制, open_port/2来创建一个端口.
+   每个Port都有一个与之关联的控制进程, 也就是创建该端口的进程.
+
+   a. 只有控制进程才能向端口发消息
+   b. 该端口接收到的所有消息都将发送给控制进程.
+
+   通常的消息格式是:
+   Port ! {Proc, Command}
+   Command 
+   {command, Data}: 把Data通过端口发送给外部对象. 
+   close: 关闭一个端口, 被关闭的端口必须向控制进程回复一个{Port, closed}消息.
+
+2. 测试Port的性能
+   a. gcc -o myport myport.c
+   b. 在Erlang Shell中
+      c(myport).
+      myport:start().
+      myport:test(100000).
+      myport:stop().
+
+3. 测试Driver的性能
+   a. gcc -shared -o mydriver.so mydriver.c
+   b. 在Erlang Shell中
+      c(mydriver).
+      mydriver:start().
+      mydriver:test(100000).
+      mydriver:stop().
+      
+    
