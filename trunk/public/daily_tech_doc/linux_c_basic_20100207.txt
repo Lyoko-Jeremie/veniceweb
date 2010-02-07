@@ -1,0 +1,120 @@
+
+1.  gcc -c和gcc -o
+gcc -c hello.c
+gcc -o hello hello.c
+
+$hello.c
+#include <stdio.h>
+int main(int argc, char **argv) {
+  printf("hello world!\n");
+  return 0;
+}
+
+a. 编译成可执行文件
+gcc -o hello hello.c
+
+-o表示编译器给我们输出的可执行文件名为hello, 如果不给出这个选项,
+gcc就给出预设的可执行文件a.out.
+
+编译器会为我们生成一个hello的可执行文件.
+执行./hello就可以看到程序的输出结果.
+
+b. 编译成目标文件obj.
+gcc -c hello.c
+会生成hello.o的目标文件, 上面的命令只激活预处理,编译,和汇编,
+也就是只编译，不连接成为可执行文件.
+
+2. 多文件编译 
+下面一个例子有五个文件
+$mytool1.h
+$mytool1.c
+$mytool2.h
+$mytool2.c
+$hello.c
+
+$mytool1.h
+#ifndef _MYTOOL1_H_
+#define _MYTOOL1_H_
+
+void mytool1_printf(char *str);
+
+#endif
+
+$mytool1.c
+#include <stdio.h>
+#include "mytool1.h"
+
+void mytool1_printf(char *str) {
+  printf("mytool1 print: %s\n", str);
+}
+
+$mytool2.h
+#ifndef _MYTOOL2_H_
+#define _MYTOOL2_H_
+
+void mytool2_printf(char *str);
+
+#endif
+
+$mytool2.c
+#include <stdio.h>
+#include "mytool2.h"
+
+void mytool2_printf(char *str) {
+  printf("mytool2 print: %s\n", str);
+}
+
+$hello.c
+#include "mytool1.h"
+#include "mytool2.h"
+
+int main(int argc, char **argv) {
+  mytool1_printf("hello world!");
+  mytool2_printf("hello world!");
+  return 0;
+}
+
+a. 一种"手工的"编译方式
+gcc -c mytool1.c
+gcc -c mytool2.c
+gcc -c hello.c
+gcc -o hello mytool1.o mytool2.o hello.o
+
+b. 使用makefile编译
+makefile的两条简单规则:
+ > #开头的行是注释
+ > target: components  // 依赖关系
+   TAB rule            // 规则
+所以上面的makefile我们可以写成
+
+$Makefile
+hello : mytool1.o mytool2.o hello.o
+	gcc -o hello mytool1.o mytool2.o hello.o
+mytool1.o : mytool1.c mytool1.h
+	gcc -c mytool1.c
+mytool2.o : mytool2.c mytool2.h
+	gcc -c mytool2.c
+hello.o : hello.c mytool1.h mytool2.h
+	gcc -c hello.c
+   
+
+c. makefile的三个变量
+$@  - 表示目标文件
+$^  - 表示所有的依赖文件
+$<  - 表示第一个依赖文件
+
+所以makefile可以修改为
+
+$Makefile
+hello : mytool1.o mytool2.o hello.o
+	gcc -o $@ $^
+mytool1.o : mytool1.c mytool1.h
+	gcc -c $<
+mytool2.o : mytool2.c mytool2.h
+	gcc -c $<
+hello.o : hello.c mytool1.h mytool2.h
+	gcc -c $<
+
+
+3.
+

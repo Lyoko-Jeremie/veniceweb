@@ -1,4 +1,7 @@
 
+文档:
+http://blog.csdn.net/dqatsh/archive/2009/09/19/4570867.aspx
+
 1. 主页: http://www.imagemagick.org/
 
 2. Windows平台下安装与使用
@@ -8,27 +11,53 @@
    安装完成会自动设定PATH，所以convert.exe等命令可以直接使用.
 
 3. convert命令介绍:
-   我们准备的原始图片尺寸是src.jpg 200x150
+   我们准备的原始图片尺寸是src.jpg 400x300
 
-   2.1 默认时，宽度和高度表示要最终需要转换图像的最大尺寸，
+   2.1 保持比例原来的比例缩放.
+   宽度和高度表示要最终需要转换图像的最大尺寸，
    同时Convert会控制图片的宽和高，保证图片按比例进行缩放.
-   下面的例子会生成一张600X450的图片.
-   convert -resize 600×600 src.jpg dst.jpg
+   下面的例子会生成一张800x600的图片.
+   convert -resize 800×800 src.jpg dst.jpg
 
-   2.2 如果需要转换成600×600，而图片无需保持原有比例，可以在
+   2.2 不保持比例缩放, 会使图片看起来"失真".
+   如果需要转换成800×800，而图片无需保持原有比例，可以在
    宽高后面加上一个感叹号!
-   convert -resize 600×600! src.jpg dst.jpg
+   convert -resize 800×800! src.jpg dst.jpg
 
+   2.3 保持比例, 图片不失真的情况下得到一个正方形的图片的算法.
+   
+   if(width > height) {
+     %% 限定高度为100
+     convert -resize x100 -gravity center -extent 100x100 src.jpg dst.jpg
+   } else {
+     %% 限定宽度为100
+     convert -resize 100x -gravity center -extent 100x100 src.jpg dst.jpg
+   }
 
-   3.3 生成验证码
-   convert -background white -fill black -font Sylfaen -pointsize 24 -size 128x64 -gravity center label:"teststring" dest.jpg
-   -background 控制背景
-   -fill 控制字体颜色
-   -font 控制字体
-   -pointsize 控制字体大小
-   -size 控制输入图片的大小(这个尺寸可以去掉)
-   -travity 控制文字位置
-   label 表示要输入的文字
-   最后一个是目标文件
+   2.4
+   convert -crop wxh+dx+dy src.jpg dst.jpg
+   w为目标图片的宽度
+   h为目标图片的高度
+   dx, dy为开始截取的偏移位置, 以左上角为原点.
+
+   -crop 宽x高+起点横坐标+起点纵坐标：裁剪图
+   -resize 宽x高[!]：改变尺寸，如果使用惊叹号，表示不保留视觉比例，强行改变尺寸匹配给定的宽和高
+
+4. 获取图片的尺寸信息.
+   2.1 获取图片的简要信息 
+   identify sea.jpg
+   sea.jpg JPEG 400x300 400x300+0+0 8-bit DirectClass 11.7kb 
+
+   2.2 获取图片的高度和宽度
+   identify -format "%w" sea.jpg    - 宽度
+   identify -format "%h" sea.jpg    - 高度
+   identify -format "%wx%h" sea.jpg - 宽度x高度
+
+   2.3 获取图片的相信信息.
+   identify -verbose sea.jpg   
+   ...
+   很详细的图片信息.
+   ...
+
 
    
