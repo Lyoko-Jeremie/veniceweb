@@ -1,7 +1,7 @@
 记录开发任务
 
 Active Task:
-7, 9, 10, 14
+7, 10, 14, 15
 
 1. State: Active - Closed
    Date: 2010/1/14 - 2010/1/24
@@ -50,8 +50,8 @@ Active Task:
    Description:
    完成公共浏览区页面publictimeline页面.
 
-9. State: Active
-   Date: 2010/1/26
+9. State: Active - Closed
+   Date: 2010/1/26 - 2010/2/4
    Description:
    完成首页下面图片的随机显示, 和公共浏览区类似, 显示
    最近的图片.
@@ -83,8 +83,9 @@ Active Task:
    修复bug, 当删除照片的时候, 应该同时更新pic_tag表格, 保证数据的一致性.
 
 15. State: Active
-   Date: 2010/2/xx
+   Date: 2010/2/4
    Description:
+   用户上传的图片生成正方形的缩略图的时候, 图片失真, 没有保持原来比例, 需要修复.
 
 
 15. State: Active

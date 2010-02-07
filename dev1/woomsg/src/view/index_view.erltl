@@ -1,4 +1,4 @@
-<%@ index(State, Username) %>
+<%@ index(State, Username, {PicCount, PicList}) %>
 <html>
 
 <head>
@@ -100,36 +100,7 @@
       <div id="main-recpic">
         <center>
 
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
-          <a style="text-decoration: none;" href="/">
-	    <img class="photo-mini" height="75" weight="75" src="/static/test/mini-pic.jpg"/>
-          </a>
+          <% display_all_photos({PicCount, PicList}) %>
 
           <div id="main-recpic-bottom">
             关注<a class="nav" href="/">woomsgdev</a>&nbsp;&
@@ -146,5 +117,15 @@
 
 </body>
 
-
 </html>
+
+
+<%@ display_all_photos({0, []}) %>
+<% "" %>
+<%@ display_all_photos({PicCount, PicList}) %>
+<% [display_all_photos_item(Item) || Item <- PicList] %>
+
+<%@ display_all_photos_item({pic, Guid, Owner, Path, Type, Msg, Count, Dig, TagList, Spam, CreateDate}) %>
+<a style="text-decoration: none;" href="/showpic/<% Guid %>">
+  <img class="photo-mini" src="<% woomsg_image:get_image_path(Path, Guid, Type, "square") %>"/>
+</a>
