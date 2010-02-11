@@ -1,0 +1,824 @@
+介绍Perl在Linux下的开发
+
+1. 一个最基本的Perl程序
+<1> Hello World Perl:)
+$demo.pm
+#! /usr/bin/perl
+  print "hello world\n"; # 这是注释, 反斜杠'\'表示转义.
+
+    设置运行权限
+    chmod a+x demo.pm
+    执行
+    ./demo.pm
+
+2. 数字和字符串
+<1> 所有数字的内部格式一致, 对于整数和浮点数, Perl在内部都把它们当作双精度浮点数
+    来处理. 也就是说Perl内部没有整数值.
+    a. 浮点数('普通表示法'和'科学计数法')
+    1.5
+    255.00
+    7.25e45  # 7.25 X 10的45次方, e大小写都可以
+    -3.4e24  # -3.4 X 10的24次方
+    -12e-20  # -12 X 10的负20次方
+    b. 整数
+    -123
+    234_234_345 #可以用下划线分割方便阅读, 等价于234234345
+    c. 非十进制数(0b..., 0..., 0x...)
+    0b11111111   # 二进制
+    0xff         # 十六进制
+    0377         # 八进制
+    
+    c中的三个数都表示255, 在Perl中, 0xff和255.00没有区别.
+
+<2> 数字操作符
+    2+3   - 加
+    2-3   - 减
+    2*3   - 乘
+    2/3   - 除
+    10%3  - 取余 (10.5%3.2会先转换成整数10%3, 再计算)
+    2**3  - 2的三次方
+
+<3> 单引号字符串
+    在单引号字符串中, 除了反斜杠\和单引号外', 其它所有字符均表示自身.
+    要得到反斜杠和单引号, 需要转意(\\或者\').
+    在单引号字符串中, \n不表示换行.仅仅表示反斜杠和n.
+    'abcdefg\n'
+
+<4> 双引号字符串
+    有很多转意字符, \n表示换行, 还可以进行字符串变量内插.
+    但引号字符串不能进行变量值的内插.
+
+<5> 字符串的.操作和x操作: 连接和重复
+    "abc"."efg" 等于  "abcefg"
+    "ab" x 4    等于 "abababab"
+    5 x 4       等于 "5555"
+
+<6> 数字和字符串之间的自动转换
+    Perl会在需要的时候对数字和字符串进行转换, 在+的时候看作数字, 在.的时候看作字符串.
+
+    例如:
+    "12" * "3" = 36
+    "12abc34" * 3 =   36 # "12abc34"后面的非数字部分和签名的空格都会被去掉.
+    	      	         # 如果我们不使用warnings, 这个表达式会直接返回36, 没有任何提示.
+    	      	         # 在极端的时候, 一个不包含任何数字的字符串"abc"会被看作0.
+    "a".3*4 = "a12"
+
+3. 使用warnings和diagnostics: 警告和诊断
+<1> 两种开启warnings的方式
+    #! /usr/bin/perl -w
+    ...
+    或者
+    #! /usr/bin/perl
+    use warnings;
+    ...
+
+    我们开启了warnings, "12ab34" * "3" 将提示警告:
+    Argument "12ab34" isn't numeric in multiplication (*) 
+
+<2> 两种方式开启诊断模式
+    在诊断模式下, 如果Perl发现错误, 会方便的读取错误文档.
+    /usr/bin/perl -Mdiagnostics ./mydemo.pm
+    或者
+    #! /usr/bin/perl
+    use diagnostics
+    ...
+
+4. 标量
+<1> 定义和赋值
+    以$开头, 后面是数字, 字母和下划线组成, 但不能以数字开头. 并且区分大小写.
+    Perl中习惯所有变量都小写.
+
+    赋值:
+    $num = 5;
+    $num += 3; 等价于$num = $num + 3
+    $str .= "abc"; 等级爱与$str = $str."abc"
+
+<2> 字符串中变量的内插   
+    如果是一个双引号的字符串, 并且变量前没有反斜杠, 变量值会被内插.
+    所以变量内插值也称为双引号内插值.
+ 
+    $str1 = "abc";
+    $str2 = "123$str1"; #是"123abc"， 如果使用 "123\$str1", 将进行转意, 不会进行内插值.
+    等价于
+    $str2 = 'abc'.$str1;
+
+    如果一个变量没有赋值, 则用空值表示undef, 是一个特殊的价值, 如果开启
+    了警告, Perl会提示你内插的变量没有赋值.
+
+    变量名是字符串中有意义的最长的一个, 所以
+    "abc$num1"使用$num1而不是$num, 我们可以使用下面两种方式解决, 
+    使用{}定义变量名字或者将字符串分割后再连接.
+    "abc${num}1" 
+    或者
+    "abc$num"."1"
+
+5. 比较运算符
+   数字   字符串
+   ==     eq
+   !=     ne
+   <      lt
+   >      gt
+   <=     le
+   >=     ge
+
+   例如:
+   "frea" lt "free"  # true
+
+6. Boolean值
+   Perl中没有布尔值, 但它使用如下规则判断.
+   a. 如果为数字, 0为false, 其余为真
+   b. 如果为字符串, 空串''为false, 其余为真
+   c. 如果既不是字符串也不是数字, 转换成数字或者字符串后引用上述规则.
+   d. undef为false, 所有引用都是true.
+
+   一个特殊的地方, 字符串'0'和数字0有相同的标量值, 也就是字符串'0'是唯一
+   一个非空, 但是为false的字符串.
+
+7. 用户输入
+   使用<STDIN>, Perl程序每次读入一行, 传入<STDIN>, 以换行结束.
+
+$demo.pm
+#! /usr/bin/perl 
+  use warnings;
+  $line = <STDIN>;
+  if($line eq "\n") {
+    print "you input: nothing\n";
+  } else {
+    print "you input: $line";
+  }
+
+8. chomp操作
+   <1> chomp的作用是去掉字符串结尾的换行符, 返回值为移除的字符的个数.
+       通常返回0或者1. (如果字符串结尾有两个换行符, 它只移除一个)
+
+   $text = "this is a string\n";
+   chomp($text); #去掉\n
+
+   <2> 两条Perl的原则
+   a. 在需要使用变量的地方, 使用赋值表达式代替.
+      chomp($text = <STDIN>)
+   b. 除非移除它们的含义会改变, 否则可以省略它.
+      chomp $text; #省略括号   
+
+9. undef值和defined函数
+<1> undef
+    变量未赋值以前, 默认是undef
+    规则:
+    undef在需要数字的地方转换为0, undef在需要字符串的地方转换成空串.
+    这也就是为什么undef为false的原因了.
+
+<2> defined
+    判断一个变量是否为undef, 也就是一个变量是否赋值过.
+
+$demo.pm
+#! /usr/bin/perl 
+use warnings;
+  $tag = "a";
+  if(defined $tag) {
+    print "defined \n";
+  } else {
+    print "undef\n";
+  }
+
+10. 列表和数组
+<1> 基本概念
+    '列表'是标量的"有序集", '数组'是包含列表的变量. 在Perl这两个术语是可以互换的.
+
+<2> 访问数组元素
+    $arr[0] = "str0";  
+    $arr[1] = "str1";
+
+    同一程序还中可以有$arr的变量, 它和数组可以重名, 因为Perl中数组和标量属于不同
+    的命名空间.
+    $arr = "atom"; # 变量可以和数组重名
+
+    如果数组的下标不是整数, 将自动转换成"小于它的最大整数"
+    $num = 2.3;
+    $arr[num - 1] = "string"; #等价于$arr[1] = "string";
+
+<3> 特殊的数组索引
+    a. 如果将元素存储在数组最后的元素后面, 数组将自动增长.
+    $arr[0] = "str0";
+    $arr[1] = "str1";
+    $arr[10] = "str10"; # 导致$arr[2] - $arr[9] 都是undef
+
+    b. 数组的长度
+    $#arr表示数组的最大索引, 所以数组的长度为: $#arr + 1
+
+    c. 数组的负数索引
+    数组的负数索引从最后一个元素开始, -1, -2, -3...
+    $arr[-1] = "test";
+
+<4> 列表
+    由括号括起来, 里面的元素由逗号分割, 可以使用范围操作符.
+    (1, 2, 3, 4, 5)
+    (1 .. 5)     等价于(1,2,3,4,5)
+    (1.4 .. 5.8) 最小值和最大值转换成整数, 等价于(1,2,3,4,5)
+    (5 .. 1)     为空, 左值小于右值, 否则为空
+    ($m .. $n)   由$m和$n的值决定
+
+<5> qw简写
+    qw = quoted words, 字符串列表在Perl中经常使用, 一种方式是:
+    ("str1", "str2", "str3")
+    也可以
+    qw(str1 str2 str3)  #是空格不是逗号
+    
+    qw将内部被空格(像spaces, tab, newlines等字符串)分割的部分作单引号字符串处理,
+     所以我们不能像双引号字符串那样在qw里面使用\n或者$var等.
+
+    Perl允许qw使用任何标点符号作分界符, 例如:
+    qw <str1 str2 str3>
+    qw {str1 str2 str3}
+    qw !str1 str2 str3!
+
+<6> 列表赋值
+    ($a, $b, $c) = ("str1", "str2", "str3");
+    
+    交换两个变量
+    ($a, $b) = ($b, $c)  #在C语言中需要临时变量, 在Perl中使用列表赋值就可以
+    ($arr[0], $arr[1]) =($arr[1], $arr[0])
+
+    如果列表赋值左右两边的个数不一致:
+    ($a, $b) = qw(str1 str2 str3 str4);  #str3和str4被忽略
+    ($a, $b, $c) = qw(str1 str2);        #$c为undef
+
+    对数组进行赋值
+    ($arr[0], $arr[1], $arr[2], $arr[3]) = qw/str1 str2 str3 str4/;
+
+    使用简写@arr来表示整个数组
+    @arr1 = qw/str1 str2 str3/;
+    @arr2 = ();          # 空表
+    @arr3 = 1 .. 1e5     # 包含100 000个元素的表
+    @arr4 = (@arr3, undef, @arr3) # 包含200 001个元素的表
+    @arr5 = (@arr1, @arr2, @arr1) 
+    @arr6 = (str1 str2 str3 str1 str2 str3)  #等价于@arr5, 数组名字被起列表替换, 数组不能成为
+                                             #列表的一个元素的原因是, 数组只能包含标量值, 不能包
+					     #含数组.
+
+    未被初始化的数组为(), 空表; 未被初始化的标量值为undef. 
+
+    @arr1 = @arr2  #数组拷贝, 仍然是列表赋值.
+    
+<7> pop和push操作
+    习惯上Perl程序员不使用索引来操作数组, 而使用pop和push, 把数组看作一个栈来操作,
+    在数组的右边添加删除元素.
+
+    pop操作:
+    @arr = 5 .. 9;
+    $item1 = pop(@arr); # 现在@arr为(5, 6, 7, 8)
+    $item2 = pop @arr;  # 现在@arr为(5, 6, 7)
+    pop @arr;           # 现在@arr为(5, 6)
+   
+    如果@arr为空, pop什么也不做, 返回undef
+
+    push操作:
+    @arr = (1, 2);
+    push(@arr, 3);   # 现在@arr为(1, 2, 3)
+    push @arr, 4;    # 现在@arr为(1, 2, 3, 4)
+    push @arr, 1 .. 10; # 现在@arr多了10个元素
+    @others = qw/1 2 3 4 5/;
+    push @arr, @others; # 现在@arr多了5个元素.
+
+<8> shift和unshift
+    pop和push是对数组的末尾进行操作, shift和unshift对数组的开头进行操作.
+    shift 对应 pop; unshift对应push.
+    
+    @arr = qw#str1 str2#;
+    $item1 = shift @arr;   #$item1是"str1", @arr现在是("str2")
+    shift @arr;            #@arr现在为空
+    unshift @arr, 1;       #@arr现在为(1)
+    @others = 2 .. 4;     
+    unshift @arr, @others; #@arr现在为(1, 2, 3, 4)
+
+    如果@arr为空, 和pop一样, 返回undef.
+
+<9> 将数组插入字符串
+    数组也可以插入双引号的字符串中, 数组会自动由空格分开:
+    @arr = qw/str1 str2 str3/;
+    $res = "str0 @arr str4";   # "str0 str1 str2 str3 str4 str5"
+    $res = "str0 $arr[0] str4" # "str0 str1 str4"
+
+    Email地址, 在使用@xxx表示email地址的时候, 要注意:
+    "liqiang@gmail.com"  # 错误
+    			 # 如果@gmail定义了数组, 会被替换;
+                         # 如果@gmail没定义, 会提示警告, 并返回"liqiang.com"
+    "liqiang\@gmail.com" # 正确
+    'liqiang@gmail.com'  # 正确
+
+    例子(数组和变量同名的情况):
+    $arr = "str0";
+    @arr = qw/str1 str2 str3 str4 str5/;
+    print "this is: $arr[1]\n";       # 数组元素插值, 输出this is: str1
+    print "this is: ${arr}[1]\n";     # 变量插值, 输出this is: str0[1]
+
+<10> foreach控制结构
+     我们使用foreach控制结构来遍历整个列表, 从列表的第一个元素到最后一个元素.
+     foreach $item (qw /str1 str2 str3/) {
+       print "this is: $item";
+     }
+
+     注意:
+     控制变量不是列表元素的拷贝, 而是列表元素本身, 如果在循环中修改这些变量, 列表
+     元素也会被修改.
+
+<11> Perl最常用的默认变量 $_
+     foreach (1 .. 10) {
+       print "this is: $_";
+     }
+
+     或者(Perl没有要求使用某个变量的时候, 会自动使用默认变量$_)
+     $_ = "this is string!\n";
+     print;
+
+<12> reverse操作
+     将输入的列表逆序后输出
+     
+     @arr = 1 .. 5;  #等价于(1, 2, 3, 4, 5)
+     @arr1 = reverse @arr # 返回(5, 4, 3, 2, 1), @arr不变, 也就是reverse不改变操作数.
+     @arr1 = reverse 1 .. 5;
+     @arr = reverse @arr;  # 倒序@arr
+
+<13> sort操作
+     按照ASCII字符顺序排序(从小到大), 数字在字母前面, 大写字母在小写字母前面.
+     
+     @arr = qw/a c b d/;
+     @arr1 = sort @arr;  # @arr1是("a", "b", "c", "d"), @arr不变, 也就是sort不改变操作数.
+     @numbers = sort 97 .. 102 # @numbers是(100, 101, 102, 97, 98, 99)
+     @arr = sort @arr; # 排序@arr
+     
+     注意:
+     reverse和sort都不改变操作数.
+
+<14> "标量"和"列表"context
+    a.一个给定的表达式在不同的上下文中含义不同, 上下文指表达式存在的地方. Perl解析表达式的时候, 它通常
+    期望一个标量值或一个列表值, 这就是表达式的上下文环境.
+
+    例如:
+    一个数组名字name, 在标量环境下返回数组元素个数, 在列表环境下返回列表元素.
+    @arr = qw(str1 str3 str2);
+    @sorted = sort @arr;    # 列表context: ("str1", "str2", "str3")
+    $num = 42 + @arr;       # 标量content: 42 + 3得45
+
+    @copyarr = @arr;        # 数组拷贝
+    $count = @arr;          # 数组元素个数
+
+    b. 在标量context中使用list-producing表达式
+    一些表达式根本没有标量context的值, 例如sort, 所以sort在标量context中返回undef.
+    reverse在列表context中返回反转的列表, 在标量context中返回反"转后的字符串".
+
+    下面是一些例子:
+    $num = something; #标量context
+    @arr = something; #列表context
+    ($m, $n) = something; #列表context
+    ($m) = something;     #列表context
+    
+    上面的3和4括号是必须的, 是列表context, 使4区别于1.
+
+    print something; 也是列表context
+    
+    c. 在列表content中使用scalar-producing表达式
+    如果表达式不是列表值, 则表达式自动转换为一个元素的列表
+
+    @arr = undef; # 得到一个元素的列表(undef)
+    @arr = ();   #将数组清空 
+
+    d. 强制转换成标量context
+    使用scalar强制转换成标量context.
+
+    @arr = qw/str1 str2 str3/;
+    print "the items of arr:", @arr, " end!\n";
+    print "the items of arr:", scalar @arr, " end!\n"; 
+    print "the items of arr:", $#arr + 1, " end!\n";
+    会输出:
+    the items of arr:str1str2str3 end!
+    the items of arr:3 end!
+    the items of arr:3 end!
+
+<15> <STDIN>在列表context
+     <STDIN>在标量context下返回输入的一行, 在列表context下返回整个输入.
+     如果输入来自键盘, CTRL + D表示输入结束, 如果是文件则到文件结尾.
+
+    下面的代码可以从标准输入输入内容, 然后依次打印每一行.
+    @lines = <STDIN>;
+    foreach(@lines) {
+      print;
+    }
+
+11. 子程序
+<1> 定义和调用子程序
+    a. 子程序的名字由数字子母和下划下组成, 但不能由数字开头, 和标量的名字定义一样.
+    b. 子程序的定义是全局的, Perl中没有私有子程序, 如果两个子程序名字相同, 后一个
+       将覆盖前一个.
+    c. 使用sub关键字来定义子程序.
+    d. 使用子程序的名字加上&来调用子程序.
+
+    例子:
+    $demo.pm
+    #! /usr/bin/perl 
+    use warnings;
+
+    sub scenario {
+        $n += 1;    # 注意: n是全局变量
+        print "the value of n is: $n\n";
+    }
+
+    &scenario();     # 将输出the value of n is: 1
+    &scenario();     # 将输出the value of n is: 2
+    &scenario();     # 将输出the value of n is: 3
+    
+<2> 子程序的返回值, 最后计算的表达式的值.
+    例如:
+    sub scenario {
+        print "you invoked scenario\n";
+	$num1 + $num2;  # 子程序的返回值
+    }
+
+    $res = &scenario;  # 获取子程序的返回值
+
+    注意:
+    print成功返回true, 失败返回false, 并不是返回打印出来的字符串.
+
+<3> 子程序的参数
+    在Perl中, 参数列表会自动保存在@_这样一个数组中, 要特别注意的是, @_和$_没有任何关系,
+
+    例如:
+    sub max {
+      if($_[0] > $_[1]) {
+	$_[0];
+      } else {
+	$_[1];
+      }
+    }
+    $res = &max(3, 5);
+    
+    a. 子程序不会使用$_[2], Perl不会关心多余的变量.
+       参数不够的时候也被忽略, 不够的参数会用undef代替.
+    b. @_是子程序的私有变量, 如果有一个全局变量@_, 在此子程序调用的时候会被保存起来,
+       当子程序调用结束的时候重新赋原来的值给它. 所以嵌套的子程序调用或者程序递归调用的时候,
+       每次都能通过@_获得自己的参数列表.
+       这和foreach的机制类似, foreach每次都会自动赋予$_一个新的值.
+       #! /usr/bin/perl 
+       use warnings;
+       $_ = "val";
+       foreach (1 .. 5) {
+          print "num: $_\n"; # 全局变量$_会被保存, 使用$_是私有变量
+       };
+       print "res: $_\n";  # 会输出val
+    c. 但是如果调用子程序的时候使用&scenario; 这种形式, 也就是前面有&而后面没有括号,
+       @_就将从调用者的上下文context中得到. 所以我们通常的调用方式是, 即使没有参数, 也需要
+       写括号&scenario(); 而不是&scenario;
+
+<4> 子程序的私有变量 
+    通过my关键字定义私有变量
+    sub max {
+      my($arg1, $arg2);
+      ($arg1, $arg2) = @_;
+      if($arg1 > $arg2) {
+	$arg1;
+      } else {
+	$arg2;
+      }
+    }
+    或者在max内, 几乎所有的子程序都是这么开头的.
+    my($arg1, $arg2) = @_;
+
+<5> 参数列表长度
+    利用数组名在标量context下表示数组元素个数的特性.
+
+    sub max {
+      if(@_ != 2) {
+	print "&max should have 2 arguments\n";
+      }
+      ....
+    }
+
+<6> 实现一个没有参数个数限制的&max.
+    重写一个&max, 使它不受参数个数的限制
+    sub max {
+      my($max_val) = shift @_;;
+      foreach(@_) {
+	if($_ > $max_val) {
+	    $max_val = $_;  # $_是foreach循环体的私有变量
+	}
+      }
+      $max_val;
+    }
+    $res = &max(1, 3, 10, 9, 8); # 返回10
+
+    如果传递给&max空参列表, 结果会怎样?
+    实质上会返回undef.
+
+<7> my变量的理解:
+    a. my不会改变参数的context
+       my($arg) = @_; # 列表context
+       my $arg = @_;  # 标量context
+    b. 如果没有使用括号, my仅定义一个变量:
+       my $arg1, $arg2;   #没有定义$arg2.
+       my ($arg1, $arg2); #两个都定义了
+    c. 也可以使用my创建信的私有的数组
+       my @priv_arr;
+
+<8> 使用strict pragma(严格的)
+    使用了strict的代码段会进行严格的检查:
+    use strict;
+
+    a. 如果打开了strict, Perl要求声明每一个变量的时候都使用my, 这只是针对信的变量,
+       对于内嵌的变量, $_, @_则不需要加my.
+    b. 应该避免使用$a, $b, 因为sort使用了它们.
+    
+<9> 返回操作
+    使用return可以从子程序中马上返回:
+    
+    例如(下面函数返回数组元素的索引, 如果不存在返回-1):
+    sub which_elem_is {
+      my($what, @arr) = @_; #参数的赋值方式
+      foreach(0 .. $#arr) {
+	if($what eq $arr[$_]) {
+	  return $_;   # 返回结果, 停止后面代码的执行
+	}
+      }
+      -1;
+    }
+    my @array = qw/str1 str2 str3 str4 str5/;
+    my $res = &which_elem_is("str3", @array);
+
+<10> 省略符号&
+     规则:
+     a. 如果编译器在调用前知道此子程序的定义(定义在调用前), 
+        或者从Perl语法中知道这是一个子程序的调用,可以省略&,就像使用build-in函数一样.
+        i. 如果用括号将一些参数括起来, 那其为函数调用(函数定义在调用之后).
+	   my $res = which_elem_is("str3", @array); # &可以省略
+	   sub which_elem_is {
+	       ...
+           }
+        ii. 如果Perl内部知道这此子函数的定义(函数定义再调用之前)
+	    (这个例子如果把函数定义放到调用之后会出错)
+	   sub which_elem_is {
+               ...
+           }
+           my $res = which_elem_is "str3", @array; # &可以省略
+     b. 特别需要注意的是, 如果一个子程序和Perl build-in程序同名, 则必须使用&.
+        sub chomp {
+	  ...
+        };
+	&chomp();  # 我们调用自己的子程序的时候必须加&, 否则会调用build-in chomp子程序.
+
+<11> 非标量返回值
+     如果在列表context使用子程序, 则会返回列表值
+
+     例如: 下面函数从大到小, 或者从小到大的列表
+     sub mylist {
+       my($arg1, $arg2) = @_;
+       if($arg1 < $arg2) {
+	 $arg1 .. $arg2;
+       } else {
+	 reverse $arg2 .. $arg1;
+       }
+     }
+     my @res = &mylist(10, 5); # 返回(10, 9, 8, 7, 6, 5) 
+
+     补充:
+     wantarray()
+     在Perl中, 来自子程序的返回值既可是一个标量, 也可以是一个列表.
+     一次调用既有可能返回一个列表, 也有可能返回一个标量, 具体由子程序的调用场合来决定.
+     为支持这种不确定性, Perl专门提供了wantarray函数. 一旦在"子程序主体中"调用了这个函数,
+     那么假如子程序是在一个列表试用场合下调用的, 该函数便返回一个真值;
+     假如子程序是在一个标量使用场合下调用的, 该函数便返回一个假值.
+     例子:
+     sub myarr {
+       if(wantarray()) {
+	 return qw/str1 str2 str3/;
+       } else {
+	 return "hello";
+       }
+     }
+
+     my $res1 = &myarr; # 标量context "hello"
+     my @res = &myarr;  # 列表context ("str1", "str2", "str3")
+     print "res1: $res1\n";
+     print "res2: @res\n"; 
+
+12. 输入和输出
+<1> 从标准输入设备输入
+    a. 使用<STDIN>为输入操作, 在文件结尾或者CTRL + D的时候返回undef.
+       i. 在标量的context下将返回输入的一行
+       下面的例子可以输出你输入的每一行,
+       while(defined($line = <STDIN>)) {
+         print "you saw: $line";
+       }
+       也可以写成
+       while(defined($_ = <STDIN>)) {
+         print "you saw: $_";
+       }
+       简写, 这种简写只有在特定的情况下才有效, 默认情况下不会将一行读入$_, 
+       仅仅"当while的条件判断部分只包含行输入操作时"才有效, 如果条件判断部分
+       还有其它内容, 在无效.
+       也就是说<STDIN>和Perl的默认变量$_没有别的关系.
+       while(<STDIN>) {
+         print "you saw: $_";
+       }
+       ii. 在列表的context下会返回整个输入的所有内容, 直到文件结尾或者CTRL + D
+       @lines = <STDIN>;
+       foreach $line (@lines) {
+         print "you saw: $line";
+       }
+       简写: 因为foreach默认的赋值变量是$_, 所以可以这么简写.
+       foreach(<STDIN>) {
+         print "you saw: $_";
+       }
+
+<2> 从<>读取输入
+    使用尖括号<>作输入, 用这种方法可以书写类似标准linux的工具, 比如cat.
+    例如:
+    cat file1 file2 file3将输出fil21 file2 file3三个文件的内容.
+    cat 没有参数将从标准输入读取内容, 每读取一行输出一行.
+    cat file1 - file3将输入file1内容, 然后从标准输入读取, 然后在输入file3内容.
+
+    我们需要设计一个工具, 实现类似功能:
+    a. ./demo.pm file1 file2 file3输出file1, file2, file3文件的内容
+    b. ./demo.pm 没有参数将从标准输入读取内容, 每读取一行输出一行.
+    c. ./demo.pm 如果将-作为参数, 也看作是标准输入
+
+    代码:
+    #! /usr/bin/perl 
+    use warnings;
+    while(defined($line = <>)) {
+      print $line;
+    }
+    简写:
+    #! /usr/bin/perl 
+    use warnings;
+    while(<>) {
+      print $_;
+    }
+    理解<>读取的流程:
+    如果调用./demo.pm file1 file2, <>会现一行行的读取file1, 读到结尾"自动跳转"到file2
+    然后在一行行的读取file2. 如果输入结束, 返回undef. while循环也结束.
+    如果<>不能找到文件的时候会输出一些错误信息, 然后自动跳转到下一个文件, 这个特性和cat一致.
+    
+    深入的理解调用参数:
+    实质上, <>从数组@ARGV中得到调用参数, 这个数组是Perl的特殊数组, 包含的调用参数的列表.
+    (补充: $0包含了程序的名字)
+    <>操作查看@ARGV来决定使用哪些文件, 如果@ARGV为空, 则使用标准输入流.
+    在使用@ARGV以前我们有机会修改它:
+    @ARGV = qw/file1 - file2/; # 强制修改参数列表
+    while(<>) {
+      print $_;
+    }
+    
+<3> 输出到标准输出设备
+    a. print操作将传给它的依次输出到标准设备中, 一个接着一个, 不会在这些加入任何字符.
+       print "nihao", "ok", "haha\n"; # nihaookhaha换行
+    b. 打印数组和内插数组的不同:
+       my @arr = qw/str1 str2 str3/;
+       print @arr, "\n"; # str1str2str3, 实质上和: print $arr[0], $arr[1], $arr[2];一样
+       print "@arr\n";   # str1 str2 str3
+       打印"所有的元素", 一个元素接着一个元素, "不会加空格"
+       打印"一个元素", 它的内容是@arr的所有元素, "数组内插值, 元素以空格间隔".
+    c. 注意看下面一个例子, 关于unchomped的数组的输出缩进问题
+       我们在打印@arr的时候, 数组包含unchomped的元素, 也就是每个元素都有一个换行符, 观察输出结果:
+       也就是"如果对unchomped的数组使用双引号, 则会出现缩进, 这是数组元素在插值的时候自动加空格的原因"
+       my @arr = ("str1\n", "str2\n", "str3\n");
+       print @arr;
+       print "@arr";
+       输出:
+       str1
+       str2
+       str3
+       str1
+        str2  # 被缩进了一个空格, 数组内插值的原因
+	str3  # 被缩进了一个空格, 数组内插值的原因
+    d. 由于print的参数是作为"列表context"来求职的, 所以我们可以如下使用
+       <>和<STDIN>类似, 在标量上下文中返回一行, 在列表上下文中返回所有行, 直到文件结束.
+       print <>;          # 类似cat的程序
+       print sort <>;     # 类似sort的程序
+
+<4> 使用printf进行格式化输出:
+    a. 可以实现和C语言的printf类似的格式化输出:
+    %g - 通用数字格式, 会自动选择整数, 浮点数和指数形式.
+    %d - 整数形式(根据需要截尾)
+    %x - 十六进制形式
+    %o - 八进制形式
+    %f - 浮点数形式
+    %s - 字符串形式
+
+    (下面例子中, ----表示空格)
+    printf "%6d\n", 23;   # ----23
+    printf "%6f\n", 23;   # 23.000000, 6表示小数点后的位数
+    printf "%8.4f\n", 23; # --23.0000, 8表示整个长度, 4表示小数点后的位数.
+    如果宽度为负数, 则为左对其:
+    printf "10send", "nihao";  # ----nihaoend
+    printf "-10send", "nihao"; # nihao----end
+    
+    b. 数组使用printf操作
+    x操作的要求两边都是标量, 都字符串重复N次: 字符串x整数N, 也就是x操作是标量context.
+
+    所以我们可以这样处理数组(对每个元素都格式化输出):
+    my @items = qw/str1 str2 str3/;
+    my $format = "The items are:\n"."item: %10s\n"x@items; # @items在标量context
+    printf $format, @items; # @item在列表context
+    
+<5>　文件句柄filehandle.
+
+
+13. 哈希Hash
+<1> 哈希就是key/value对, 其中key是字符串(如果使用50/20作为key, 它通常被转换为"2.5").
+    Perl的hash由优秀的算法, 当含有大量数据的时候仍然很快. 包含5百万数据的时候, 速度仍然很快.
+
+<2> Hash元素的存/取
+    格式: $hashname{$key}, 哈希名字和其它标量的命名规则一样. 
+    由于属于不同的命名空间, 所以$hashname{$key}和&hashname, $hashname, $hashname[0]之间
+    没有任何关系.
+	
+    Perl会根据名字前面或者后面的符号来判断其含义:
+    $hashname = "string1";         # 标量
+    $hashname[0] = "string1";      # 数组
+    $hashname{"key"} = "string1";  # 哈希
+    &hashname("arg1", "arg2");     # 子程序
+
+    例如:
+    $myhash{"key1"} = "val1";
+    $myhash{"key2"} = "val2";
+    $myhash{"key3"} = "val3";
+    foreach $key (qw/key1 key2 key3/) {
+        print "key: $key, val: $myhash{$key}\n";
+    }
+
+    访问不存在的hash元素返回undef, 这和访问未定义的标量和数组的返回值是一样的.
+
+<3> 作为整体的hash
+    a. 要引用整个Hash, 可以使用百分号作为前缀, %hashname.
+    b. 为了方便, hash可以转换为列表, 或者反过来.
+       i. 给hash赋值属于列表context赋值.
+	  %hashname = ("key1","val1","key2","val2","key3","val3");
+       ii. hash的值在列表context中是一个key/val列表, 这就是hash展开.
+	  @arr = %hashname; 
+<4> hash赋值
+    %new_hashname = %hashname; # hash之间拷贝, 这不单单拷贝一块内存, Perl作很多事情.
+    %new_hashname = reverse %hashname; # 我们通常作的是hash"反转", 我们可以通过val查询key了.
+	 	       	 	       # 我们必须保证key/val的唯一性, 否则hash是最后一次赋值的结果为准. 
+<5> 大箭头符号 =>
+    有两种方式给hash赋值:
+    a. 不容易区分key和val
+        %hashname = ("key1","val1","key2","val2","key3","val3");
+    b. 使用=>, 这里大箭头的作用和逗号类似, 因此称为"胖逗号"(fat comma)
+       注意: Perl语法中, 需要逗号的地方, 都可以使用=>替换.
+       %hashname = (
+	   "key1" => "val1",
+	   "key2" => "val2",
+	   "key3" => "val3",
+       );
+     
+<6> hash函数
+    a. keys和values函数
+       keys函数会返回hash所有的key, values函数会返回hash所有的value.
+       %hashname = ("key1" => "val1", "key2" => "val2", "key3" => "val3");
+       @mykeys = keys %hashname;
+       @myvals = values %hashname;
+       $count = keys %hashaname; # 会得到3, key/val对的个数.
+       
+       上面的例子中@mykeys中会含有"key1","key2","key3", 但顺序不一定.
+       @myvals会含有"val1","val2","val3", 顺序也不一定, 但顺序和@mykeys中的顺序是一致的.
+
+    b. each函数
+       each函数将返回含有key和value两个元素的列表.
+	    
+       例如:
+       while(($key, $val) = each %myhash) {
+	  print "$key => $val\n";
+       }
+
+       分析:
+       上述while的循环条件, each会遍历hash中所有的key/val返回, 如果没有, 则返回空表, 
+       虽然在空表的情况下$key和$val都是undef, 但我们看整体的空表.
+       i. 存在key/val的条件下: 返回两个元素的列表, 结果在标量context下是2, 为true.
+       ii. 不存在key/val的条件下: 返回空表, 结果在标量context下是0, 为false.
+	   
+    c. exists函数
+       判断一个hash是否存在某个keys, 使用exists函数, 如果存在返回true, 这和是否由对应的val无关.
+       if(exists $hashname{$key}) {
+	        ... #存在$key
+       }
+
+    d. delete函数
+       delete $hashname{$key}; # 会删除$key, 以及对应的value
+
+<7> hash元素的内插
+    hash不支持所有key/val对的内, 可以使用单个元素的内插
+	 
+    例如:
+    foreach $key (sort keys %hashname) {
+       print "key: $key, val: $hashname{$key}\n"; #单个元素的内插
+    }
+
+14. Perl的正则表达式
+<1> 正则表达式的概念:
+
+<2>
+<3>
+
+
+15.
+
+
+

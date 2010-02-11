@@ -21,11 +21,20 @@
       myport:stop().
 
 3. 测试Driver的性能
-   a. gcc -shared -o mydriver.so mydriver.c
+   a. gcc -fpic -shared -o libmydirver.so mydriver.c
    b. 在Erlang Shell中
       c(mydriver).
       mydriver:start().
       mydriver:test(100000).
       mydriver:stop().
+
+4. 测试场景:
+调用都是调用库twice(x) 100000次, 测试需要的时间:
+(可以看出, driver比port快接近40倍)
+a. port
+Wall clock:14923 ms, run-time:1760 ms
+
+b. driver
+Wall clock:338 ms, run-time:50 ms
       
     

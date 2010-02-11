@@ -69,7 +69,7 @@ ErlDrvEntry my_driver_entry = {
   drv_output,
   NULL,
   NULL,
-  "mydriver", // 和Erlang的open_port中使用的参数一致
+  "libmydriver", // 和Erlang的open_port中使用的参数一致
   NULL,
   NULL,
   NULL,

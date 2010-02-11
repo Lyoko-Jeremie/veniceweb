@@ -116,5 +116,91 @@ hello.o : hello.c mytool1.h mytool2.h
 	gcc -c $<
 
 
-3.
+3. 动态链接库和静态链接库
+区别:
+静态库在程序编译时会被连接到目标代码中, 程序运行时将不再需要该静态库.
+动态库在程序编译时并不会被连接到目标代码中, 而是在程序运行是才被载入,
+因此在程序运行时还需要动态库存在.
+
+测试代码(我们仍然使用2中的代码):
+$mytool1.h
+$mytool1.c
+$mytool2.h
+$mytool2.c
+$hello.c
+
+a. 编译使用静态库 
+使用gcc和ar命令编译打包成静态库
+静态库的命名规则是: 以lib为前缀, 紧接着跟静态库名,扩展名为.a.
+gcc -c mytool1.c mytool1.c              // 会生成mytool1.o mytool2.o
+ar -crv libmytool.a mytool1.o mytool2.o  // 创建静态库
+
+使用ar命令来创建和修改库
+ar -rcv <生成的档案文件名> <.o文件名列表>
+c - 建立库
+r - 在库中插入模块(替换)。当插入的模块名已经在库中存在，则替换同名的模块
+v - 显示详细信息
+
+使用静态库
+gcc -o hello hello.c -L/home/woomsgadmin/tmp -lmytool
+
+
+在编译成功后我们可以删除libmytool.a, 测试效果, hello仍然可以运行, 编译完成后
+就不依赖于libmytool.a了.
+
+补充:
+<1> 头文件, 在于编译过程中使用的参数. (默认的搜索路径/usr/include)
+-Idirname, 将dirname所指出的目录加入到程序头文件目录列表中, 是在预编译过程中使用的参数.
+
+C程序中的头文件包含两种情况:
+  a)#include <myinc.h>
+  b)#include "myinc.h"
+其中, A类使用尖括号(< >), B类使用双引号(" "). 对于A类, 预处理程序cpp在系统预设包含文件目录(如/usr/include)
+中搜寻相应的文件, 而对于B类, c程序在当前目录中搜寻头文件, 这个选项的作用是告诉c程序, 如果在当前目录中没有找到需
+要的文件, 就到指定的dirname目录中去寻找.
+
+<2> 库文件, 在链接过程中使用的参数. (默认的搜索路径/usr/lib)
+-Ldirname, 将dirname所指出的目录加入到程序函数档案库文件的目录列表中, 是在连接过程中使用的参数.
+在预设状态下, 连接程序ld在系统的预设路径中(如/usr/lib)寻找所需要的档案库文件, 这个选项告诉连接程序,
+首先到-L指定的目录中去寻找, 然后到系统预设路径中寻找, 如果函数库存放在多个目录下, 就需要依次使用这个选项,
+给出相应的存放目录.
+-lname, 在连接时, 装载名字为"libname.a"的函数库, 该函数库位于系统预设的目录或者由-L选项确定的目录下.
+
+b. 编译使用动态库
+动态库文件名命名规范: 和静态库类似, 不同的是扩展名不同. 动态库名增加前缀lib, 文件扩展名为.so.
+gcc -c mytool1.c mytool2.c         // 会生成mytool1.o mytool2.o
+gcc -fpic -shared -o libmytool.so mytool1.o mytool2.o // 创建动态库
+(也可以由.c文件直接创建gcc -fpic -shared -o libmytool.so mytool1.c mytool2.c)
+
+-shared, 该选项指定生成动态连接库
+-fpic, 表示编译为位置独立的代码, 不用此选项的话编译后的代码是位置相关的所以动态载入时是通过
+       代码拷贝的方式来满足不同进程的需要, 而不能达到真正代码段共享的目的.
+
+使用动态库
+gcc -o hello hello.c -L/home/woomsgadmin/tmp -lmytool
+
+在运行的时候会出错:
+./hello
+./hello: error while loading shared libraries: libmytool.so: cannot open shared 
+object file: No such file or directory.
+
+下面是两种解决方式:
+<1>拷贝动态链接库到系统共享目录下, 或在系统共享目录下为该动态链接库
+   建立连接(硬连接或符号连接均可, 常用符号连接).这里说的系统共享目录,
+   指的是LINUX动态链接库存放的目录,包括/lib, /usr/lib以及/etc/ld.so.conf
+   文件内所列的一系列目录.
+
+   拷贝: sudo cp `pwd`/libmytool.so /usr/lib/
+   创建符号链接: sudo ln -s `pwd`/libmytool.so /usr/lib
+
+<2> 修改/etc/ld.so.conf
+    加入一行/home/woomsgadmin/tmp     // libmytool.so的存放路径
+    sudo ldconfig
+
+
+
+
+
+
+
 
