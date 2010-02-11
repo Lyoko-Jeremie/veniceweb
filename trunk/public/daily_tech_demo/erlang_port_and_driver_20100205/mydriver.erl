@@ -15,10 +15,10 @@ test(Count)->
     io:format("Wall clock:~p ms, run-time:~p ms~n",[Time1,Time2]).
 
 %% 依赖:
-%% 在Linux平台上，我们需要把动态链接库mydriver.so拷贝到
+%% 在Linux平台上，我们需要把动态链接库libmydriver.so拷贝到
 %% mydriver.beam相同的目录下,才能正常启动.
 start()->
-    start("mydriver").
+    start("libmydriver").
 
 start(ShareLib) ->
     case erl_ddll:load_driver(".",ShareLib) of
