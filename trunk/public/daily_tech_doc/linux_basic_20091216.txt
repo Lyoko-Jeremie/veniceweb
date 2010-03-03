@@ -57,7 +57,7 @@ ls ~user1 ÏÔÊ¾user1ÓÃ»§µÄ$HOMEÄ¿Â¼ÏÂµÄÎÄ¼þ
 <4> mkdir -p(Ð¡Ð´) dir1/dir2 ¿ÉÒÔ´´½¨¸¸Ä¿Â¼, »á´´½¨dir1ºÍdir1µÄ×ÓÄ¿Â¼dir2
 
 8. rmdir É¾³ýÒ»¸öÄ¿Â¼(¿ÉÒÔÓÃrm -r dir´úÌæ)
-<1> rmdir dir1  É¾³ýdir1
+<1> rmdir dir1  É¾³ýdir1(dir1±ØÐëÊÇ¿ÕÄ¿Â¼)
     (Ð§¹ûµÈÍ¬ÓÚ rm -r dir1)
 <2> rmdir dir1/dir2    É¾³ýdir2, ±£Áôdir1
 <3> rmdir -p dir1/dir2 Í¬Ê±É¾³ýdir2ºÍdir1
@@ -106,15 +106,15 @@ b. Ë÷Òý½Úµã
 µ±ÎÄ¼þ±»´ò¿ªµÄÊ±ºò£¬Ë÷Òý½Úµã»á±»¸´ÖÆµ½ÄÚ´æÖÐ£¬¼Ó¿ì·ÃÎÊ¡£
 ËùÒÔÃ¿¸öÎÄ¼þ¶¼ÓÐÎÄ¼þÃûºÍË÷Òý½ÚµãºÅÀ´±íÊ¾<inode#,filename>
 
-c. ÎÄ¼þÈçºÎ·ÃÎÊ?
+c. ÎÄ¼þÈçºÎ·ÃÎÊ(Àí½âË÷Òý½ÚµãinodeºÍÎÄ¼þÃèÊö·ûfile descriptor)?
 Ë÷Òý½ÚµãÖÐ±£´æÁËÎÄ¼þÔÚ´ÅÅÌÉÏµÄ´æ´¢Î»ÖÃ£¬ËùÒÔÍ¨¹ýË÷Òý½ÚµãºÅÕÒµ½Ë÷Òý½Úµã£¬È»ºóÍ¨¹ý´æÔÚÔÚË÷Òý½ÚµãÖÐµÄÎÄ¼þÔÚ´ÅÅÌµÄÎ»ÖÃÀ´·ÃÎÊ.
 
-d. LinuxÎªÃ¿¸öÖ´ÐÐµÄÃüÁî¶¼´ò¿ªÈý¸öÎÄ¼þ: stdin, stdout, stderr, ÎÄ¼þÃèÊö·û·Ö±ðÊÇ0, 1, 2 
+d. LinuxÎªÃ¿¸öÖ´ÐÐµÄÃüÁî¶¼´ò¿ªÈý¸öÎÄ¼þ: stdin, stdout, stderr, "ÎÄ¼þÃèÊö·û"·Ö±ðÊÇ0, 1, 2 
 
 e. LinuxÖÐÃ¿¸ö´ò¿ªµÄÎÄ¼þ¶¼ÓÐÒ»¸öÎÄ¼þÃèÊö·û(file descriptor), ÊÇÒ»¸öÐ¡ÕûÊý£¬Ã¿¸ö½ø³Ì¶¼ÓÐÒ»¸ö¶ÔÓ¦µÄÎÄ¼þÃèÊö±í£¬ÀïÃæ°üº¬ÁË¸Ã½ø³ÌµÄ
    ÎÄ¼þÃèÊö·ûµÄËùÓÐÐÅÏ¢£¬Í¨¹ýÕâ¸öÎÄ¼þÃèÊö·û±í£¬¿ÉÒÔ¶¨Î»µ½ÏµÍ³·¶Î§ÄÚµÄÎÄ¼þ±í£¬ÆäÖÐ°üº¬ÁËÖ¸ÏòË÷Òý½ÚµãµÄÖ¸Õë£¬¿ÉÒÔÍ¨¹ýË÷Òý½ÚµãÀ´½øÒ»²½·ÃÎÊÎÄ¼þµÄÄÚÈÝ.
 
-   [Ã¿¸ö½ø³Ì¶ÔÓ¦µÄÎÄ¼þÃèÊö·û±í] -> [ÏµÍ³·¶Î§µÄÎÄ¼þ±í] -> [ÏµÍ³·´ÎÊµÄË÷Òý½ÚµãÁÐ±í] -> {ÕÒµ½Ò»¸öÌØ¶¨µÄË÷Òý½Úµã£¬·ÃÎÊÎÄ¼þ}
+   [Ã¿¸ö½ø³Ì¶ÔÓ¦µÄÎÄ¼þÃèÊö·û±í] -> [ÏµÍ³·¶Î§µÄÎÄ¼þ±í] -> [ÏµÍ³·¶Î§µÄË÷Òý½ÚµãÁÐ±í] -> {ÕÒµ½Ò»¸öÌØ¶¨µÄË÷Òý½Úµã£¬·ÃÎÊÎÄ¼þ}
 
 17. ÎÄ¼þ½áÊøµÄ±êÖ¾:
 Ã¿¸öLinuxÎÄ¼þ¶¼ÓÐÒ»¸öÎÄ¼þ½áÊøµÄ±êÖ¾, eof, µ±ÊäÈëÊÇ¼üÅÌÊ±ºò£¬½áÊø±êÖ¾ÊÇ<Ctrl - D>
@@ -184,7 +184,7 @@ e. LinuxÖÐÃ¿¸ö´ò¿ªµÄÎÄ¼þ¶¼ÓÐÒ»¸öÎÄ¼þÃèÊö·û(file descriptor), ÊÇÒ»¸öÐ¡ÕûÊý£¬Ã¿¸ö½
     ÐÞ¸ÄÎÄ¼þµÄÈ¨ÏÞ:
     chmod u+r file1
     chmod g-rw file1
-    chomd o=rwx file1
+    chmod o=rwx file1
     chmod a=rwx file1 (µÈÓÚchmod 777 file1, a±íÊ¾ugo)
     chmod 777 file1
     chmod -R 777 fold1 (µÝ¹éµÄÉèÖÃ×ÓÎÄ¼þºÍ×ÓÎÄ¼þ¼ÐµÄÈ¨ÏÞ)
@@ -463,6 +463,11 @@ $ ls -il file1 file1.soft
 <6> ÎªÒ»¸öÄ¿Â¼´´½¨Ò»¸ö·ûºÅÁ´½Ó
 ln -s pic2 pic2.soft Èç¹ûpic2ÊÇÒ»¸öÄ¿Â¼£¬Ôò»áÎªÕâ¸öÄ¿Â¼´´½¨Ò»¸ö·ûºÅÁ´½Ó
 
+<7> Ä¿Â¼µÄË÷Òý½Úµã¸öÊý
+²¹³äÒ»µã, Ä¿Â¼µÄÁ¬½ÓÊýÖÁÉÙ2, Ô­ÒòÊÇÃ¿¸öÄ¿Â¼ÖÐ¶¼ÓÐÒ»¸ö., Ó²Á´½Óµ½Ëü×Ô¼º, Èç¹ûÄ¿Â¼ÏÂ¶à¼¸¸ö×ÓÄ¿Â¼,
+Ã¿¸ö×ÓÄ¿Â¼µÄ..Ò²Ó²Á´½Óµ½Õâ¸öÄ¿Â¼. ËùÒÔÄ¿Â¼µÄÓ²Á´½ÓÊýÒ»¶¨´óÓÚµÈÓÚ2.
+ËùÒÔ¿ÉÒÔÕâÃ´Ëµ, Ó²Á´½ÓÊýÊÇÒ»¸öÎÄ¼þ»òÕßÄ¿Â¼µÄÕæÊµÃû×ÖµÄ¸öÊý.
+
 31. ÖØ¶¨ÏòºÍ¹ÜµÀ
 a. ÊäÈëºÍÊä³öÖØ¶¨Ïò
 LinuxÄÚºË»á×Ô¶¯ÎªÃ¿ÌõÃüÁî´ò¿ªÈý¸öÎÄ¼þ£¬stdin, stdout, stderr. Ä¬ÈÏµÄÇé¿öÏÂ¼üÅÌÊÇ±ê×¼ÊäÈë, ¿ØÖÆÌ¨ÖÕ¶ËÊÇ±ê×¼Êä³ö.
@@ -512,7 +517,7 @@ cat < file1 > file1.backup
 ls -il file5 2> error.log
 
 b. ¹ÜµÀ
-LinuxÔÊÐíÒ»¸öÃüÁîµÄ±ê×¼ÊäÈë×÷ÎªÁíÍâÒ»¸öÃüÁîµÄ±ê×¼ÊäÈë
+LinuxÔÊÐíÒ»¸öÃüÁîµÄ±ê×¼Êä³ö×÷ÎªÁíÍâÒ»¸öÃüÁîµÄ±ê×¼ÊäÈë
 command1 | command2 | command3 | ... | commandN
 ÆäÖÐcommand1µÄ±ê×¼Êä³öÊÇcommand2µÄ±ê×¼ÊäÈë£¬ÒÔ´ËÀàÍÆ.
 
@@ -560,7 +565,7 @@ a. Linux½ø³ÌµÄ×´Ì¬
 ¾ÍÐ÷: ½ø³Ì×¼±¸ÔËÐÐ£¬µ«Ã»ÓÐµÃµ½CPU
 ÔËÐÐ: ½ø³ÌÕýÔÚÔËÐÐ£¬Õ¼ÓÃCPU
 µÈ´ý: µÈ´ýÄ³¸öÊÂ¼þµÄ·¢Éú
-±»½»»»: ÔÝÊ±±£´æÔÚ½»»»¿Õ¼äÉÌ
+±»½»»»: ÔÝÊ±±£´æÔÚ½»»»¿Õ¼ä
 ½©ËÀ: ´¹ËÀµÄ½ø³Ì£¬Í¨³£Ò»¸ö½ø³ÌµÄ¸¸½ø³ÌÔÚ¸Ã½ø³Ìµ÷ÓÃexitÏµÍ³µ÷ÓÃÇ°¾ÍÖÕÖ¹Ê±ºò£¬¸Ã½ø³Ì¾ÍÊÇ½©ËÀ½ø³Ì.
 
 forkÏµÍ³µ÷ÓÃ:
@@ -579,7 +584,7 @@ c. Ö´ÐÐShell½Å±¾µÄÁ÷³Ì(»á´´½¨Ò»¸ö×ÓShellÀ´Ö´ÐÐ, Ò²¼´ÊÇ¸¸shellµÄ¸±±¾À´Ö´ÐÐ):
 (sh)¸¸½ø³Ì      -> (sh)×Ó½ø³Ì  fork-> (sh)×Ó½ø³Ì
 (sh)¸¸½ø³Ì      -> (sh)×Ó½ø³Ì      -> (exec find)×Ó½ø³Ì
 
-d. execÃüÁîÔËÐÐÁíÒ»¸ö³ÌÐòÀ´Ìæ´úµ±Ç°shell
+d. execÃüÁî"ÔËÐÐÁíÒ»¸ö³ÌÐòÀ´Ìæ´úµ±Ç°shell"
 ÎÒÃÇÆô¶¯Ò»¸ösh: /bin/sh
 ÔÙÆô¶¯Ò»¸öbash: /bin/bash
 È»ºóÔÚbashÖÐÖ´ÐÐexec more file1, ÕâÌõÃüÁî»áÊ¹exec moreÀ´Ìæ»»µ±Ç°µÄbash shell, Ò²¾ÍÊÇbash
@@ -615,19 +620,21 @@ h. Ê¹ÓÃtopÃüÁî
 Ê¹ÓÃ<Ctrl - C>ÍË³ö
 
 i. Ç°Ì¨½ø³ÌºÍºóÌ¨½ø³ÌµÄÏà¹ØÃüÁî
-command   Ç°Ì¨½ø³Ì
-command & ºóÌ¨½ø³Ì
+command    Ç°Ì¨½ø³Ì
+command &  ºóÌ¨½ø³Ì
+<CTRL - Z> ½«Ò»¸öÕýÔÚÇ°Ì¨Ö´ÐÐµÄÃüÁî·Åµ½ºóÌ¨, ²¢ÇÒÔÝÍ£(Stopped).
+jobs       ²é¿´µ±Ç°ÓÐ¶àÉÙÃüÁî±»·ÅÔÚºóÌ¨Ö´ÐÐ.
+fg         ½«Ò»¸öºóÌ¨ÔÝÍ£µÄÃüÁîÔÚÇ°Ì¨Ö´ÐÐ, Èç¹ûfg²»´ø²ÎÊý, Ôò½«µ±Ç°×÷ÒµÇÐ»»µ½Ç°Ì¨;
+	   Ò²¿ÉÒÔ´ú²ÎÊý, Ö´ÐÐjobid, fg jobid
+bg         ½«Ò»¸öºóÌ¨ÔÝÍ£(Stopped)µÄÃüÁî±ä³ÉÔÚºóÌ¨¼ÌÐøÖ´ÐÐ(Í¨³£ÅäºÏ<CTRL - Z>Ê¹ÓÃ).
+	   Èç¹ûÓÐ¶à¸öºóÌ¨ÃüÁî, ¿ÉÒÔÊ¹ÓÃbg jobid.
 
-fg[%jobid] ÇÐ»»jobºÅÎªjobidµÄºóÌ¨½ø³Ìµ½Ç°Ì¨Ö´ÐÐ£¬Èç¹ûfg²»´ø²ÎÊý£¬Ôò½«µ±Ç°×÷ÒµÇÐ»»µ½Ç°Ì¨Ö´ÐÐ.
-jobs»òÕßjobs -lÁÐ³öµ±Ç°ËùÓÐµÄJob.
-bg[%jobid] ÇÐ»»jobºÅÎªjobidµÄÇ°Ì¨µÄjobµ½ºóÌ¨Ö´ÐÐ.
-
-ÀýÈç: ·µ»ØµÄÊÇJobµÄ -> [JobID] + PID
+¸ñÊ½: ·µ»ØµÄÊÇJobµÄ -> [JobID] + PID
 $ find /home/ -name liqiang -print > data.log &
 [1] 11639
 
 ÒªÖÕÖ¹Ò»¸öÇ°Ì¨½ø³Ì£¬<Ctrl - C>¾Í¿ÉÒÔÁË£»
-ÒªÖÕÖ¹ºóÌ¨½ø³Ì£¬¿ÉÒÔÊ¹ÓÃkillÃüÁî; »òÕßÊ¹ÓÃfg½«Æä×ª»»µ½Ç°Ì¨£¬È»ºó<Ctrl - C>
+ÒªÖÕÖ¹ºóÌ¨½ø³Ì£¬¿ÉÒÔÊ¹ÓÃkillÃüÁî(kill pid); »òÕßÊ¹ÓÃfg½«Æä×ª»»µ½Ç°Ì¨£¬È»ºó<Ctrl - C>
 
 j. LinuxÊØ»¤½ø³Ì
 ÈÎºÎºóÌ¨ÔËÐÐµÄ½ø³Ì¶¼¿ÉÒÔ³ÉÎªÊØ»¤½ø³Ì£¬µ«×÷ÎªÒ»¸öÊõÓï£¬Í¨³£Ö¸ÔÚºóÌ¨ÔËÐÐµÄÏµÍ³½ø³Ì.

@@ -1,0 +1,439 @@
+主要介绍Perl的引用, Perl的面向对象, Perl的包和模块等方面的内容
+
+1. Perl的引用
+<1> 简单变量的引用
+    \反斜线和C语言中的&区地址操作类似, 我们使用\创建一个新的引用.
+    例如:
+    $var = "this is a string.";
+    $pointer = \$var; # $pointer指向存储$var值的位置.
+    print "$pointer:$$pointer\n"; #输出SCALAR(0x865b060):this is a string.
+
+    上面的例子是一个"硬引用", 即使$var销毁了, 也可以通过$pointer来访问它的值, 硬引用采用引用计数
+    的方式, 所以我们必须同时销毁$var和$pointer, 才能使内存池中的空间释放.
+    $pointer存储的是$var的地址, 而不是$var的值本身, 使用$$pointer的形式获得引用的简单变量的值.
+
+<2> 数组和引用
+    关于Perl中的数组和Hash表始终要记住的一点: 数组和hash表都是一纬的, 因此数组和hash表只能保存
+    标量的值, "不能直接存储数组或者其它复杂的数据结构", 数组的成员要么是数(或者字符串), 要么是引用.
+
+    数组的引用也是使用反斜杠/来创建, $pointer = \@array;
+    例子:
+    my @arr = qw/str1 str2 str3/;
+    $pointer = \@arr;
+    print "Address:$pointer\n";
+
+    $count = scalar(@$pointer);
+    print "Count:$count\n";
+
+    $index = 0;
+    foreach(@$pointer) {
+      # 也可以写成 $pointer->[$index++]
+      print "$index: $$pointer[$index++]\n"; # 含义: "取出$pointer中的地址当作数组使用"
+    }
+
+    结果:
+    Address:ARRAY(0x9e14060)
+    Count:3
+    0: str1
+    1: str2
+    2: str3
+
+<3> 哈希表和引用
+    哈希表和数组的使用方式类似,
+    例子:
+    my %month = (
+    "1" => "Jan",
+    "2" => "Feb",
+    "3" => "Mar",
+    "4" => "Apr");
+
+    $pointer = \%month;
+    print "Address:$pointer\n";
+
+    foreach $key (sort keys %$pointer) {
+        print "$key: $$pointer{$key}\n";
+    }
+
+    结果:
+    Address:HASH(0x922e060)
+    1: Jan
+    2: Feb
+    3: Mar
+    4: Apr
+
+<4>多维数组
+   在Perl中可以使用中括号[]创建"匿名数组"的引用, 语法是:
+   $ref = ["str0", "str1", ["str20", "str21", "str22"], "str3"];
+   $ref指向该数组, "访问其元素"的语法是(->访问和$访问的方式一样):
+   $ref->[$index1];                   # 一维数组, 等价于$$ref[$index1]
+   $ref->[$index1][$index2];　　　　　　#　二维数组, 等价于$$ref[$index1][$index2]
+   $ref->[$index1][$index2][$index3];	# 三维数组, 等价于$$ref[$index1][$index2][$index3]
+
+   二维数组的例子:
+   $ref = ["str0", "str1", ["str20", "str21", "str22"], "str3"];
+
+   print "\$ref->[0]    -> $ref->[0]\n";
+   print "\$ref->[1]    -> $ref->[1]\n";
+   print "\$ref->[2][0] -> $ref->[2][0]\n";
+   print "\$ref->[2][1] -> $ref->[2][1]\n";
+   print "\$ref->[2][2] -> $ref->[2][2]\n";
+   print "\$ref->[3]    -> $ref->[3]\n";
+   结果:
+   $ref->[0]    -> str0
+   $ref->[1]    -> str1
+   $ref->[2][0] -> str20
+   $ref->[2][1] -> str21
+   $ref->[2][2] -> str22
+   $ref->[3]    -> str3
+
+   总结:
+   数组和哈希表取得引用值有"两种方式":
+   $$pointer_arr[$index] = "item";
+   $pointer_arr->[$index] = "item";
+
+   $$pointer_hash{$index} = "item";
+   $pointer_hash->{$index} = "item";
+
+   数组和哈希表组合成复杂数据结构的例子:
+   my %hash = (
+    "key1" => ["1-1-val", "1-2-val"],
+    "key2" => ["2-1-val", "2-2-val"],
+    "key3" => ["3-1-val", "3-2-val"]);
+   $pointer = \%hash;
+   foreach $key (sort keys %$pointer) {
+     my $vals = $$pointer{$key};
+     my $val1 = $vals->[0];
+     my $val2 = $vals->[1];
+     # 或者($val1, $val) = @$vals;
+     print "$key: $val1, $val2\n"
+   }
+   结果:
+   key1: 1-1-val, 1-2-val
+   key2: 2-1-val, 2-2-val
+   key3: 3-1-val, 3-2-val
+
+<5> 子程序的引用
+    子程序的引用和C的指针类似,
+    $pointer = sub { ... };  # 创建
+    &pointer($param_lists);  # 调用
+
+    例如:
+    sub server_msg {
+      my $level = shift_; # 或者shift
+      return sub {
+	my $msg = shift @_;
+	print "Level-$level:$msg\n";
+      }
+    }
+    $error_msg = &server_msg("Error");
+    $warning_msg = &server_msg("Warning");
+
+    &$error_msg("this is a error msg");
+    &$warning_msg("this is a warning msg");
+    结果:
+    Level-Error:this is a error msg
+    Level-Warning:this is a warning msg
+
+<6> 数组和子程序
+    要知道子程序通过@_存储传递给它的参数, 如果我们想传递多个数组作为参数, 可以通过传递数组引用的方式实现.
+    
+    例如:
+    sub my_func{ 
+     my($ref1, $ref2) = @_; # 取得参数的引用
+     ...
+    };
+    my_func(\@arr1, \@arr2); # 传递数组引用作为参数
+
+<7> 文件句柄的引用
+    open FILE1, ">", "demo.out" 
+      or die "can't open demo.out$!";
+    $var = \*FILE1;
+    print $var "this is a test string\n";
+
+2. Perl的包和模块
+<1> require函数
+    使用reqiure函数可以把一个大的程序分割成多个小文件分别包含, 同时也可以创建子程序库.
+    a. 文件的包含
+    如果我们在myutil.pl文件中定义了一系列函数, 可以使用require("myutil.pl")将程序包含进来, 当Perl的解释器
+    看到require语句的时候, 会在"内置的数组变量@INC"指定的目录中搜索myutil.pl, 如果找到了, 该文件会被执行, 否则输出
+    "Can't find myutil.pl in @INC"错误.
+ 
+    作为子程序的调用参数, 文件的最后一行表达式的值为返回值, require函数检查返回值是否为0, 如果为0则终止.
+    并返回: myutil.pl did not return a true value at ... 的错误.
+ 
+    可以用简单变量或者数组元素向require传递参数:
+    @reqlist = qw/fil1.pl file2.pl file3.pl/;
+    require ($reqlist[0]);
+    require ($reqlist[1]);
+    require ($reqlist[2]);
+
+    requires; 也可以不使用参数, 这时候会把$_传递给require.
+
+    注意:
+    如果@INC的多个目录中包含一个文件, 则只有第一个会被包含.
+    b. 子程序库
+    创建子程序库的几个步骤:
+    > 确定存储子程序的目录
+    > 将子程序保存在单独的文件中, 存储到子程序的目录中
+    > 在子程序的结尾加一个非0的语句, 例如1作为返回值
+    > 在主程序中使用require引用子程序
+    > 运行主程序的时候增加-I选项指定子程序的存储位置, 或者在调用require之前将子程序的存储目录加入到@INC中.
+      (例如: perl -I/home/user/lib)
+
+    例如:
+    如果子程序存储在/home/user/lib下, 则调用
+    unshift (@INC, "/home/user/lib"); # 不要使用push, 因为push会把路径存储在@INC数组末尾.
+    require ("myutil.pl");
+
+    我们也可以使用require来指定运行Perl所需要的版本, 当Perl解释器看到require跟着数字的时候, 只有高于或者等于
+    该版本的程序才会运行:
+    require 5.001; # 高于或者等于5.001才运行
+
+<2> 包Package
+    Perl程序把变量和子程序的名字都存储在"符号表"中, Perl符号表表中名字的集合就叫做包(Package).
+
+    a. 包的定义和使用
+    package newpackage; 
+    上面的语句定义了一个新的package, 以后所有的变量和子程序的名字都存储在newpackage包关联的符号表中,
+    直到遇到另一个package语句为止.
+    每个符号表都有自己相关的变量, 子程序的名字, 彼此间不会相互影响.
+    存储程序和变量的缺省符号表在main包中, package main;可以切换到缺省的符号表.
+    例如:
+    $var = 1;  # 存储在main符号表中
+    package newpack1;
+    $var = 2;  # 存储在newpack1符号表中
+    package newpack2;
+    $var = 3;  # 存储在newpack2符号表中
+
+    package main;
+    print "$var\n";    # 打印1
+    package newpack2;
+    print "$var\n";    # 打印3
+
+    如果要在一个包中引用其它包的变量, 可以这样:
+    $packagename::var;
+    上面的例子可以这样写: 
+    package main;
+    print "$var\n";
+    print "$newpack1::var\n";  # 在缺省包引用newpack1的变量
+    print "$newpack2::var\n";
+
+    b. 指定无当前包
+    package; 指定无当前包, 这时所有的变量必须明确的指出所属的包, 否则出错
+    $newpackage1::var = 1; #正确
+    $var = 2;  # 错误
+
+    c. 包和子程序
+    包的定义也影响到子程序, 在包外调用其子程序, 要显示的指示所属于的包.
+
+    例如:
+    package newpack1;
+    sub myprint {
+      print "newpack1-print\n";
+    }
+    package main;
+    &newpack1::myprint(); # 正确
+    &myprint() # 错误
+
+    d. 用包定义私有数据
+    包通常用在子程序中, 保证子程序使用的全局变量不可以在其它地方使用.
+    
+    私语数据的例子:
+    # 定义"私有的"数据
+    package privpack;
+    $val = 46;
+
+    # 外界可以调用的"接口"
+    package main;
+    sub printval {
+        &privpack::printval();
+    }
+
+    # 定义"私有的"函数
+    package privpack;
+    sub printval {
+        print "$val\n";
+    }
+
+    package main;
+    1;   # require的返回值
+
+    e. 包和系统变量
+    下面变量及时在其它包中调用, 也在main包中起作用:
+    文件变量: STDIN, STDOUT, STDERR, ARGV
+    变量: %ENV, %INC, @INC, $ARGV, @ARGV
+
+<3> 模块
+    a. 创建模块
+    Perl5用包来创建模块: 创建包, 并将它存放在同名的文件中. 例如名为MyModult的包存储在文件MyModule.pm中
+    (.pm Perl Module).
+
+    下面的模块含有子程序myfun1, myfun2和变量$myvar1, $myvar2.
+    #! /usr/bin/perl
+    use warnings;
+
+    package mymodule;  # 定义包
+    require Exporter;  # 包含Perl模块Exporter
+    @ISA = qw(Exporter);
+    # 进行子程序, 变量的输出于外界联系
+    # a. 创建名为EXPORT的特殊数组, 该数组中的子程序可以被其它程序调用
+    # b. @EXPORT_OK的数组包含所有可以被外界访问的变量
+    @EXPORT = qw(myfun1 myfun2);
+    @EXPORT_OK = qw($myvar1 myvar2);
+
+    sub myfun1 {
+      $myvar1 += 1;
+      print "\$myvar1: $myvar1\n";
+    }
+    sub myfun2 {
+      $myvar2 +=1;
+      print "\$myvar2: $myvar2\n"
+    }
+
+    b. 导入模块
+    use module;这样的语法来使用模块.
+    no module; 这样的语法来取消模块的使用.
+
+    使用上面自定义的模块:
+    #! /usr/bin/perl 
+    use warnings;
+    use mymodule;
+
+    &myfun1();  # 调用mymodule::myfun1();
+    &myfun1();
+
+    例外一个例子:
+    use integer;
+
+    $res = 3.4 + 2.3;
+    print "$res\n"; # 5
+    no integer;
+    $res = 3.4 + 2.3;
+    print "$res\n"; # 5.7
+
+3. Perl中的面向对象
+<1> 介绍
+    Module就是Perl的包package:
+    类就是一个Perl包. 
+    方法就是一个Perl子程序, 类名是第一个参数
+    对象是对"类中的数据项的引用".
+
+    Perl中的继承只继承方法, 我们要自己实现数据的继承.
+
+<2> 创建类(构造函数)
+    构造函数是子程序, 它返回"与类名相关的一个引用".
+    将类名和引用结合的方式称为"祝福"bless, 语法是:
+    bless yourRef [, classname]
+    yourRef是被"祝福"的对象的引用, classname是可选的, 指定对象获取方法的包名, 默认为当前包名.
+    
+    下面是代码: 创建一个构造函数的方法, 并返回"与类名相关的一个引用"
+    $mymodule.pm
+    #! /usr/bin/perl
+    use warnings;
+
+    package mymodule;
+    sub new {
+      my $this = {};  # 创建一个"匿名hash"引用. 不局限于hash, 也可以是"匿名数组" my $this = [];
+      bless $this;    # 将hash引用和当前的package mymodule相关联, 将"引用变成一个对象"
+      return $this;   # 返回这个"与类名相关的hash引用", 也就是返回这个对象.
+    }
+
+    下面语句是创建该对象:
+    #! /usr/bin/perl
+    use warnings;
+    push(@INC, "/home/user/lib") # 将mymodule.pm的存放路径加入到包搜索路径
+    use mymodule;
+
+    #三种方式创建对象
+    $mod1 = new mymodule;
+    $mod2 = mymodule->new();  # 会自动添加一个参数进去
+    $mod3 = mymodule::new();  # new没有参数传递进去
+
+    "对象"和"引用"的真正区别是什么？
+    对象被bless以属于某个类, 引用则不然.
+    如果引用被bless, 则它将属于某个类, 也就变成了对象.
+    对象知道自己属于哪个类(也就是对象和类有从属的关系, "对象一定是某个类的一个实例"), 引用不属于任何类.
+
+    实例变量:
+    构造函数new的变量叫做"实例变量", 实例变量在用来创建对象每个实例的时候用来初始化, 可以用"匿名哈希"或者"匿名数组"
+    来保存实例变量.
+
+    看下面的例子:
+    #! /usr/bin/perl
+    use warnings;
+    package mymodule;
+    sub new {
+      # my $type = shift @_; 如果加入了这一行, 则不能使用mymodule::new()来调用,
+      # 只能使用mymodule->new()来调用, 因为->调用方法的方式会自动添加第一个参数.
+
+      my %parm = @_; # 参数列表
+      my $this = {}; # 匿名的哈希引用, 也可以使用匿名数组my $this = []; 来保存实例变量.
+      $this->{'name'} = $parm{'name'}; # 可以使用$$this{'name'} = $parm{'name'}
+      $this->{'x'} = $parm{'x'};
+      $this->{'y'} = $parm{'y'};
+      bless $this;
+      $this;
+    }
+    1; # 注意: 模块返回价值
+
+    调用模块:
+    #! /usr/bin/perl 
+    use warnings;
+    use mymodule;
+    $myinstant = mymodule::new("name"=>"myinstant-name", "x"=>23, "y"=>34);
+    print "$myinstant->{'name'}\n"; # 可以使用$$myinstant{'name'}来输出结果
+    print "$myinstant->{'x'}\n";
+    print "$myinstant->{'y'}\n";
+
+    结合引用数据的访问方式, 理解如何访问类的实例变量:
+    my $ref_hash = {"key1"=>"val1", "key2"=>"val2"}; # 创建匿名哈希的引用
+    my $ref_arr = ["val1", "val2"]; # 创建匿名数组的引用
+    注意数组元素的访问方式:
+    $ref_hash->{"key1"} 等价于 $$ref_hash{"key1"}
+    $ref_arr->[0] 等价于 $$ref_arr[0]
+
+<3> 方法的"输出"和"调用"
+    类的方法就是一个子程序, 分为"静态方法"和"虚方法", 区别是: "是否关系第一个参数"
+    
+    对上面的例子进行更新:
+    #! /usr/bin/perl
+
+    # 导出函数的方式
+    require Exporter;
+    @ISA = qw(Exporter);
+    @EXPORT = qw(print_x, set_x);
+
+    use warnings;
+    package mymodule;
+    sub new {
+      my %parm = @_; # 参数列表
+      my $this = {}; # 匿名的哈希引用
+      $this->{'name'} = $parm{'name'}; # 可以使用$$this{'name'} = $parm{'name'}
+      $this->{'x'} = $parm{'x'};
+      $this->{'y'} = $parm{'y'};
+      bless $this;
+      $this;
+    }
+
+    sub print_x {
+      my $this = shift @_;
+      print "x: $this->{'x'}\n";
+    }
+    sub set_x {
+      my $this = shift @_;
+      $this->{'x'} = $_[0];
+    }
+    使用方式:
+    #! /usr/bin/perl 
+    use warnings;
+    use mymodule;
+    $myinstant = mymodule::new("name"=>"myinstant-name", "x"=>23, "y"=>34);
+    $myinstant->print_x(); # 等价于 mymodule::print_x($myinstant)
+    $myinstant->set_x(5);  # 等价于 mymodule:set_x($myinstant, 5)
+    $myinstant->print_x();
+    要注意的是: 通过箭头->调用方法, 类自身的引用是如何自动添加为方法的第一个参数的.
+
+<4> 类的一些特别说明:
+    a. 一定要通过方法来访问类的变量, 不要直接访问.
+    b. use mod:file; 的含义是在@INC的所有搜索路径中搜索 ./mod/file.pm
+
