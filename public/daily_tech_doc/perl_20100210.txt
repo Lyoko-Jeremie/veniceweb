@@ -29,6 +29,10 @@ $demo.pm
     0377         # 八进制
     
     c中的三个数都表示255, 在Perl中, 0xff和255.00没有区别.
+    也就是下面条件表达式会返回true.
+    if(0xff == 255.00) {
+      print "equal\n";
+    }					
 
 <2> 数字操作符
     2+3   - 加
@@ -54,7 +58,8 @@ $demo.pm
     5 x 4       等于 "5555"
 
 <6> 数字和字符串之间的自动转换
-    Perl会在需要的时候对数字和字符串进行转换, 在+的时候看作数字, 在.的时候看作字符串.
+    Perl会在需要的时候对数字和字符串进行转换: 
+    在+或者*的的时候看作数字, 在.的时候看作字符串, 在x的时候左边看作字符串, 右边看作数字.
 
     例如:
     "12" * "3" = 36
@@ -152,7 +157,7 @@ $demo.pm
        通常返回0或者1. (如果字符串结尾有两个换行符, 它只移除一个)
 
    $text = "this is a string\n";
-   chomp($text); #去掉\n
+   chomp($text); #去掉$text中的\n, 修改$text变量.
 
    <2> 两条Perl的原则
    a. 在需要使用变量的地方, 使用赋值表达式代替.
@@ -188,8 +193,8 @@ use warnings;
     $arr[0] = "str0";  
     $arr[1] = "str1";
 
-    同一程序还中可以有$arr的变量, 它和数组可以重名, 因为Perl中数组和标量属于不同
-    的命名空间.
+    同一程序还中可以有$arr的标量, 它和数组可以重名, 因为Perl中"数组和标量属于不同
+    的命名空间".
     $arr = "atom"; # 变量可以和数组重名
 
     如果数组的下标不是整数, 将自动转换成"小于它的最大整数"
@@ -252,8 +257,8 @@ use warnings;
     @arr4 = (@arr3, undef, @arr3) # 包含200 001个元素的表
     @arr5 = (@arr1, @arr2, @arr1) 
     @arr6 = (str1 str2 str3 str1 str2 str3)  #等价于@arr5, 数组名字被起列表替换, 数组不能成为
-                                             #列表的一个元素的原因是, 数组只能包含标量值, 不能包
-					     #含数组.
+                                             #列表的一个元素的原因是, "数组只能包含标量值, 不能包
+					     #含数组".
 
     未被初始化的数组为(), 空表; 未被初始化的标量值为undef. 
 
@@ -271,7 +276,7 @@ use warnings;
    
     如果@arr为空, pop什么也不做, 返回undef
 
-    push操作:
+    push操作(可以一次push多个元素):
     @arr = (1, 2);
     push(@arr, 3);   # 现在@arr为(1, 2, 3)
     push @arr, 4;    # 现在@arr为(1, 2, 3, 4)
@@ -293,7 +298,7 @@ use warnings;
     如果@arr为空, 和pop一样, 返回undef.
 
 <9> 将数组插入字符串
-    数组也可以插入双引号的字符串中, 数组会自动由空格分开:
+    数组也可以插入双引号的字符串中, "数组元素会自动由空格分开":
     @arr = qw/str1 str2 str3/;
     $res = "str0 @arr str4";   # "str0 str1 str2 str3 str4 str5"
     $res = "str0 $arr[0] str4" # "str0 str1 str4"
@@ -317,7 +322,7 @@ use warnings;
        print "this is: $item";
      }
 
-     注意:
+     注意!!:
      控制变量不是列表元素的拷贝, 而是列表元素本身, 如果在循环中修改这些变量, 列表
      元素也会被修改.
 
@@ -330,7 +335,7 @@ use warnings;
      $_ = "this is string!\n";
      print;
 
-<12> reverse操作
+<12> reverse操作(不改变输入的参数)
      将输入的列表逆序后输出
      
      @arr = 1 .. 5;  #等价于(1, 2, 3, 4, 5)
@@ -464,7 +469,8 @@ use warnings;
           print "num: $_\n"; # 全局变量$_会被保存, 使用$_是私有变量
        };
        print "res: $_\n";  # 会输出val
-    c. 但是如果调用子程序的时候使用&scenario; 这种形式, 也就是前面有&而后面没有括号,
+    c. 注意!!: 子程序调用形式对默认参数的影响
+       但是如果调用子程序的时候使用&scenario; 这种形式, 也就是前面有&而后面没有括号,
        @_就将从调用者的上下文context中得到. 所以我们通常的调用方式是, 即使没有参数, 也需要
        写括号&scenario(); 而不是&scenario;
 
@@ -522,7 +528,7 @@ use warnings;
     使用了strict的代码段会进行严格的检查:
     use strict;
 
-    a. 如果打开了strict, Perl要求声明每一个变量的时候都使用my, 这只是针对信的变量,
+    a. 如果打开了strict, Perl要求声明每一个变量的时候都使用my, 这只是针对新的变量,
        对于内嵌的变量, $_, @_则不需要加my.
     b. 应该避免使用$a, $b, 因为sort使用了它们.
     
@@ -628,7 +634,7 @@ use warnings;
        }
 
 <2> 从<>读取输入
-    使用尖括号<>作输入, 用这种方法可以书写类似标准linux的工具, 比如cat.
+    使用尖括号<>作输入, 用这种方法可以书写"类似标准linux的工具", 比如cat.
     例如:
     cat file1 file2 file3将输出fil21 file2 file3三个文件的内容.
     cat 没有参数将从标准输入读取内容, 每读取一行输出一行.
@@ -711,15 +717,128 @@ use warnings;
     printf "-10send", "nihao"; # nihao----end
     
     b. 数组使用printf操作
-    x操作的要求两边都是标量, 都字符串重复N次: 字符串x整数N, 也就是x操作是标量context.
+    x操作的要求两边都是标量, 字符串重复N次: 字符串x整数N, 也就是x操作是标量context.
 
     所以我们可以这样处理数组(对每个元素都格式化输出):
     my @items = qw/str1 str2 str3/;
     my $format = "The items are:\n"."item: %10s\n"x@items; # @items在标量context
     printf $format, @items; # @item在列表context
     
-<5>　文件句柄filehandle.
+<5> 文件句柄filehandle.
+    a. 文件句柄是程序IO的名字, 是Perl和外界的纽带, 命名规则和其它标示符一样, 但是没有前缀, 这可能
+       导致文件句柄和现在或者以后的保留子重名, 所以建议所有的文件句柄都用大写.
+    b. Perl自带了六个文件句柄: STDIN, STDOUT, STDERR, DATA, ARGV, ARGVOUT
+    c. 通过下面的程序可以把标准输入的内容显示到标准输出上, 并且每行加一个行号.
+    #! /usr/bin/perl 
+    use warnings;
+    my $line = 0;
+    while(<STDIN>) {
+      $line += 1;
+      print "$line: $_";
+    };
+    使用:
+    i. 标准输入输出重定向到文件: 
+       ./demo.pm < file1 > file2
+    ii. 使用管道
+        cat file1 | ./demo.pm > file2
+    d. 文件句柄的打开
+       open CONFIG, "file1";
+       open CONFIG, "<file1";
+       open RESULT, ">file2"; 
+       open LOG, ">>logfile";
+       也可以在文件名的地方使用任意的标量表达式:
+       $output_file = "file2";
+       open RESULT, "> $output_file"; # >后面的空格, Perl会忽略它.
 
+       其中1和2是一样的, 作用都是使用这个文件作为输入操作.
+       3是打开一个新的文件, 如果文件内容存在, 则清空它, 重新写入信内容. 4是追加内容到文件.
+
+       从Perl5.6以后开始支持3元的打开表达式(安全性的考虑):
+       open CONFIG, "<", "$file_name";
+       open LOG, "<<", "&logfile_name()";
+    e. 文件句柄打开是否成功?
+       i. 如果一个读入文件句柄打开失败, 会立刻到达文件尾end-of-file, 文件尾在标量中是undef, 在列表中是空列表.
+       ii.如果写数据到一个打开失败的文件句柄, 数据会悄悄丢失.
+
+       open如果成功返回true, 失败返回false.
+       $success = open CONFIG, "<file1";
+       if(!$success) {
+          ... # 文件打开失败
+       }
+    f. 关闭文件句柄
+       close CONFIG;
+       如果程序使用open重新打开文件句柄, 或者程序退出, Perl将自动关闭文件句柄.
+    g. 严重错误
+       Perl内部发生了一个严重的错误, 程序将停止, 我们可以调用die函数来创建一个严重的错误.
+       die可以用标准错误流输出错误信息, 并保证程序退出状态(exit status)非0.
+
+       补充:
+       每一个Linux程序都有一个退出状态, 表明其是否成功. 运行程序(如make)通过查看退出状态来分析程序
+       的运行状况, 退出状态是一个单字节, 0表示成功, 非0表示失败. 当退出状态非0的时候, make一类的程序
+       就停止下面的处理.
+
+       例子:
+       if(!open CONFIG, "<", "file8") {
+         die "can't open file8: $!";
+       }
+       ./demo.pm
+       can't open file8: 没有该文件或目录 at ./demo.pm line 5.
+
+       die还会做另外一件事, 将程序的名字和行数输出到消息的末尾, 因此我们可以轻易的区分哪些是die引起的消息.
+       如果不想要名字和行数, 只需要在die的结尾加上\n, 则不会输出名字和行数.
+       die "can't open file8: $!\n";
+
+       如何获取系统的错误信息?
+       $!表示发生错误的时候, 系统产生的一些可读信息. 如果用die来表明错误, 但该错误不是系统请求引起的,
+       就不要使用$!.
+    h. 警告信息
+       可以使用warn函数显示警告信息, 它的用法和die一样, 不同点是显示警告信息后, 程序不会退出, 继续执行.
+    i. 使用文件句柄
+       输入文件句柄打开后, 就可以和<STDIN>类似的使用;
+       输出文件句柄打开后, 可以配合print或者printf一起使用.
+       
+       例子(会把当前目录中的文件file1的内容赋值到file2, 并且每行的开头加行号):
+       if(!open FILE1, "<", "file1") {
+         die "can't open file1: $!";
+       };
+
+       if(!open FILE2, ">", "file2") {
+         die "can't open file2: $!";
+       }
+
+       $count = 0;
+       while(<FILE1>) {
+         $count += 1;
+         print FILE2"$count: $_"; #文件句柄和要打印的内容之间没有逗号.
+       }
+       close FILE1;
+       close FILE2;
+    j. 改变默认的输出句柄
+       print的默认输出是STDOUT, 这个默认属性可以通过select改变:
+       
+       例如:
+       if(!open FILEOUT, ">>", "fileout") {
+         die "can't open fileout: $!";
+       }
+
+       print "string to STDOUT-1\n";
+       select FILEOUT;
+       print "string to FILEOUT-1\n";
+       select STDOUT;
+       print "string to STDOUT-2\n";
+       close FILEOUT;
+       
+    k. 重新打开文件句柄
+       重新打开一个文件句柄, 前一个同名的句柄将会自动关闭.
+       我们一般不使用Perl默认的六种句柄, 除非想使用特殊的性质.
+       die或者warn的错误信息将输出到STDERR上
+       
+       用上面的三条运则, 就可以把错误信息输入到文件中:
+       if(!open STDERR, ">>", "mylog") {
+         die "can't open mylog: $!";
+       }
+       当重新打开STDERR之后, 所有的错误信息都被写入文件中.
+       如果STDERR句柄没有打开成功, die的错误信息仍然使用原来的标准错误输出.
 
 13. 哈希Hash
 <1> 哈希就是key/value对, 其中key是字符串(如果使用50/20作为key, 它通常被转换为"2.5").
@@ -803,8 +922,8 @@ use warnings;
     d. delete函数
        delete $hashname{$key}; # 会删除$key, 以及对应的value
 
-<7> hash元素的内插
-    hash不支持所有key/val对的内, 可以使用单个元素的内插
+<7> hash"元素"的内插
+    hash不支持所有key/val对的内插, 可以使用单个元素的内插
 	 
     例如:
     foreach $key (sort keys %hashname) {
@@ -812,13 +931,1154 @@ use warnings;
     }
 
 14. Perl的正则表达式
+    列举本节出现的所有元字符, 如果要匹配元字符本身, 则需要使用\转意.
+    . 所有字符(\n除外)
+    / 转意字符
+    
+    * 0次或者多次
+    + 1次或者多次
+    ? 0次或者一次
+
+    () 分组
+    | 选择符
+    [] 字符类(只匹配类中的一个字符)
+       \d 数字
+       \w word
+       \s 空格
+    [^] 字符类的补集
+       \D 非数字, [^\d]
+       \W 非word, [^\w]
+       \S 非空格, [^\s]
+       
 <1> 正则表达式的概念:
+    在Perl中正则表达也称为"模式", 也就是某个模板是否匹配某个字符串.
+    注意: 不要将正则表达式和Linux Shell中的文件名匹配模式混淆.
 
-<2>
-<3>
+<2> 使用简单的模式:
+    要匹配某个正则表达式和$_的关系, 可以将模式放在两个正斜杠之间//.
+    (注意: 所有在双引号中转意的字符在模式中仍然有效, 例如/abc\tabc/, 会匹配7个字符的字符串, 中间有/t).
+    $_ = "abdabcaa";
+    if(/abca/) {
+      print "find abca\n";
+    }
+    表达式/abca/将在$_寻找匹配这个模式的字串, 如果找到, 返回true.
+
+<3> 元字符(metacharacters)
+    模式匹配中的特殊字符, 在正则表达式中有特殊的含义.
+    
+    例如(讲解点.和斜杠\两个元字符):
+    点(.)匹配任意的单个字符(换行\n除外).
+    如果想使用元字符, 比如要匹配点(.)则需要在元字符前面加斜杠来转意, 这条规则在Perl的正则表达式中对所有的元字符都有效.
+    /ab.c/:  可以匹配"abac"或者"abdc"等等.
+    /ab\.c/: 可以匹配"ab.c"
+    反斜杠也是元字符, 需要匹配反斜杠也要转意.
+    /ab\\3/: 匹配"ab\3"
+
+<4> 简单的数量词(模式匹配中一共三个数量词, 都是元字符)
+    *匹配前一项0次或者多次.
+    +匹配前一项1次或者多次.
+    ?匹配前一项0次或者1次.
+
+    例如:
+    /start.*end/ 匹配所有以start开头, end结尾的字符串.(字符串中不能由换行, .不能匹配换行)
+    /start +end/ 匹配start开头, 中间由1个或者多个空格, 并且以end结尾的字符串. (空格不是元字符)
+
+<5> 模式中的分组
+    括号()也是元字符, 用来分组
+    /fred*/ 可以匹配fredddddd这样的字符串.
+    /(fred)*/ 可以匹配fredfred这样的字符串.
+
+    注意:
+    /(fred)*/ 甚至可以匹配"hello world", 因为*可以匹配前项0次或者多次, 当为0的时候, 什么串都可以匹配, 
+    甚至是空串都可以.
+
+<6> 选择符
+    竖线(|),也是元字符, 是选择符号, 意思是匹配左边或者右边的, 如果竖线左边没匹配上, 则匹配右边的.
+    
+    /ab|cd|ef/ 可以匹配ab或者cd或者ef.
+    /start( |\t)+end/ 可以匹配start开头, end结尾, 中间是空格或者TAB, 或者空格和TAB混合的字符串.
+    /start( +|\t+)end/ 可以匹配start开头, end结尾, 中间是空格或者TAB的字符串.
+    /start and end | start or end/ 等价于 /start (and|or) end/
+
+<7> 字符类(要注意的是, 字符类只能匹配'一个'字符)
+    a. 字符类是方括号[]中的一列字符, 它可以匹配括号中出现的任意"单个"字符.
+       字符类开头使用^, [^xxx]表示取此字符类的补集.
+
+    [abcwxyz] 可以匹配7个字母中的任意一个
+    [^abcwxyz] 匹配除了这7个字母外的任意一个字符.
+    [a-zA-Z] 可以匹配任意大小写的英文字母(使用连接字-表示范围)
+    [^a-zA-Z] 匹配不是大小写英文字母的任意字符.
+
+    /NUM-[0-9]+/ 可以匹配"NUM-123"等, 要注意的是[]外面的连接字-不需要转义, []外的-不会被理解为连接字.
+    /NUM-[0\-9]+/ 可以匹配"NUM--"或者"NUM-099"等, 这里[]里面的-被转意了.
+
+    b. 字符类的简写
+    有些字符类出现的很频繁, 所以提供了简写的形式.
+    \d 表示数字, [0-9]
+    \w 表示字符, [0-9a-zA-Z_]
+    \s 表示空白, [\f\t\n\r ]: 格式, TAB, 回车, 换行, 空格
+
+    c. 简写形式的补集.
+    [^\d] 表示非数字, \D
+    [^\w] 表示非word, \W
+    [^\s] 表示非空白, \S
+
+15. 正则表达式的应用
+<1> 使用m//匹配, 
+    我们使用//作为模式匹配, 实质上是m//模式匹配的一种简写. 在使用m的时候, 
+    我们可以使用任何成对的分割符来进行模式匹配.
+    m /abc/
+    m !abc!
+    m <abc>
+    m {abc}
+
+    和我们使用qw类似(注意: m在使用//的时候可以去掉m使用简写//, qw不能使用简写): 
+    qw /ab cd ef/等价于("ab", "cd", "ef")
+    qw !ab cd ef!
+    qw <ab cd ef>
+    qw {ab cd ef}
+
+    一般使用一个不会在模式中出现的字符作分割符:
+    例如匹配http://
+    m %http://% 或者m /http:\/\//  #正斜杠不是元字符, 不需要转意, 只有在作为分隔符的时候, 需要转意.
+
+<2> 可选的修饰符(都是"正斜杠开头"的修饰符, 注意和"反斜杠开头"的元字符区分\d, \w, \s)
+    a. /i 不区分大小写
+       例如:
+       /yes/i  可以匹配大写的"YES"
+    b. /s 匹配任意字符
+       点.在默认情况下不匹配换行符, 如果希望.能匹配换行符, 则增加/s, 作用和[\d\D]类似.
+       "增加了/s的.可以匹配任意字符"
+       例如:
+       /start.*end/s 可以匹配"startgaga/ngaga/nend"
+    c. /x 添加空格
+       由于模式匹配默认情况下会匹配空格, 我们添加了/s会是模式不匹配空格.
+       例如:
+       /-?\d+\.?\d*/     # 看起来不容易理解
+       /-? \d+ \.? \d*/s # 增加了空格, 容易理解
+       Perl中的注释也被看作空格, 所以使用了/s, 可以添加注释
+       注意:
+       不要在注释中使用闭分隔符, 否则注释结束
+       #后面的是注释, 如要要匹配#, 可以使用\#或者[#]
+       /
+        -?   # 可选的负号
+	\d+  # 小数点前一个或者多个十进制数字
+	\.?  # 可选的小数点
+	\d*  # 小数点后可选的十进制数字
+       /x    # 模式结束
+
+       注意:
+       在使用了/x的时候, 匹配空白的常用方法是: \t或者\s(\s*或\s+)
+
+    d. 将可选字符结合起来
+       上面提到的/i, /s, /x可以一起使用
+       /xxxx/isx这样使用.
+
+<3> 锚定(anchor)
+    理解"整个字符串的锚定"和"单词的锚定", 以及下面三个元字符.
+    ^
+    $
+    \b和\B
+    a. 锚定可以要求模式在"特定的位置"上进行匹配.
+       ^表示在字符串开头进行匹配: /^start/
+       (^在字符类中, 如果把它放在前面, 表示此字符类的补集, 在字符类外, 则变成了元字符)
+       $表示在字符串结尾进行匹配: /end$/
+       (事实上可以匹配字符串的"结尾位置"或者"换行处", /^friend$/可以同时匹配上"friend"或者"friend/n")
+
+       /^\s*$/可以匹配一个空行.
+    b. 词锚定\b
+       /\bfriend\b/是针对单词使用的, 可以匹配"friend"但是不能匹配"abfriendcd"这样的单词.
+       这里的"词"是指\w类型的词, 由数字, 字母和下划线组成.
+       /\b123/可以匹配以123开头的单词, 可以匹配"123abc"但不能匹配"abc123"
+       /123\b/可以匹配以123结尾的单词, 可以匹配"abc123"但不能匹配"123abc"
+       
+       理解: \B非词锚定:
+       /\b123\B/可以匹配以123开头, 但是不能以123结尾的单词. 可以匹配: "123wd", "123da"; 但是不能匹配"123", "ab123"
+
+<4> 绑定操作符: =~
+    对$_的匹配只是默认行为, 我们可以使用=~告诉Perl将"右边的模式"跟"左边的字符串"进行匹配.
+
+    例如:
+    my $var = "this is a string\n";
+    if($var =~ /string$/) {  # =~操作有非常高的优先级
+      print "matched\n";
+    }
+    
+<5> 模式的内插(向模式中插入变量)
+    正则表达式也可以被内插, 如同双引号字符串一样.
+    
+    例如:
+    这个程序可以读取输入,然后把以"liqiang"开头的行打印出来.
+    #! /usr/bin/perl
+    use warnings;
+    my $name = "liqiang";
+    while(<>) {
+      if(/^($name)/) {
+	print "start by $name: $_";
+      }
+    }
 
 
-15.
+    我们也可以通过my $name = shift @ARGV;来动态的获取名字.
+    注意下面两个例子的区别:
+    /^(liqiang|user1)/ 以liqiang和user1开头的字符串
+    /^liqiang|user1/   以liqiang开头, 或者包含user1的字符串.
+
+<6> 匹配变量
+    a. 在模式中使用括号, 会引起正则表达式分配新的内存块, 这些内存块含有括号中的模式所匹配到的
+       字符串, 如果不止一对括号, 那就不止一个内存块.
+       这些字符串是标量变量, 我们可以使用$1, $2, $3..来访问它们.
+       变量的个数跟括号的对数相同.
+       
+       例如:
+       #! /usr/bin/perl
+       use warnings;
+
+       $_ = "hello liqiang, end";
+       if(/\s(\w+),/) {          # 匹配前面时空格, 后面是逗号的单词
+         print "matched: $1\n";  # liqiang
+       }
+
+       也可以一次使用多个
+       $_ = "hello liqiang, end";
+       if(/(\S+) (\S+), (\S+)/) {          
+         print "matched: $1 $2 $3\n";      
+       }
+
+       注意: 
+       匹配变量可能是空串(不等于undef), 如果其没有被匹配上.
+       如果模式匹配中只有3个括号, 则$4为undef.
+    b. 内存值的保存
+       匹配变量的值会保持不变, 直到下次匹配成功, 也就是说一次没有匹配成功的模式不会改变这些内存变量的值.
+       这也是为什么机会所有的模式匹配都在if/while条件中使用的原因.
+    c. 自动匹配变量
+       $& : 表示整个被匹配的部分
+       $` : 匹配部分的前一部分
+       $' : 匹配部分的后一部分
+       将这三个变量组合起来, 可以得到原始的字符串.
+       和数字匹配变量一样, 它们的值也可能为空, 有相同的作用域在下次成功前值不变.
+
+       注意:
+       如果使用了这三个自动匹配的变量中的任意一个, 其它地方的正则表达式要慢一些, 
+       所以我们可以选用一些替代的方案, 如把整个模式用括号括起来来代替$&.
+
+<7> 一般的数量词{}
+    *, +, ? 三个元字符不能满足需求的时候, 我们可以使用{}来表示数量.
+    /a{4, 10}/  匹配4-10个a组成的字符串.
+    /a{4,}/     匹配4个或者更多的a组成的字符串
+    /a{4}/      匹配4个a组成的字符串.
+
+    {0,1} 等价于 ?
+    {1,}  等价于 +
+    {0,}  等价于 *
+
+<8> 优先级
+    正则表达式有4个优先级别:
+    a. 最高优先级是括号
+    b. 第二级是数量词, * + ? {4, 5}
+    c. 第三级是锚定和序列.
+       ^, $, \b, \B; 
+       序列虽然没有使用元字符, 但是是一种操作, 让字符更加紧密.
+    d. | 或操作, 优先级最低.
+
+<9> 提供一个通用的模式测试程序来使用, 测试输入的模式:
+    #! /usr/bin/perl
+    use warnings;
+
+    while(<>) {
+      chomp;
+      if(/liqiang/) {
+	print "matched: | $`< $& > $' |\n"
+      } else {
+	print "mo match: |$_|\n";
+      }
+    }
+
+16. 使用正则表达式处理文件
+重点介绍通过模式匹配来修改文本的某个部分
+<1> 使用s///进行替换
+    a. m//类似于"查询"search, 则s///类似于"查询并替换"search and replace 
+
+    如果匹配上则替换, 没有匹配上则什么也不做.
+    $_ = "this is liqiang\n";
+    s/liqiang/user1/;  # liqiang被user1替换.
+    print "res: $_";
+
+    更多的替换方式(使用$1, $2来替换):
+    $_ = "ab cd ef";
+    s/(\w+) (\w+)/$2 $1/  # $_变成"cd ab ef"
+
+    如果s///成功替换返回true, 否则返回false.
+
+    b. 和m//和qw//类似, s也可以使用不同的分隔符
+    s#liqiang#user#
+    s{liqiang}(user)  # 要注意的一点: 使用配对的分隔符的时候, 必须使用两对不同的.
+    s<liqiang>#user#
+
+    c. 绑定操作=~
+    和m//类似, s///也可以使用=~完成绑定操作.
+    $var =~ s/liqiang/user/;  #不从$_中匹配和替换, 而是从$var中匹配和替换.
+    
+<2> 使用修饰符/g进行全局替换.
+    使用s///默认的情况下只进行一次替换, 增加了修饰符/g, 则可以进行全局替换.
+    
+    $_ = "ab asdfa ab cd";
+    s/ab/xx/g;  # 变成"xx asdfa xx cd"
+
+    全局替换的一个常用的场景就是将多个空格替换成一个:
+    s/\s+/ /g;
+    去掉开头和结尾的空格:
+    s/^\s+//        去掉开头的空格
+    s/\s+$//        去掉结尾的空格
+    s/^\s+|\s+$//g  同时去掉开头和结尾的空格
+
+    在使用/g的时候, /i, /s, /x这些可选的修饰符都是可以使用的.
+
+<3> 大小写转换
+    有时候需要要求被替换的字符都是大写或者小写的时候, 可以使用\U大写, \L小写完成.
+    (补充: \L和\U可以用在任意的双引号字符串中, "\Uthis is a \Etest\n" 返回"THIS IS A test\n")
+    
+    $_ = "this Is a Test string";
+    s/(is|test)/\U$1/gi;  # thIS IS a TEST string
+    s/(is|test)/\L$1/gi;  # this is a test string
+
+    \U和\L会影响到后面所有字符的替换, 如果要消除这种影响, 可以使用\E.
+    例如:
+    $_ = "there are user1 and user2";
+    s/(\w+) and (\w+)/\U$2\E and $1/; # "there are USER2 and user1";
+
+    \u和\l只作用于一个字符
+    $_ = "this is a test string";
+    s/(is|test)/\u$1/gi; # "thIs Is a Test string"
+
+    \u和\L一起使用表示"第一个字母大写, 其它字母都小写"
+    $_ = "this is test string";
+    s/(is|test)/\u\L$1/gi; #thIs Is a Test string.
+
+<4> split操作
+    根据某个模式将字符串分开, 将分隔符分割的字串作为列表返回.
+    @fields = split /separtor/, $string;
+    例如:
+    @fields = split /:/, "ab:cd:ef"; # 返回("ab","cd","ef")
+    如果两个分隔符连接在一起, 可能得到空元素
+    @fields = split /:/, "ab:cd::ef"; # 返回("ab","cd","","ef")
+
+    注意:
+    默认情况下, 开头的空元素会被返回, 但结尾的空元素会被丢弃.
+    @fields = split /:/, "::::ab:cd:ef:::" # 返回("", "", "", "ab", "cd", "ef")
+
+    常用的使用空白分割的操作:
+    my @my_input = "this is  \t   a   string.\n";
+    @fileds = split /\s+/, $my_input; # 返回("this","is","a","string.")
+
+    默认的时候, split对$_操作, 模式为空白.
+    my @fileds = split; # 等价于 split /\s+/, $_;
+
+<5> join操作
+    join操作和split相反, split是分割字符串, 把字符串分割成一个列表, 而join是组合列表,
+    把一个列表组合成一个字符串.
+    my $results = join $glue, @pieces;
+    $glue是粘合元素, 可以是任意的字符串.
+
+    例如:
+    my $results = join ":", 1, 2, 3, ,4 ,5; # 返回"1:2:3:4:5";
+
+    特殊情况(只有一个元素, 空列表)
+    my $results = join ":", "liqiang"; # 返回"liqiang"
+    my @empty;
+    my $results = join ":", @empty;  # 没有元素, 返回空串.
+
+<6> 列表上下文的m//
+    a. m//在列表上下文中使用m//, 如果成功返回值为内存变量的列表, 失败则返回空列表.
+    b. m//在标量上下文中返回true或者false.
+    $_ = "ab cd ef";
+    ($first, $secode, $third) = m/(\S+) (\S+) (\S+)/;
+    ...
+    通过这种方式可以给匹配的变量赋予一个名字, 这些值在下次匹配的时候不会被覆盖.
+    
+    在s///中使用的修饰符/i, /g也可以在m//中使用
+    my $text = "ab cd ef";
+    my @words = ($text =~ m/([a-z]+)/ig);
+    print "results: @words"
+    上面这个例子有点类似split, 但是split是保留剩下的; 而上面的例子是保留匹配的.
+
+<7> 非贪婪的数量词
+    我们前面讲述的贪婪数量词: *, +, {}, ?.
+    它们对应的非贪婪数量词是: *?, +?, {}?, ??.
+
+    例子(我们想移除<h1></h1>标签):
+    my $text = "this is a html <h1>string1</h1>, not <h1>string2</h1>\n".
+    贪婪的做法 - (错误):
+    s#<h1>(.*)</1>#$1#g;
+    非贪婪的做法  - (正确):
+    s#<h1>(.*?)</h1>#$1#g;
+
+<8> 匹配多行文本
+    通常情况下, 正则表达式是针对单行文本的, 我们可以使用/m参数来处理多行匹配.
+    $_ "this is a test\nstring.\nusername test string.\ngaga\n";
+    print "Found 'username' at start of line\n" if /^username\b/im;
+
+    说明:
+    锚定^, $是针对整个字符串的开头和结尾. 但/m这个参数允许它们根据内部的换行符进行匹配, 这时
+    锚定针对每一行而不是整个字符串.
+
+    下面一个例子展示了对多行字符串进行替换: 
+    (在每行的前面加上文件名, /^/对任意开头进行匹配, /$/对任意结尾进行匹配)
+    #! /usr/bin/perl
+    use warnings;
+
+    my $filename = "file1";
+    open FILE, "<", $filename
+      or die "can't open $filename: $!";
+
+    my $lines = join "", <FILE>;
+    $lines =~ s/^/$filename:/gm;
+    print $lines;
+
+<9> 更新大量文件
+    现在有很多类似file1和file2这样格式的文件, 我们需要批量处理:
+    a. 修改Author为Liqiang
+    b. 删除电话号码
+    c. 更新日期为当前的日期
+
+    $file1
+    Author: User1
+    Phone: 123456
+    Company: Google
+    Number: 123456
+    Date: xxxxx
+    $file2
+    Author: User2
+    Phone: 123456
+    Company: Microsoft
+    Number: 123456
+    Date: xxxxx
+
+    Perl代码
+    #! /usr/bin/perl
+    use warnings;
+    chomp(my $date = localtime); # 获取当前时间
+    $^I = ".bak";
+    while(<>) {
+      s/^Author:.*/Author: Liqiang/;
+      s/^Phone:.*\n//; #包括换行一起删除
+      s/^Date:.*/Date: $date/;
+      print;
+    }    
+
+    注意:
+    我们知道<>的特点, 如果没有制定文件名, 则从标准输入流自动打开一系列文件进行读取, 
+    但是如果$^I(默认是undef)有字符串, 这个字符串会称为备份文件的扩展名.
+    例如file1, file1.bak, Perl会将这个新文件作为标准输出, 等修改完成后再做一次交换.
+    则最终表现给用户的是: "file1"被修改了, "file1.bak"是源文件的备份.
+
+    当我们设定$^I为空串的时候, 会修改自身的文件.
+
+<10> 在命令行中进行修改
+     Perl提供了完整的命令行选项, 我们只需要使用几个简单的命令行选项, 就可以实现一个功能强大的程序.
+
+     perl -p -i.bak -w -e 's/liqiang/admin/g' file*.dat
+     分析上面的代码:
+     a. -p要求Perl为你写一个简单的程序, 类似
+        while(<>) {
+         print;
+        }
+        如果想更少, 可以用-n, 它会省略掉print语句.
+     b. -i.bak 等价于将$^I设置为".bak", 如果不需要备份文件, 则可以-i参数后不加任何扩展名.
+     c. -w 是打开警告
+     d. -e 选项的含义是执行下面的Perl代码 's/liqiang/admin/g'.由于我们有-p选项, 所以有while循环,
+        所以这段代码是放在while内print之前执行的. -e代码里面的最后一个分号是可以省略的, 如果由多个-e选项,
+	有多个代码块, 只有最后一个-e代码块的分号是可以省略的.
+     e. file*.bak它指定@ARGV应当包含匹配上此模式的文件名, 输入匹配上file*.dat的文件名.
+     综合上述, 代码类似于:
+     #! /usr/bin/perl
+     use warnings;
+     $^I = ".bak";
+     while(<>) {
+       s/liqiang/admin/g;
+       print;
+     }
+     
+<11> 非捕捉用的括号
+     括号可以捕捉匹配上的字符串, 并把它们存入到变量之中, 我们有时候只想使用括号作为分组,
+     不需要把括号中的变量存入到内存中.
+     例如:
+     if(/(start)?test(aa|bb)/) {
+       print "we need $2\n";
+     }
+     即使(start)没有被匹配上, 这部分仍然会被保存到$1中, 而实际上我们只需要$2.
+     
+     在Perl中提供了一种方式, 让括号只作分组使用, 不会把括号的匹配变量复制到内存中, 写法是(?:start)这样
+     总结?在正则表达式中的四种用法:
+     a. 表示文号本身(需要转意)
+     b. 表示0或者1的数量词
+     c. 非贪婪修饰符
+     d. 括号的开头符
+     上面的例子我们可以修改为:
+     if(/(?:start)?test(aa|bb)/) {
+       print "we need $1\n";
+     }
+
+17. 更多的控制结构
+<1> unless控制结构
+    a. 在if控制语句中, 只有条件为真, 才能执行代码; unless为只有条件为假, 才执行代码: 
+       (效果和if条件里面加!一样)
+    例如:
+    unless($str =~ /liqiang/) {
+      print "no match\n";
+    }
+    等价于
+    if(!($str =~ /liqiang/)) {
+      print "no match\n";
+    }
+    等价于
+    if($str =~ /liqiang/) {
+      # 什么也不做
+    } else {
+      print "no match\n";
+    }
+    b. unless和else一起使用
+    unless语法上支持和else一起使用
+    unless(xxx) {
+      # false, todo
+    } else {
+      # true, todo
+    }
+
+<2> until控制结构
+    希望对while条件部分取反, 可以使用until
+    until和while类似将一直执行, 直到条件表达式为真停止.
+    until($arg1 < $arg2) {
+      # todo
+    }
+
+<3> 表达式修饰符
+    为了得到更紧凑的输出, 表达式可以紧接着控制修饰语.
+    a. 看下面代码
+    print "$n is a negative number\n" if $n < 0;
+    等价于
+    if($n < 0) {
+      print "$n is a negative number\n";
+    }
+
+    输出这段消息, 如果n小于0, 简写看起来更像英文 :)
+    虽然被放在后边, 但是条件表达式也是被先求值的.
+
+    b. 更多修饰方式:
+    while($n < 10) {
+      print " ", "$n += 2";
+    }
+    可以简写成
+    print " ", "$n += 2" while $n < 10;
+
+    foreach(@myarr) {
+      &myfun($_);
+    }
+    可以简写成
+    &myfun($_) foreach @myarr;
+
+<4> The Naked Block
+    "裸的块" {}, 主要作用是限制变量的作用域:
+    {
+      my $var1 = "test";
+      ...
+    }
+    $var1只在上面大括号的代码块内起作用.
+
+<5> elsif语句
+    注意: 是elsif而不是elseif.
+    需要检测一连串的条件表达式, 一个接着一个的.
+    下面的代码会一个接着一个的判断条件, 只要发现一个为true, 则执行相应的代码段, 然后整个if结束.
+    if(xxx1) {
+      # todo
+    } elsif(xxx2) {
+      # todo
+    } elsif(xxx3) {
+      # todo
+    } else {
+      # todo
+    }
+
+<6> 自增, 自减
+    a. 常常需要一个标量标量自增或者自减1.
+       $var = 34;
+       $var++;
+       $var--;
+    c. ++, --前缀和后缀的问题:
+       $var = 23;
+       $res1 = ++$var; # 先增加到24, 然后赋值给$res1
+       
+       $var = 23;
+       $res2 = ++$var; # 先赋值23给res1, 然后再增加到24.
+
+<7> for控制结构
+    a. 和C语言的类似
+    例如:
+    for($i = 1; $i < 10; $i++ ){
+      # todo
+    }
+    b. for和foreach的关系
+    Perl的解析器, for和foreach是等价的. 它会自动的取解析并理解, 如果遇到两个分号, 则是for, 否则看作foreach,
+    所以下面的代码也可以正常执行:
+    for(1 .. 10) {
+      # todo
+    }
+
+<8> 循环控制
+    Perl是一种结构化的程序语言, 每一个代码块均有一个入口, 就是代码的顶端, 但有时候希望可以有更多的控制,
+    Perl提供了三种循环控制操作:
+    a. last
+       会立刻结束循环, 和C语言中的break;
+       下面的例子输出遇到"liqiang"的行, 遇到"__END__直接退出"
+       while(<STDIN>) {
+         if(/__END__/) {
+	   last;
+	 } elsif(/liqiang/) {
+	   print;
+	 }
+       }
+
+       补充:
+       Perl中的循环结构有五种: for, foreach, while, until, 裸块{}. 不包括子程序和if.
+       所以上面的last是跳出while, 而不是if.
+
+    b. next
+       不希望结束循环, 但本次循环已经结束, 类似C语言的continue;
+       跳到当前循环的最后面, 马上进入下一轮循环.
+
+       统计出现"liqiang"的行的数目.
+       while(<>) {
+         next unless /liqiang/;
+	 $valid ++;
+       }
+       print "count: $valid\n";
+    c. redo
+       会跳到当前循环块的顶端, 不进行条件表达式的判断, 接着调用本次循环.
+       redo和next的区别是: next会进入下一次循环, redo会进行本次循环.
+
+       例如:
+       my @words = qw/word1 word2 word3 word4/;
+       my $errors = 0;
+       foreach(@words) {
+         # redo 会跳到这里!!
+         print "current word: $_\n";
+	 chomp(my $try = <STDIN>);
+	 if($try ne $_) {
+	   print "sorry, that's not right!\n";
+	   $errors ++;
+	   redo;
+	 }
+       }
+       print "you have completed the test, with the errors: $errors\n";
+    d. 标签块
+       如果要从最内层的循环跳出来, 可以使用标签.
+       标签像Perl中的一般标示一样, 由数字子母和下划线组成, 但不能由数字开头.
+       为了防止冲突, 建议标签都用大写.
+       要给循环体加上标签, 可以在循环体的前面加上标签和冒号
+       LINE: while(<>) {
+          ...
+	  last LINE if /__END__/; # 退出LINE循环.
+	  ...
+       }
+
+       在last, next, redo后加上标签配合使用.
+       习惯的代码风格:
+       不管代码缩进了多少, 都把标签放在最左侧.
+    
+<9> 逻辑操作符
+    a. "短路"的逻辑操作符: &&, ||
+    m && n, m || n
+    &&在m为false的时候会立刻返回, 不会计算n的值.
+    ||在m为true的时候立刻返回, 不会计算n的值.
+    
+    使用短路的特性, 我们可以在计算平均值的时候防止除数是0.
+    在下面的例子中, 如果除数$n是0, $total/$n不会被执行.
+    if(($n != 0) && ($total/$n < 5)) {
+      print "the average is below five\n";
+    }
+    b. 注意短路操作符的值:
+    与C语言不同的地方是, 短路操作符的返回值不是单纯的true或者false, 而是"最后被执行语句的返回值".
+    
+    结果是相同的:
+    如果最后被执行的部分为真, 则返回真; 如果最后被执行的部分为假, 则返回假.
+    例如(理解下面的语句):
+    my $last_name = $last_name{$someone} || "no last name";
+
+<10> 三元操作符, ?:
+     和C语言中的含义是一样的.
+     Express ? expr1 : expr2;
+     首先表达式Express被求值, 如果为真, 则执行expr1; 否则执行expr2
+
+     利用这个特性, 我们可以这样写分支程序:
+     my $size = 
+       ($width < 10) ? "small" :
+       ($width < 20) ? "medium" :
+       ($width < 30) ? "large" :
+                       "extra_large"; # default;
+
+<11> 控制结构, 使用部分求值的操作:
+     &&, ||, ?:都有一个共性, 根据左侧的值来判断是否执行右侧的代码.
+     
+     ($m < $n) && ($m = $n);
+     等价于
+     if($m < $n) {
+       $m = $n;
+     }
+
+     跟上面的例子类似:
+     ($m > 10) || print "$m is not greater than 10\n";
+
+     &&, ||, ! 可以被and, or, not替换.
+
+18. 文件检验
+<1> 文件检验操作
+    可以对文件做一些检测.
+    a. 检测一个文件是否存在, 使用-e.
+       my $filename = "testfile";
+       die "file $filename already exists\n" if -e $filename;
+       这里我们在die里不使用$!, 因为这里不是系统错误.
+    b. 我们检测一个"已经打开的句柄, 而不是文件名", 文件在1天内修改过, 使用-M.
+       my $filename = "file1.dat";
+       open FILE, "<", $filename;
+       die "the file $filename is updated today\n" if -M FILE < 1;
+    c. 检测文件列表, 找去尺寸大于100K, 最近90天没有被访问过的文件. 使用-s和-A.
+       my @my_files = qw//;
+       my @big_old_files;
+       foreach my @filename(@my_files) {
+         push @big_old_files, $filename 
+	   if -s $filename > 100_100 and -A $filename > 90;
+       }
+    d. 文件检测选项有一个连接符-和一个字母组成, 字母表示测试类型, 后面接着文件名或者文件句柄,
+       大多选项返回true/false.
+<2> stat和lstat
+    除了使用检测选项检测文件的状态外, 还可以使用stat或者lstat来检测文件的状态, 会返回更多的信息.
+    如果成功返回一个13个元素的列表, 失败返回空表.
+    (作用和linux中输入stat类似)
+    my @res = stat $filename;
+    print "@res";
+
+<3> localtime函数
+    上面stat返回的列表元素中, 有类似的时间戳1180630098, 看不出实际的时间, 可以使用localtime
+    a. my $timestamp = 1180630098;
+       my $time = localtime $timestamp; #会转换成类似格式: Fri Feb 26 18:16:50 2010
+    b. 要注意的是: localtime在列表上下文返回的是一个列表.
+    c. 另外两个类似的函数是gmtime, 和time.
+
+<4> 位操作
+    &  与操作
+    |  或操作
+    ^  异或
+    << 左移
+    >> 右移
+    ~  取反
+    例如:
+    10 & 12 结果是8
+    10 | 12 结果是14
+    10 ^ 12 结果是6
+    6 << 2  结果是24, 将左边的操作数向左移动右边操作数的位数. 空出的位用0补齐
+    25 >> 2 结果是6,  将左边的操作数向右移动右边操作数的位数, 移出来的舍弃.
+
+19. 目录操作
+<1> 在目录树上移动
+    程序在某个工作目录(working directory)下运行, 这是"相对路径"的起点, 如果我们要打开一个文件"file1",
+    是指打开"当前工作目录下的file1".
+    
+    我们可以使用chdir来改变当前的工作目录:
+    (当前目录没有file1这个文件, fold1/file1存在)
+    chdir "./fold1" or  # 改变当前的工作目录
+      die "can't chdir fold1: $!";
+    open FILE1, "<", "file1" or
+      die "can't open file1: $!";
+    while(<FILE1>) {
+      print;
+    }
+
+    工作目录会被Perl启动后的所有进程所继承, 但是对于调用Perl的进程(如: shell)的工作目录将不会改变.
+    chdir如果省略掉参数, 会尝试将当前用户的主目录作为工作目录, 这种行为和shell下不带参数的cd类似.
+
+<2> Globbing(文件名替换)
+    a. Linux的Globbing指Shell将每个命令中的任何文件名模式转换成它匹配的文件名, 这被称作Globbing.
+    例如(注意: echo命令不需要知道如何展开这些文件名, Shell会做这些操作):
+    echo *.pm
+    file1.pm file2.pm file3.pm
+
+    例如:
+    $show_arg.pm
+    foreach(@ARGV) {
+      print "arg: $_\n";
+    }
+    ./show_arg.pm *.pm
+    arg: file1.pm
+    arg: file2.pm
+    arg: file3.pm
+    (我们的Perl程序不需要知道如何Globbing, Shell会自动为我们做这些处理, 然后将结果保存在@ARGV中)
+    b. 在Perl内部也可是使用glob操作.
+    my @all_files = glob "*";   #获得当前工作目录下的所有文件, 不包括.文件.
+    my @all_files = glob "*.pm"; #获得当前工作目录下的所有扩展名是pm的文件.
+
+    可以同时匹配多个(下面例子和: echo .* *类似):
+    my @all_files = glob ".* *" # 中间用空格隔开, 匹配所有文件(.开头的以及不是.开头的)
+    my @all_files = glob ".pm .txt" 
+
+<3> Globbing的替换语法
+    我们可以使用<>来代替glob, <>中的值和双引号中的类似, 可以被内插.
+    my @all_files = <*>; #等价于glob "*"
+    my $dir = "/home/user1";
+    my @all_files = <$dir/* /$dir/.*>; #得到目录下所有文件(.开头的和不是.开头的)
+
+    注意:
+    由于<>n既可用用于表示globbing, 也可以指从文件句柄读入内容, 如何区分?
+    "如果<>中间是一个严格意义上的标示符, 则表示从文件句柄读入操作, 否则表示globbing"
+    一种例外的情况:
+    "如果<>是一个简单的标量, 它是一个间接的文件句柄读入操作, 变量的内容就是文件句柄的名字"
+
+    例如:
+    my @files = <FRED/*>; # globbing
+    my @lines = <FRED>;   # 文件句柄读入
+    my $name = "FRED";
+    my @files = <$name/*> # globbing
+
+    my $name = "FRED";
+    my @lines = <$name>;  # 间接文件句柄读入
+
+    也可以使用readline从间接文件句柄读入内容, 但不常用:
+    my $name = "FRED";
+    my @lines = readline $name; # 从FRED读入
+    my @lines = readline FRED;  # 从FRED读入
+    
+<4> 目录句柄
+    从给定的目录得到所有文件的方法除了globbing操作外, 还可以使用目录句柄,
+    目录句柄的行为和文件句柄很类似, 看一些对应的操作:
+    由于globbing会调用别的进程, 目录句柄不会, 所以在效率上目录句柄操作更高效.
+    opendir  -  open
+    closedir - close
+    readdir  - readline
+
+    看一个例子:
+    得到一个特定目录下的所有文件(返回的文件名没有特定顺序, 包括.和..):
+    my $mydir = "/home/woomsgadmin/tmp";
+    opendir MYDIR, $mydir or
+      die "can't open $mydir: $!";
+    foreach $file (readdir MYDIR) {
+      print "file: $file\n";
+    }
+    closedir MYDIR;
+
+    如果要对返回的文件名作一些处理, 需要自己进行:
+    a. 找出所有以.pm结尾的文件.
+    foreach $file (readdir MYDIR) {
+      next unless $file =~ m/\.pm$/;
+      print "file: $file\n";
+    }
+    b. 找出所有非.开头的文件
+    foreach $file (readdir MYDIR) {
+      next if $file =~ m/^\./;
+      print "file: $file\n";
+    }
+    或者
+      next if $file eq "." or $file eq "..";
+    c.readdir返回的是文件名, 没有路径名字, 下面的代码获得文件的全名:
+    全名 = 路径名 + 文件名
+    my $mydir = "/home/woomsgadmin/tmp";
+    opendir MYDIR, $mydir or
+      die "can't open $mydir: $!";
+    foreach $file (readdir MYDIR) {
+      next if $file =~ m/^\./;
+      print "file: $mydir/$file\n";
+    }
+
+<5> 删除文件
+    在Shell命令中, 我们使用rm可以删除文件, rm file1 file2
+    在Perl中, 使用unlink可以实现同样的功能.
+
+    unlink "file1", "file2"; 可以删除文件
+    由于unlink以列表作为参数, glob返回一个列表, 所以可以结合使用.
+    unlink glob ".o"; 
+
+    unlink的返回值表示删除的文件个数.
+    下面代码可以逐个检测删除的文件是否成功
+    foreach my $file (@files) {
+      unlink $file or warn "failed on rm file: $file$!";
+    }
+
+<6> 重命名文件
+    在Shell命令中可以使用mv来重命名文件, mv fileold filenew
+    在Perl中, 可以使用rename
+
+    a. 在同一个目录中
+    rename "fileold", "filenew";
+    b. 在不同的目录中(如果失败, 和unlink类似, 可以使用die/warn皮和$!获得错误信息)
+    rename "fold1/file1", "fold2/file2";
+    c. 一个有用的例子: 如何批量的将".old"扩展名的文件修改为".new"扩展名 
+    foreach my $file (glob "*.old") {
+      my $newfile = $file;
+      $newfile =~ s/\.old$/.new/;
+      if(-e $newfile) { # 检测文件是否存在
+	warn "can't rename $file to $newfile: $newfile exists\n";
+      } elsif(rename $file, $newfile) {
+	# 成功, 什么也不作
+      } else {
+	warn "can't rename $file to $newfile, failed: $!";
+      }
+    }
+
+    注意:
+    s/\.old$/.new/, 为什么左右两部分不对称?
+    左边部分是正则表达式, 需要转意, 右边是双引号引起的字符串, 不要要:)
+    我们可以简写foreach的前两行
+    (my $newfile = $file) =~ s/\.old$/.new/;
+
+<7> 连接和文件
+    链接分为: 硬链接和软链接(软链接就是符号链接).
+
+    Shell中使用ln file file.hard创建一个硬链接
+    Perl中使用:
+    link "file", "file.hard"创建一个硬链接, 成功返回true, 失败返回false.
+
+    我们通常不针对目录使用硬链接, 可以针对目录使用符号链接.
+    Shell中使用ln -s fold1 fold1.soft创建一个符号链接
+    Perl中使用:
+    symlink "fold", "fold.soft";
+
+    补充:
+    我们可以在shell中使用mv将一个硬链接移动, 但是只能限定在一个文件系统中.
+    符号链接可以跨越文件系统给一个目录建立链接, 硬链接不能.
+
+<8> 创建和删除目录
+    在Shell中使用mkdir来创建和rmdir删除目录. 
+    mkdir fold1或者rmdir fold1(注意: "rmdir只能删除空目录", 删除非空目录使用rm -r fold1).
+
+    在Perl中: 
+    a. 创建一个目录fold1, 并指定全向为0775
+    mkdir "fold1", 0775 or warn "can't create directory fold1 $!";
+    b. 看一个例子
+    my $fold = "fold1";
+    my $perm = "0775"; # 错误, 在转换成数字的时候会被认为是十进制
+    mkdir $fold, $perm; # 在设置权限的时候会使用01363, 因为0775被当作10进制转换.
+    mkdir $fold, oct($perm); # 正确, oct会强迫某个字符串按照八进制解释.
+    oct在使用参数解析的时候十分有效:
+    my($fold, $perm) = @ARGV; # $perm会被当作字符串看待.
+    mkdir $fold, oct($perm) or warn "can't create directory $!";
+    c. 删除目录
+    在Perl中, 和unlink删除文件类似, rmdir返回删除的目录个数.
+    rmdir glob "*.o";  # Perl中的rmdir也只能删除空目录
+    一个个删除
+    foreach $fold (@folds) {
+      rmdir $fold or warn "can't delete directory $!";
+    }
+
+    rmdir在目录非空的时候失败, 我们可以使用unlinki先删除目录下的文件, 然后在删除目录.
+    
+<9> 修改权限	
+    Shell可以使用chmod来修改文件的权限
+    例如:
+    chmod a+w file1
+
+    在Perl中也可以使用chmod(我们不能像Shell中一样使用a+w这种形式, 只能使用八进制数字)
+    chmod 0755, "file1", "file2"; # 第一个参数是八进制的权限值			     
+
+<10> 改变所有者: chown 
+     在Linux Shell中可以使用如下命令修改文件的所有者/组
+     chown user file1        更改文件的拥有者
+     chown user:group file1  更改文件所属于的组
+
+     在Perl中也可以使用chown
+     my $user = 1004;
+     my $group = 100;
+     chown $user, $group, glob "*.o";
+
+     如果不知道user或者group的id, 可以使用getpwnam来获得(失败将返回undef), 
+     代码如下:
+     defined(my $user = getpwnam "username") or die "bad user";
+     defined(my $group = getpwnam "groupname") or die "bad group";
+     chown $user, $group, glob "*.o";
+
+<11> 改变时间戳: utime
+     Linux时间戳包含三个方面: Access(访问时间), Modify(修改时间), Change(文件节点修改时间).
+     (可以使用touch -m修改modify或者touch -a修改access)
+     在Perl中可以使用utimea来改变access和modify两个时间戳.
+     utime "第一个参数是access, 第二个参数是modify", 后面的参数列表是要修改的文件列表.
+
+     例如:
+     my $now = time;  # 当前的时间
+     my $ago = $now - 24*60*60;
+     utime $now, $ago, glob "*.new";
+
+20. 字符串和排序
+<1> 使用索引index寻找子串(rindex)
+    $where = index($big, $small); 将查找子串第一次在大串中出现的地方, 返回第一个字符的位置,
+    从0开始索引. 找不到则返回-1.
+    $where = index("bcaaadd", "aaa"); # 返回2
+
+    index也可以带有第三个参数, 表示搜索在$big中开始的地方, num是可能返回的最小值
+    $where = index($big, $small, num)
+    
+    如果想知道一个子串最后出现的位置, 可以使用rindex, num是可能返回的最大值
+    $where = rindex($big, $small, num)
+
+<2> 使用substr操作子串
+    $part = substr($string, $init_pos, $len)
+    三个参数, 一个字符串, 一个从0开始编号的初始位置, 一个子串的长度.
+    第三个参数可以胜率, 如果$len长度超出了$string的范围, 不会出错, 返回的字串比期望的段.
+
+    其中$init_pos可以是负数, -1表示从$string的最后一个字符开始.
+
+    下面是substr的一个特殊的用法, 不是很常见:
+    my $string = "hello, world!";
+    substr($string, 0, 5) = "goodbye"; # $string将变成"goodbye, world"
+    substr作为左值的时候, 表示从0开始, 长度为5的字串会被后边的"goodbye"替换.
+    赋值串的长度不需要和替换字串的长度相同, 字符串会自动调整到合适的长度.
+    下面一个也是类似的功能:
+    substr($string, -20) =~ s/liqiang/user/ig;
+    将字符串最后20个字符中的liqiang替换成user.
+
+    下面可以实现同样类似的作用
+    $prev_string = substr($string, 0, 5, "goodbye");
+    (如果在void context中使用, 结果被丢弃)
+
+<3> 使用sprintf格式化数据
+    sprintf的参数和printf完全相同, 不同是sprintf返回结果字符串, printf打印结果.
+
+    例如(注意如何前置0来补位):
+    $date_tag = sprintf "%4d%02d%02d", $year, $month, $day; #得到2010/02/09这样的字符串.
+    $date_tag = sprintf "%4d%2d%2d", %year, $month, $day;   #得到2010/ 2/ 9这样的字符串.
+    
+    在货币中使用sprintf
+    $res = sprintf "%.4f", 23;   # 返回: "23.0000"
+    $res = sprintf "10.4f", 23;  # 返回: "    23.0000"
+    $res = sprintf "010.4f", 23; # 返回: "000023.0000"
+    
+    $res = sprintf "%.2f", 2.499999 # 返回: 2.50, "四舍五入"
+
+    如何把123456789.0 处理成: $12345,678.90
+    sub big_money {
+      my $number = sprintf "%.2f", shift @_;
+      #空循环, 循环加入逗号
+      1 while $number =~ s/^(-?\d+)(\d\d\d)/$1, $2/;
+      #将美元符号放在合适的位置
+      $number =~ s/^(-?)/$1\$/;   
+      $number;
+    }
+    print &big_money(-12345678.9); #返回-$12, 345, 678.90
+
+<4> 高级排序
+    a. sort按照ASCII的编码顺序从小到大排序, 数字在前, 然后是大写字母, 后面是小写字母.
+    b. 我们可以写一个排序子程序, 客户化的完成排序.
+       自动赋值两个变量$a, $b; 返回-1表示$a在$b的前面; 返回1表示$b在$a的前面; 
+       返回0表示$a和$b的位置没关系.
+       调用方式是把排序子程序防盗sort和要排序的列表中间, 不需要加&.
+       (很多这类排序子程序都用by_开头, 翻遍阅读:)
+       例如:
+       sub by_number {
+         if($a < $b) {
+	   -1;
+         } elsif($a > $b) {
+	   1;
+         } else {
+	   0;
+         }
+       }
+       my @res = sort by_number (1, 3, 5, 10, 23, 100, 99, 87);
+       print "@res"; # 1, 3, 5, 10, 23, 87, 99, 100
+    c. Perl提供了一个太空船操作符<=>来完成上例中的三向的比较, 这个操作符比较两个数字,
+       有"三个返回值": -1, 0, 1
+       所以上面的子程序可以改写成(可以和<=, >=类比):
+       sub by_number {$a <=> $b} 
+    d. 字符串中也有类似<=>的操作, cmp可以和(le, ge类比)
+       sub by_ascii {$a cmp $b}
+       还可以创建更复杂点的(大小写无关, 全部转换为小写)
+       sub by_ascii_insenstive {\L$a cmp \L$b}
+       
+       我们还可以使用in line子程序
+       my @res = sort {$a cmp $b} qw/abc abe abd/;
+       my @res = reverse sort {$a cmp $b} qw/abc abe abd/;
+    e. 根据值对hash排序.
+       一个场景, 3个人取比赛, 赛后根据每个人的分数评出排名:
+       (实质上并不能对hash进行排序, 我们只是根据hash的values对对应的keys进行排序)
+       my %score = ("user1"=>12, "liqiang"=>29, "sunchen"=>23);
+       my @winners = reverse sort {$score{$a} <=> $score{$b}} keys %score;
+       print "@winners\n"; #liqiang sunchen user1
+    
+       现在对上面的程序进行扩展, 如果两个人成绩g相同, "根据名字进行排序":
+       (多条件排序, 可以从下面例子中的两个条件扩充到多个条件)
+       my %score = ("user1"=>12, "liqiang2"=>29, "sunchen"=>23, "liqiang1"=>29);
+       sub by_score_and_name {
+        $score{$b} <=> $score{$a} or   # 注意: $be和$a的顺序
+        $a cmp $b;
+       }
+       my @winners = sort by_score_and_name keys %score;
+       print "@winners\n"; #liqiang1 liqiang2 sunchen user1
+
+21. 进程管理
+<1> 系统函数
+    Perl中调用子程序最简单的方式就是调用system函数, 
+
+    例如:
+    调用linux的date命令, 可以
+    system "date";
+    "子进程"运行date命令, 它继承了Perl的标准输入, 标准输出, 标准错误输出.
+
+    如果要调用: ls -l $HOME;
+    可以system 'ls -l $HOME';   # 
+    或者system "ls -l \$HOME";  # 我们要转意$, 否则在Perl中$HOME会被做字符串的插值.
+
+    当子进程运行的时候, Perl会等待其结束, 如果date运行了35秒, 则Perl等待35秒.
+
+    我们也可以想在shell中执行后台进程一样, 在命令后面加上&, 这样Perl就不会等待命令完成.
+    system "long_command &";
+    它将long_command变成后台运行的, shell立即退出, Perl注意到这些继续执行. 这种情况下, long_command是
+    Perl的孙子进程, Perl没有对它直接了解.
+
+    system执行命令的时候分为两类:
+    i. 很简单的命令不会用到shell, 例如运行date的时候, Perl会自动寻找要执行的命令, 
+    必要的时候会根据继承来的PATH来搜索命令(Shell的环境变量$PATH, 等价于Perl中的$ENV{'PATH'}).
+    ii. 如果字符串里出现奇怪的字符, 例如$, ;, |等, 会调用shell来解析解析这些符号并执行.
+ 
+<2> 如何避免使用Shell
+    可以使用system的多参数版本, 这样一来, 不管多么复杂, 都不会用到Shell.
+    my $res = "folds.tar.gz";
+    my @dirs = qw(fold1 fold2);
+    system "tar", "-czvf", $res, @dirs;
+
+    system的返回值是根据子进程的状态来决定的, Linux里, 0表示正常, 1表示有问题.
+    但是, 绝大多数Perl操作都遵循"真为正常, 假为错误"的原则, 这于system的返回值刚好想反
+    unless(system 'date') {
+      print "date command success\n";
+    }
+    或者
+    !system "rm -r files_to_delete" or die "something wrnong\n";
+22. Perl模块
+<1> 两个地方可以获得Perl模块: Perl发布包中附带的, 以及CPAN(Comprehensive Perl Archive Network)下载.
+    http://search.cpan.org 可以搜索perl模块.
+
+    一般检查一个模块是否安装, 我们可以查看它的文档是否存在:
+    perldoc CGI
+
+    perldoc gaga # 查看一个不存在的模块, 将提示错误.
+    No documentation found for "gaga".
+
+<2> 安装模块
+    有几中安装Perl模块的方法:
+    a. 使用MakeMaker来构建 
+    如果模块使用了MakeMaker(也是Perl的一个模块, ExtUtils::MakeMaker, 跟随Perl一起发布, 这个n文件包含
+    针对你的系统安装Perl需要的指令)
+    $perl Makerfile.pl
+    $make 
+    $make test
+    $make install
+    如果在默认的目录中不能安装, 可以使用PREFIX改变安装路径
+    $perl Makerfile.pl PREFIX /usr/woomsg/lib
+    b. 一些开发者使用Module:Build来构建和安装它们的模块
+    $perl Build.pl
+    $./Build install
+    c. Perl自带了一个CPAN.pm这样一个模块, 我们可以启动它来在线安装模块
+    $perl -MCPAN -e shell   (-M和use作用是一样的)
+    cpan>h                cpan帮助
+    cpan>m                列出CPAN所有的模块列表
+    cpan>install DBI      安装DBI模块
+    cpan>q                退出
+
+
 
 
 
