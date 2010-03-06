@@ -178,7 +178,9 @@
 <8> 检测mogilefsd和mogstored的服务有没有启动起来
     ps -ef | grep mogilefsd
     ps -ef | grep mogstored
-<9>
+
+<9> TODO:
+    测试安装情况, 这部分还有问题
 
    
    

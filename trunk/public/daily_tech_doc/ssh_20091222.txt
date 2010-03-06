@@ -1,9 +1,137 @@
-SSH (Secure Shell) 
-windows下可以使用putty远程登录
+结合Putty的具体使用方式, 介绍SSH相关的知识.
 
-1. 启动sshd服务(ssh默认使用22端口)
-   service sshd start
+一篇关于SSH的详细介绍:
+<<实战 SSH 端口转发>>
+https://www.ibm.com/developerworks/cn/linux/l-cn-sshforward/
 
-2. sshd配置文件的路径:
-   /etc/ssh/sshd_config
+1. 什么是SSH?
+传统的网络服务程序, ftp, telnet本质上都是不安全的, 在网络上使用明文传送口令和数据,
+这些服务的安全认证方式也有弱点, 容易受到中间人攻击(man-in-the-middle).
+SSH全名是Secure Shell, 对所有的数据进行加密, 防止中间人攻击. 
+一个额外的好处就是传输的数据是经过压缩的，所以可以加快传输的速度.
+
+2. 什么是中间人攻击?
+中间人冒充真正的服务器接收你你传给服务器的数据, 然后再冒充你把数据传给真正的服务器。
+服务器和你之间的数据传送被中间人在中间处理.
+
+3. 对称加密和非对称加密?
+a. 对称加密
+文件的加密和解密使用相同的密钥(或者解密密钥可以通过加密密钥推算出来).
+
+b. 非对称加密
+有两个密钥, public-key, private-key, 是一对密钥.
+如果用公钥加密数据, 只有用私钥才能解密.
+如果用私钥加密数据, 只有用公钥才能解密 - (可以用作数字签名).
+
+4. SSH两种安全验证
+a. 基于口令的安全认证
+通过账号和口令登录到远程主机, 所有传输的数据都会被加密，但是不能保证你正在连接的服务器就是你想连接的服务器. 可能会有别的服务器在冒充真正的服务器，也就是受到“中间人”这种方式的攻击.
+
+b. 基于密钥的安全认证(核心是: 你的私钥自己保存, 公钥保存在服务器上)
+需要依靠非对称加密，也就是你必须为自己创建一对密匙，并把"公用密匙"放在需要访问的服务器上。
+如果你要连接到SSH服务器上，客户端软件就会向服务器发出请求，请求用你的密匙进行安全验证。
+服务器收到请求之后，先在你在该服务器的家目录下寻找你的公用密匙，然后把它和你发送过来的公用密匙进行比较。
+如果两个密匙一致，服务器就用公用密匙加密“质询”（challenge）并把它发送给客户端软件。
+客户端软件收到“质询”之后就可以用你的私人密匙解密再把它发送给服务器.
+
+
+5. 如何解决乱码问题?
+<1> 在登录以后的Putty console窗口的标题栏右键, 然户选择Change Settings
+<2> 在填出的Putty Reconfiguration对话框中Window -> Apperance -> Font Settings -> Change可以改变字体 
+    (宋体或者Courier New等)
+<3> Window -> Translation -> Received data assumed to be in which character set(下拉列表) 
+    选择你需要的编码, 例如UTF-8或者Use font encoding
+    (可以使用echo $LANG来查看系统的字符集)
+
+补充:
+先看看系统的字符集，如果是 UTF-8 的，那就简单了，选择好中文字体，然后编码选择 UTF-8 就行了。
+如果编码是 GB2312、GBK、GB18030，当然也包括 BIG5这些，在 PuTTY 的编码选择中看不到这些编码，
+那就选择最后一个“Use font encoding”，绝大部分情况下这样就没啥问题了.
+
+
+6. Putty里面如何选中, 复制和粘贴?
+在Putty Reconfiguration对话框中, Window -> Selection 
+a. Action of mouse buttons(鼠标按键的功能)
+默认是Compromise, 含义是:
+一是直接用鼠标左键拖拉选中就可以了
+选中以后，单击鼠标左键就把选中部分复制到剪贴板了
+粘贴也很简单，单击鼠标右键.
+
+b. Shift overrides application's use of mouse 是和 Shift 键有关的(默认是选中的)
+有些程序默认有鼠标的功能, 如果这项险种了，我们按住Shift键之后, 就能覆盖应用程序
+的鼠标功能, 使用6.a里面的方式来选中，复制和粘贴了.
+
+c. Control use of mouse控制选中的方式, 默认是Normal, 另外一个是 Rectangular block（块选择方式）
+我们使用默认的就可以.
+
+7. 实时的保存会话Session
+我们在Putty Reconfiguration里面做了一些设置, 当我们关闭窗口后, 下次使用还要重新选择, 这个时候我们
+可以保存一个Session. 来保存我们的配置.
+
+8. 注销的问题
+使用exit来退出.
+
+9. 控制窗口的输出
+执行了一个命令，输出了好多东西，但是默认的配置下，PuTTY只保存了最后200行的内容，满足不了我们的需求
+Putty Reconfiguration对话框 -> Window -> Lines of scrollback 
+(默认是200行, 我们可以自己修改)
+
+补充:
+PuTTY中的前后翻页, 与Linux终端一样, 用Shift+PageUp/PageDown来上下翻页; 而Ctrl+PageUp/PageDown则是一行一行的
+
+10. SSL tunnel隧道技术
+例如:
+Client是我们的客户机, 运行Firefox
+Server是我们的Web服务器, 但是防火墙规则阻止了Client对Server:80端口的访问,
+我们想办法绕过这个限制.
+
+我们可以
+Client:12345(firefox) -> Client:10000 (ssh) -> Server:22 (sshd) -> Server:80 (httpd)
+方法1 (在Client上运行下面命令):
+ssh -Nf -L <local port>:<remote host>:<remote port> <ssh hostname>
+也就是: 
+ssh -Nf -L 10000:localhost:80 ServerIP
+
+方法2 (在Server上运行下面命令):
+ssh -Nf -R <local port>:<remote host>:<remote port> <ssh hostname>
+ssh -Nf -R 10000:localhost:80 ClientIP
+
+上面两条命令的解释就是打开ClientIP的10000端口, 定向到ServerIP的80端口,
+这样我们访问ClientIP的10000端口就相当于访问了ServerIP的80端口.
+
+方法1: - 本地的SSH隧道
+-N 告诉SSH客户端, 这个连接不需要执行任何命令, 仅仅做端口转发
+-f 告诉SSH客户端在后台运行
+-L 做本地映射端口, 被冒号分割的三个部分含义分别是
+   * 需要使用的本地端口号
+   * 需要访问的目标机器IP地址
+   * 需要访问的目标机器端口
+最后一个参数是我们用来建立隧道的中间机器的IP地址, 在上面的例子中, Server也即是我们的中间人.
+
+-L X:Y:Z的含义是，将IP为Y的机器的Z端口通过中间服务器映射到本地机器的X端口
+
+注意:
+a. 在选择端口号时要注意非管理员帐号是无权绑定 1-1023 端口的，所以一般是选用一个 1024-65535 之间的
+并且尚未使用的端口号即可
+b. 我们只能在建立 SSH 连接的同时创建端口转发，而不能给一个已经存在的 SSH 连接增加端口转发.
+c. 你可能会疑惑上面命令中的 <remote host> 为什么用 localhost，它指向的是哪台机器呢？在本例中，
+它指向Server 。我们为什么用 localhost 而不是 IP 地址或者主机名呢？其实这个取决于我们之前是如何限制Server,
+只有本机才能访问。如果只允许lookback接口访问的话，那么自然就只有 localhost 或者 IP 为 127.0.0.1 才能访问了，
+而不能用真实 IP 或者主机名.
+
+方法2: - 远程的SSH隧道
+
+11. Ubuntu安装sshd
+<1> 安装
+sudo apt-get install openssh-server
+<2> 启动
+sudo /etc/init.d/ssh start
+<3> 停止
+sudo /etc/init.d/ssh stop
+<4> 配置文件
+/etc/ssh/sshd_config
+
+
+  
+ 
 
