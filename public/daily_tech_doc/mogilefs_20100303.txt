@@ -1,0 +1,184 @@
+介绍mogilefs的使用
+
+
+1. mogilefs是一个分布式的文件系统解决方案:
+   a. 无单点失效的问题
+   mogilefs安装三个组件都可以运行在多台机器上, 因此没有单点失效的问题.
+   存储节点: storage nodes
+   跟踪器: trackers
+   跟踪器的数据库: tracker's databases
+   b. 自动文件复制
+   基于不同的文件"分类", 文件可以被自动的复制到多个有足够空间的存储节点上去, 
+   这样可以满足这个"类别"的"最少复制要求".
+   c. 简单的命名空间
+   文件通过一个给定的key来确定, 是一个全局的命名空间(我们可以生成多个命名空间, 但是
+   这样可能引起key冲突).
+   d. 不受文件系统最大文件数的影响.
+
+2. 介绍mogilefs的工作方式:
+   a. tracker(the mogilefsd process)
+   基于事件(event-based)的机制处理于客户端的交互, 包括将请求负载平衡到"query workers"中,
+   让mogilefsd的子进程去处理.
+   可以在不同的机器上运行两个trackers, 可以用更多的tracker作负载均衡.
+   mogilefsd的子进程有:
+   Replication: 机器间的复制
+   Deletiom: 从命名空间的删除是立即的, 从文件系统的删除是异步的
+   Query: 相应客户端请求
+   Reaper: 在磁盘失败后将文件复制请求重新放到队列中
+   Monitor: 监测主机设备的健康状态
+   ...
+
+   b. database
+   用来存放mofiglefs的元数据(命名空间, 文件存放地址), 这些数据应该存放在高可用(HA)的环境
+   防止单点失效.
+
+   c. storage node
+   实际文件存放的地方, 存储节点是一个HTTP服务器. 用来作删除, 存放等事情. 任何webDAV服务器都可以,
+   不过推荐使用mogstored
+
+3. High-Level流程:
+   a. application请求打开一个文件(通过RPC通知tracker, 找到一个可用的机器), 作一个'create_open'请求.
+   b. trackers做一些负载均衡, 决定应该去哪里, 然后给应用程序一些可用的位置
+   c. application尝试写到一个位置(如果失败了, 会尝试写到另外的位置)
+   d. application通过'create_close'告诉tracker文件写道哪里了.
+   e. tracker将该名字和域名的空间关联(通过数据库来做).
+   f. tracker在后台开始复制文件, 直到满足该文件类设置的复制规则.
+   g. application通过'get_paths'请求(domain+key,其中key==filename)文件,
+      tracker会根据每个位置I/O的繁忙情况回复该文件可用的完整URLs地址列表.
+   h. application按顺序尝试访问这些URLs地址.
+
+4. 记录Ubuntu上Mogilefs的安装过程
+<1>需要mysql存储metadata, 所以要先安装MySQL
+   sudo apt-get install mysql-server
+   sudo apt-get install mysql-client
+
+   安装完成后用下面命令可以启动mysql客户端测试安装是否成功:
+   /usr/bin/mysql -u root -p (按提示输入密码)
+
+<2>先安装依赖的包:
+   http://search.cpan.org
+   Sys-Syscall-0.22.tar.gz
+   Danga-Socket-1.61.tar.gz
+   String-CRC32-1.4.tar.gz
+   Gearman-1.11.tar.gz
+   Gearman-Client-Async-0.94.tar.gz
+   Net-Netmask-1.9015.tar.gz
+   Perlbal-1.73.tar.gz
+
+   安装方式依赖包的方式:
+   tar -xzvf Sys-Syscall-0.22.tar.gz
+   cd Sys-Syscall-0.22
+   sudo perl Makefile.PL
+   sudo make
+   sudo make test
+   sudo make install
+
+<3>安装mogilefs(从源代码安装)
+   mogilefs-server-2.34.tar.gz
+   MogileFS-Client-1.10.tar.gz
+   MogileFS-Utils-2.15.tar.gz
+
+<4>安装完成后可以看到下面7个工具:
+   ls /usr/local/bin/mog* 
+   /usr/local/bin/mogadm
+   /usr/local/bin/mogautomount
+   /usr/local/bin/mogdbsetup
+   /usr/local/bin/mogilefsd
+   /usr/local/bin/mogstats
+   /usr/local/bin/mogstored
+   /usr/local/bin/mogtool
+
+<5>数据库的配置
+   a. 创建一个名为mogilefs的数据库, 创建一个mogilefs的用户, 设置密码user@123
+   mysql -u root -p (提示输入密码进入mysql)
+   mysql>create database mogilefs;  # 创建mogilefs数据库
+   mysql>grant all on mogilefs.* to 'woomsgadmin'@'%'; # 赋予woomsgadmin操作mogilefs的权限
+   mysql>set password for 'woomsgadmin'@'%' = password('user@123'); # 设置密码
+   mysql>flush privileges; # 更新权限
+   mysql>quit;
+   b. 使用mogdbsetup来创建表:
+   /usr/local/bin/mogdbsetup --dbname=mogilefs --dbuser==woomsgadmin --dbpassword=user@123
+   (mogdbsetup默认数据库是安装在本地的, 如果在远程机器上, 需要加机器名参数: --dbhost=mogiledb.domain.com)
+
+<6>配置tracker
+   在每一个tracker server上创建配置文件, /etc/mogilefs/mogilefsd.conf
+   db_dsn DBI:mysql:mogilefs    
+   db_user woomsgadmin
+   db_pass user@123
+   conf_port 6001
+   listener_jobs 5
+
+   db_dsn指向数据库的位置, 如果你的数据库在其它机器上, 请添加机器的地址
+   db_dsn DBI:mysql:mogilefs:mogiledb.domain.com
+
+   mogilefsd不能以root的身份启动.
+   mogilefsd -c /etc/mogilefs/mogilefsd.conf --daemon
+   
+
+<7>配置storage server
+   a. 在每一个storage server上创建存储目录:
+      mkdir /var/mogdata
+   b. 在每一个storage server上创建配置文件, /etc/mogilefs/mogstored.conf
+      httplisten=0.0.0.0:7500
+      mgmtlisten=0.0.0.0:7501
+      docroot=/var/mogdata
+   c. 向系统添加"存储节点主机", 并检测是否添加成功:
+      用mogadm工具将storage server加入到数据库中
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 host add woomsgadmin --ip=192.168.0.15
+                            --port=7500 --status=alive
+      (woomsgadmin是storage server的domain地址)
+			    
+      检查storage server是否添加成功(下面命令会显示出主机列表)
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 host list
+   d. 向系统添加"存储节点设备", 并加测是否添加成功:
+      mkdir /var/mogdata/dev1
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 device add woomsgadmin 1
+      
+      检查device是否添加成功
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 device list
+
+      1表示woomsgadmin主机下存储设备的编号, 对应的存储目录是/var/mogdata/dev1
+   e. 向系统添加"存储域"
+      在mogilefs中, 文件通过key来引用, key在某个域下是唯一的, 
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 domain add woomsgadmin
+      
+      检查"存储域"是否添加成功
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 domain list
+   f. 向系统添加"存储类别"
+      mogilefs可以设置不同的存储类别来存储不同的份数的文件副本.
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 class add woomsgadmin attach --mindevcount=2
+      (含义是我们在woomsgadmin的域名下增加一个attach类, 每份文件最小复制数是2)
+      检查"存储类别"是否添加成功
+      /usr/local/bin/mogadm --trackers=192.168.0.15:6001 class list
+    g. 启动mogstored
+       /usr/local/bin/mogstored -c /etc/mogilefs/mogstored --daemon
+
+       补充:
+       启动mogstored的时候出现下面错误
+       >错误1
+       ERROR: IO::AIO not installed, so async IO not available.  Refusing to run
+       unless you set the environment variable MOGSTORED_RUN_WITHOUT_AIO=1
+       workaround:
+       sudo perl -MCPAN -e shell
+       cpan>install IO:AIO
+
+       >错误2
+       ERROR: This command is not available unless BSD::Resource is installed
+       Invalid configuration.  (shouldn't happen?)  Stopping.
+       workaround:
+       通过cpan安装BSD:Resource
+
+       >错误3
+       ERROR: Need to be root to increase max connections.
+       workaround:
+       修改/etc/security/limit.conf, 增加下面两行:
+       woomsgadmin soft nofile 65535
+       woomsgadmin hard nofile 65535
+
+<8> 检测mogilefsd和mogstored的服务有没有启动起来
+    ps -ef | grep mogilefsd
+    ps -ef | grep mogstored
+<9>
+
+   
+   
