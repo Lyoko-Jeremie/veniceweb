@@ -39,8 +39,10 @@
 <div id="header-nav">
   <div id="nav-user">
     <a class="nav" href="/user/<% Username %>">主页</a>
-    <a class="nav" href="/publictimeline">浏览</a>
     <a class="nav" href="/upload">上传图片</a>
+    <a class="nav" href="/search">搜索</a>
+    <a class="nav" href="/contact">联系人</a>
+    <a class="nav" href="/publictimeline">浏览</a>
     <a class="nav" href="/setting">设置</a>
     <a class="nav" href="/logout">注销</a>
   </div>       

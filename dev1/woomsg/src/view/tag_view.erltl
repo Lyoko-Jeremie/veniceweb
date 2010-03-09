@@ -47,7 +47,7 @@
     <div id="main">
       <center>
         <div style="font-size:18px;">
-          与标签<span style="font-size:18px; font-weight:bold;"><% Tag %></span>相关的照片
+          与标签<span style="font-size:18px; font-weight:bold;"><% Tag %></span>相关的照片<a class="nav" href="/search">(使用其它标签搜索?)</a>
         </div>
      
         <% display_all_photos(Tag, {page, PageIndex, PageStatePrev, PageStateNext, {PicCount, PicList}}) %>

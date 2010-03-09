@@ -21,6 +21,8 @@ handle_request(Req) ->
 		    api_controller:handle_get(Req);
                 "blog" ->
 		    blog_controller:handle_get(Req);
+		"contact" ->
+		    contact_controller:handle_get(Req);
 		"faq" ->
 		    faq_controller:handle_get(Req);
                 "image" ->
@@ -35,6 +37,8 @@ handle_request(Req) ->
 		    publictimeline_controller:handle_get(Req);
 		"register" ->
 		    register_controller:handle_get(Req);
+		"search" ->
+		    search_controller:handle_get(Req);
 		"service" ->
 		    service_controller:handle_get(Req);
 		"setting" ->
