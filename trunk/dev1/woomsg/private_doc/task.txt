@@ -1,7 +1,7 @@
 记录开发任务
 
 Active Task:
-7, 10, 14, 15
+10, 14, 15, 16, 17, 19
 
 1. State: Active - Closed
    Date: 2010/1/14 - 2010/1/24
@@ -40,8 +40,8 @@ Active Task:
    新功能设计, 可以返回用户的所有关注者的图片, 格式化,
    并提供limit功能供上层应用使用.
 
-7. State: Active
-   Date: 2010/1/26
+7. State: Active - Closed
+   Date: 2010/1/26 - 2010/3/6
    Description:
    重构图片上传页面upload.
 
@@ -88,9 +88,36 @@ Active Task:
    用户上传的图片生成正方形的缩略图的时候, 图片失真, 没有保持原来比例, 需要修复.
 
 
-15. State: Active
-   Date: 2010/2/xx
+16. State: Active
+   Date: 2010/3/6
    Description:
+   增加好友管理页面, 可以管理好朋友
+
+17. State: Active
+   Date: 2010/3/6
+   Description:
+   增加用户搜索页面, 可以搜索用户
+
+
+18. State: Active - Closed
+   Date: 2010/3/6 - 2010/3/7
+   Description:
+   增加tag搜索页面, 可以根据tag搜索照片
+   完成了一个简单的tag搜索页面
+
+19. State: Active
+   Date: 2010/3/6
+   Description:
+   完成一个更好的erlang调用imagemagick的driver, 目前os:cmd的调用方式不方便.
+
+20. State: Active
+   Date: 2010/3/xx
+   Description:
+
+21. State: Active
+   Date: 2010/3/xx
+   Description:
+
    
 
    

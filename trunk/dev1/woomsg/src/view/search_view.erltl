@@ -1,10 +1,9 @@
-<%@ index(State, Username, UploadRes) %>
+<%@ index(State, Username) %>
 <html>
 
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-  <title>woomsg - upload</title>
-  <link type="text/css" href="/static/css/ui.achtung-min.css" rel="stylesheet"/>
+  <title>woomsg - search</title>
   <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
   <style type="text/css">
   </style>
@@ -38,74 +37,49 @@
     }
   </script>
   <script type="text/javascript" src="/static/js/jquery-1.3.2.min.js"></script>
-  <script type="text/javascript" src="/static/js/jquery.filestyle.js"></script>
-  <script type="text/javascript" src="/static/js/ui.achtung-min.js"></script>
   <script type="text/javascript" src="/static/js/core.js"></script>
   <script type="text/javascript">
-    $(document).ready(function() {
-      $("input#uploadbox").filestyle({
-        image: "/static/image/fileupload-sel.gif",
-        imageheight : 30,
-        imagewidth : 103,
-        width : 298
-      });
-
-      <% show_upload_result(UploadRes) %>
-      
-    }); 	   
+    /**
+     * 标签搜索, 直接重定向到标签页
+     */
+    function search_pic() {
+      var searchtag = $('input#searchtag').val();
+      location.href = "/tag/" + searchtag;
+    }
   </script>
 </head>
 
 <body>
   <div id="container">
     <% header_view_in:index(State, Username) %>
-
     <div id="main">
       <center>
         <div style="clear:both;"></div>
 	<div style="padding: 30px 50px 10px; width: 600px; text-align: left;">
 	  <div class="set-box">
-	    <div style="text-align:center;padding-top:30px;float:left;font-size:20px;font-weight:bold;color:rgb(0, 0, 0);">
-	      上传照片
-            </div>
+            <div style="text-align: center; padding-top: 30px; float: left; font-size: 20px; font-weight: bold; color: rgb(0, 0, 0);">
+	    图片搜索
+	    </div>
 	    <div style="clear:both;"></div>
+            <br/>
 	    <br/>
-	    <br/>
-	    <form method="post" action="/upload" enctype="multipart/form-data">
-	      <span class="reg-label">选择您要上传的图片</span>
+	  
+	    <form id="search_form" action="" onsubmit="search_pic();return false;">
+	      <span class="reg-label">请输入要搜索的图片的标签</span>
 	      <br/>
 	      <div style="clear:both;"></div>
-	      <input id="uploadbox" type="file" name="media"/>
-	      <div class="form-hint">可以选择GIF, JPG, PNG格式的图片</div>
-
+	      <input class="reg-input" type="text" value="" id="searchtag"/>
+	      <div class="form-hint">目前只支持单个标签的搜索</div>
 	      <br/>
-	      <br/>
-	      <span class="reg-label">给照片增加一条描述信息</span>
-	      <br/>
+	      <input type="image" src="/static/image/button-search-done.gif"/>
 	      <div style="clear:both;"></div>
-	      <textarea class="upload-input" name="message" style="width:480px; height:50px;"></textarea>
-	      <div style="clear:both;"></div>
-	      <input style="font-size: 14px; "type="image" src="/static/image/fileupload-done.gif"/>
 	    </form>
 	  </div>
-	</div>
+        </div>
       </center>
-    </div> 
-
+    </div>
     <% footer_view_in:index() %>
-
   </div>
 </body>
 
 </html>
-
-<%@ show_upload_result(undefined) %>
-<% "" %>
-<%@ show_upload_result(upload_ok) %>
-show_message("文件上传成功");
-<%@ show_upload_result(upload_error) %>
-show_error("文件上传失败");
-<%@ show_upload_result(upload_error_new_pic) %>
-show_error("文件上传失败(new_pic)");
-<%@ show_upload_result(upload_error_convert) %>
-show_error("文件上传失败(convert)");

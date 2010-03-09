@@ -103,7 +103,7 @@
   <form onsubmit="add_comment('<% PicGuid %>'); return false;" action="">
     <textarea class="leave-message" name="message"></textarea>
     <div style="padding-top: 7px; width: 580px; text-align: right;">
-      <input type="submit" value="添加一条评论"/>
+      <input type="image" src="/static/image/add-comment-done.gif"/>
     </div>
   </form>
 </div>

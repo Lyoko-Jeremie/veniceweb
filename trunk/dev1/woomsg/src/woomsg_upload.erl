@@ -181,6 +181,11 @@ verify_type_in_header(Headers) ->
 	    ".gif";
 	{"image/bmp", _} ->
 	    ".bmp";
-	_ ->
+	{"image/pjpeg", _} ->  %% Fix IE issues
+	    ".jpg";
+	{"image/x-png", _} ->  %% Fix IE issues
+	    ".png";
+	Res ->
+	    io:format("unknown-pic-format:~p~n", [Res]),
 	    unknown
     end.

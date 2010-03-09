@@ -2,18 +2,32 @@
 
 
 1. #Title: setting导航菜单的位置问题:
-   #State: won't fix
+   #State: Active - won't fix
    #Description:
    在setting页面显示的时候, 右侧的导航菜单的位置会下滑.
    这个问题在firefox 3.5中会出现, IE 8.0 正常, 目前定为
    won't fix.
+   补充:
+   完成了对upload页面的重构, 这个问题已经修复.
 
 2. #Title: IE图片上传错误, 显示图片格式不能识别
-   #State: Active
+   #State: Active - Close
    #Description:
    在IE下upload页面的照片上传功能出错, 提示照片的格式不能识别.
+   
+   原因:
+   由于IE下对图片的image-type的处理方式和Firefox不同, 增加了额外的判断代码
+   来修复这个问题.
+   已经测试, 对于*.png, *.gif, *.jpg三种格式的图片都可以在IE 8下正确上传.
+   
 
 
 3. #Title: 
+   #State: Active
+   #Description:
+   upload页面的"选择上传文件按钮"在firefox下cursor:pointer;无效,
+   当鼠标移动到这个按钮上面的时候不会自动出现"手形", IE8下面显示正常.
+
+4. #Title: 
    #State: Active
    #Description:

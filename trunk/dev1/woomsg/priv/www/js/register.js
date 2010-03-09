@@ -31,7 +31,7 @@ function validate_register_user(data) {
    * 登录成功, 跳转到login页面
    */
   else if (data.result == "ok") {
-    location.href = "login";
+    location.href = "/login";
   }
   
 }
