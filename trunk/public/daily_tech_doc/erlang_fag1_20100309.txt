@@ -1,0 +1,49 @@
+介绍Erlang的一些FAQ:
+
+
+1. 介绍start和start_link的区别:
+<1> 如何创建一个process:
+    spawn(Mod, Fun, Args) -> pid()
+    a. 要用spawn启动一个process, 这个进程函数必须要从模块中导出(export)才行.
+    b. Args:list() 是一个列表
+
+    例子:
+    $test.erl
+    module(test).
+    -export([start/0, saysomething/1]).
+
+    saysomething(Data) ->
+        io:format("saysomething: ~p~n", [Data]).
+
+    start() ->
+        spawn(?MODULE, saysomething, ["this is a test string"]).
+    测试:
+    test:start().
+    saysomething: "this is a test string"
+    <0.44.0>     %% 这个是spawn/3的返回值pid()
+
+<2> 如何对一个进程发消息, 进程如何接收消息?
+    -module(test).
+    -export([start/0, call/1, loop/0]).
+    -define(NAME, mypid).
+    loop() ->
+        receive
+	    {msg, Data} ->
+	        io:format("msg: ~p~n", [Data]),
+	        loop();
+	    stop ->
+	        io:format("server stop~n", []),
+	        normal;
+	    _Any ->
+	        io:format("unknown msg~n",[]),
+	        loop()
+        end.
+
+    start() ->
+        Pid = spawn(?MODULE, loop, []), 
+        register(?NAME, Pid). %% 为pid注册一个名字
+
+    call(Msg) ->
+        ?NAME ! Msg.  %% 使用process name来代替pid向process发送消息
+
+2.

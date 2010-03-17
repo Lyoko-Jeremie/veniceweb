@@ -1,0 +1,263 @@
+
+1. tty, pty, pts的区别?
+<1> tty(teletype), 终端设备的通称, 例如键盘, 显示器.
+    终端是一种字符型的设备.
+
+<2> pty(pseudo-tty), 虚拟终端, 也叫"伪终端", 并不是实际的物理设备,
+    我们在telnet到主机或者使用xterm时也需要一个终端交互, 这就是虚拟终端.
+    伪终端是"成对的逻辑"设备, 它们于实际的物理设备并不直接相连.
+
+<3> pts
+    pts(pseudo terminal slave)
+    ptmx(pseudo terminal master)
+    pts和ptmx配合使用, 实现pty.
+
+<4> /dev/pts/N: 是XWindow模式下的伪终端.
+    小实验:
+    XWindow模式下(Ubuntu Linux)
+    a. 进入到/dev/pts目录, 会发现当前只有一个/dev/pts/ptmx文件
+    b. 打开3个终端, 这个时候会发现, /dev/pts/下多了3个文件
+       /dev/pts/0
+       /dev/pts/1
+       /dev/pts/2
+       0, 1, 2三个文件分别表示3个pts.
+    c. 在终端上输入, tty命令, 可以查看当前所登录的终端.
+    d. 在任何一个终端上, 输入下面的命令, 查看结果, 会发现三个终端上
+       都会显示"hello".
+       echo "hello" > /dev/pts/0
+       echo "hello" > /dev/pts/1
+       echo "hello" > /dev/pts/2
+
+<5> /dev/tty代表当前的tty设备
+    你在当前的tty上输入 echo "hello" > /dev/tty, 都会在当前的
+    tty上显示"hello".
+
+<6> /dev/tty0和/dev/tty1-tty6之间的关系?
+    tty0表示当前的控制台终端, tty1-tty6可以使用Alt + (F1 - F6)进行切换,
+    无论是tty1还是tty2, tty6, 当前的控制台终端tty0都指向它.
+    
+<7> 可以认为/dev/console:
+    计算机显示器通常被称为控制台终端(Console), 
+    console可以理解为是/dev/tty0的符号链接.
+    注意:
+    我们直接向/dev/tty0或者/dev/console写数据可能会遇到permission的问题, 
+    向/dev/tty则没有.
+    只有超级用户root才有权限向tty0写入数据.
+
+2. ps
+   为我们提供了进程的一次性查看的功能(如果要进行时间监控, 使用top命令):
+   我们介绍最常用的两个命令: ps aux 和ps -ef.
+
+   <1> ps aux
+       USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+       VSZ: 占用的虚拟内存大小
+       RSS: 占用的物理内存大小
+       STAT: 进程状态
+       START: 启动进程的时间
+       TIME: 进程消耗CPU的时间
+       COMMAND:命令的名称和参数
+
+       补充STAT(注意和top命令的S列类比):
+       D 无法中断的休眠状态（通常 IO 的进程）
+       R 正在运行，在可中断队列中
+       S 处于休眠状态，静止状态
+       T 停止或被追踪，暂停执行
+       X 死掉的进程
+       Z 僵尸进程不存在但暂时无法消除
+
+       < 高优先级进程
+       N 低优先序进程
+       s 进程的领导者（在它之下有子进程）
+       + 位于后台的进程组
+
+   <2> ps -ef
+       UID  PID  PPID  C STIME TTY TIME CMD
+       UID   进程的拥有者的ID
+       PID   进程ID
+       PPID  父进程的ID
+       C
+       STIME 进程启动时间
+       TTY   终端
+       TIME  进程消耗CPU的时间
+       CMD   命令行
+3. top
+<1> 补充uptime命令
+$uptime
+23:17:45 up  1:48,  3 users,  load average: 0.03, 0.05, 0.04
+23:17:45 当前时间
+up 1:48  系统已经运行的时间
+3 users  目前有多少用户登录
+load average: 0.03, 0.05, 0.04 过去1分钟, 5分钟, 15分钟系统的"平均负载", 如何理解?
+特定时间间隔内, 运行队列中的平均进程数量, 一般来说如果"每个CPU当前活动的
+进程数不大于3, 就表示系统的性能是良好的, 如果每个CPU的当前活动的进程数大于
+5, 就表示系统有严重的性能问题".
+简单说, "load average越低, 表示系统的性能越良好".
+
+<2> 分析上面5行数据
+top - 01:06:48 up  1:22,  1 user,  load average: 0.06, 0.60, 0.48
+Tasks:  29 total,   1 running,  28 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.3% us,  1.0% sy,  0.0% ni, 98.7% id,  0.0% wa,  0.0% hi,  0.0% si
+Mem:    191272k total,   173656k used,    17616k free,    22052k buffers
+Swap:   192772k total,        0k used,   192772k free,   123988k cached
+
+top:第一行和uptime的结果是一样的.
+
+Tasks: 第二行, 进程描述
+29 total       进程总数
+1 running      运行的进程
+28 sleeping    睡眠的进程
+0 stopped      停止的进程
+0 zombie       僵死的进程
+
+Cpu(s): 第三行, CPU相关的指标
+0.3% us        userspace  用户空间占CPU的百分比
+1.0% sy        system/kernel 内核空间占CPU的百分比
+0.0% ni        nice process (nice值比一般值0大, 优先序较低的进程佔用CPU百分比)
+98.7% id       idle 注意: 空闲CPU百分比
+0.0% wa        wait for I/O 等待输入输出的CPU时间百分比
+0.0% hi        hardware interrupts 硬件中断
+0.0% si        software interrupts 软件中断
+
+Mem: 第四行, 内存信息
+191272k total 	物理内存总量
+173656k used 	使用的物理内存总量
+17616k  free 	空闲内存总量
+22052k  buffers 用作"内核缓存"的内存量
+
+Swap: 第五行, swap信息
+192772k total 	交换区总量
+0k used 	使用的交换区总量
+192772k free 	空闲交换区总量
+123988k cached 	"缓存的交换区"总量.
+
+<3>
+进程的详细信息
+序号  列名   含义
+a    PID    进程ID
+b    PPID   父进程ID
+c    RUSER  Real user name, 进程真实拥有者的使用者名称, 即是"执行进程的使用者"
+d    UID    进程拥有者的ID
+e    USER   进程的有效使用者名称, 一般为执行进程的使用者, 但 suid 进程则会变成程序档案的拥有者
+f    GROUP  进程拥有者的组名
+g    TTY    启动进程的终端, 不是通过终端启动的进程为?
+h    PR     priority, 优先级(数值越小, 优先级越高)
+i    NI     nice值, 负数表示高的优先级, 正数表示低的优先级(数值越大, 优先级越低).
+j    P      最后使用的CPU, 仅在多CPU环境下有意义
+k    %CPU   上次更新到现在的CPU时间占用百分比
+l    TIME   进程使用的CPU时间总计, 单位秒
+m    TIME+  进程使用的CPU时间总计, 单位1/100秒 
+n    %MEM   进程使用的"物理内存百分比"
+o    VIRT   进程使用的虚拟内存总量, 单位kb. VIRT=SWAP+RES 
+p    SWAP   进程使用的虚拟内存中,被换出的大小, 单位kb.
+q    RES    进程使用的, 未被换出的物理内存大小, 单位kb. RES=CODE+DATA
+r    CODE   可执行代码占用的物理内存大小, 单位kb
+s    DATA   可执行代码以外的部分(数据段+栈)占用的物理内存大小, 单位kb
+t    SHR    共享内存大小, 单位kb 
+u    nFLT   页面错误次数 
+v    nDRT   最后一次写入到现在，被修改过的页面数。
+w    S      进程状态
+    * D (uninterruptible sleep) - 在不可中断的休眠中 (一般为正在进行输入/输出)
+    * R (running) - 在运行中或可以被运行 (即在运行序列 run queue)
+    * S (sleeping) - 在可以被中断的休眠中 (一般是正在等待某事件完结)
+    * T (traced or stopped) - 已被停止. 因工作控制讯号 (job control signal) 或进程在被追踪中.
+    * Z (Zombie) - 不能运作的进程, 即所谓 zombie 进程. 一般因为已终止但未能被其母进程成功接收的进程. 
+    (sleep是主动放弃cpu的，stop是被动放弃cpu的)
+x    COMMAND 命令名/命令行 
+y    WCHAN  Wait Channel, 若该进程在睡眠，则显示睡眠中的系统函数名
+z    Flags  任务标志, 参考 sched.h  
+
+补充:
+i. 系统的优先级PR和Nice的关系:
+优先级值PR  = 优先级阀值 + Nice值 + (最近的CPU使用率/2)
+系统用上面的公式为每个进程计算一个优先级值，每秒都会重新计算一次，当进程调度的时候，具有"最小优先级"值
+的进程会获得CPU, 当多个进程遇有相同优先级值的时候，使用先来先服务的原则.
+
+优先级阀值: 是一个整数，通常是40或60
+Nice值: 是一个默认值为20的整数，可以修改
+最近的CPU使用率: CPU使用率会不断更新, CPU的使用率越高，说明这个进程最近占用了越多的CPU时间.
+ii. 物理内存和虚拟内存
+RES(Resident Size)  - 进程"非被置换"的"实体内存"大小
+VIRT(Virtual Memory) - 
+SHR(Shared Mem size) - 进程使用的共享内存大小，即可以和其他进程共享的内存空间
+VIRT = SWAP + RES
+RES = CODE + DATA
+iii. 区分USER和RUSER
+USER  "有效"拥有者, 如果设置了suid, 会改变
+RUSER 真实拥有者, 也就是执行进程的使用者.
+
+<4> top运行时, 几个有用的命令参数
+a. 通过f键可以选择显示的内容.
+    按f键之后会显示列的列表, 按a-z即可显示或隐藏对应的列, 最后按回车键确定.
+b. M - 根据程序使用的内存大小排序
+c. P - 更具占用CPU的比例排序
+d. T - 根据累计占用CPU的时间TIME排序
+e. q - 退出
+f. c - 切换到完整的COMMAND显示, 显示进程启动的完整命令行, 非常有用.
+g. i - 使top不显示任何"闲置"或者"僵死进程", 也就是只显示S为R的进程.
+h. k - 终止一个进程, 需要输入进程的pid, 默认使用信号15. 如果不能正常结束那就使用信号9强制结束该进程.
+
+4. grep
+<1> g(globally) search for a re(regular expression) and p(print) the results
+它和管道(|)配合使用,非常强大,用于搜索文本文件.
+也可以用于几个文本文件中查找一字符串.
+
+传统上grep分为三种程序(我们在使用正则表达式的时候, 要特别注意BRE和ERE在语法上的差别):
+grep:   使用BRE(Basic Regular Expression)
+egrep:  使用ERE(extended Regular Expression)
+fgrep:  使用固定字符串
+现在的grep命令把这三种程序和在一起, 可以使用不同参数来区分:
+grep -F   等价于fgrep
+grep -E   等价于egrep
+grep 默认  等价于grep
+
+<2> 几个有用的参数选项
+-e 通常, "第一个非选项的参数"会指定要匹配的模式, 但如果模式为-开头的时候可能混淆,
+   这时候可以使用多个模式. 例如: who | grep -e pat1 -e pat2
+-i 忽略字母的大小写
+-l 列出匹配模式的文件名, 而不是打印匹配的行.
+-v 显示"不匹配"的行
+-w 只匹配整个单词, 而不是字符串的一部分 (和re的单词匹配类似, \<word\>, 可以匹配word, 但不能匹配wordd或者wword)
+
+<3> 典型应用:
+a. 搜索/usr/tmp/目录下所有包含erlang的文件
+   grep erlang /usr/tmp/*
+   grep -r erlang /usr/tmp/*  递归的处理子目录
+   grep -rw erlang /usr/tmp/* 等价于 grep -r '\<erlang\>' /usr/tmp/* 单词匹配
+b. 配合wc命令(wc Option FileList, 其中Option -l行数, -w单词数, -c字节数)计算返回的结果数
+   ps -ef | grep mysql | wc -l    #计算当前进程信息中包含mysql的行.
+
+5. pgrep
+
+6. sed
+<1> 对于文本的查找我们使用grep, 对于文本流的替换, 则应该使用sed.
+    通常的语法是:
+    sed [-n] 'edit command' file list
+    sed [-n] -e 'edit command' file list
+    sed [-n] -f script-file file list
+
+    -n 打印时候的特殊用法: 不是每个最后修改的结果都打印出来, 而是以p指定打印的行.
+    -f script file, 从文件中读取编辑命令, 当有多个编辑命令需要执行的时候, 有用
+    -e edit command, 编辑命令, 和grep类似, 当有多个编辑命令的时候使用方便sed -e editcmd1 -e editcmd2
+
+<2>
+
+7. Psacct(ac, lastcomm, accton, sa)
+TODO: http://bbs.securitycn.net/viewthread.php?tid=1950
+sudo apt-get install acct
+(在ubuntu系统上, acct可以自动启动)
+
+ac: 用来显示用户连接时间的统计
+lastcomm: 显示系统执行的命令
+accton: 用于打开或关闭进程记帐功能
+sa: 统计系统进程记帐的情况
+
+8. 杀掉进程kill
+
+9. find命令
+
+10.
+
+
+
+
+

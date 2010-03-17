@@ -1,0 +1,24 @@
+-module(tiny).
+-behaviour(application).
+-behaviour(supervisor)
+
+-export([start/2, stop/1]).  %% application callback
+-export([init/1]).           %% supervisor callback
+
+-define(SERVER, tiny_sup).
+
+%% application callback
+start(_Type, _Args) ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+stop(_State) ->
+    ok.
+
+%% supervisor callback
+init(_Args) ->
+    SupStra = {one_for_all, 2, 1},
+    TinyServer = {tiny_server, {tiny_server, start_link, []},
+                  permanent, 10, worker, [tiny_server]},
+    {ok, {SupStra,[TinyServer]}}.
+    
+

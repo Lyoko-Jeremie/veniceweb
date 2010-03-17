@@ -1,0 +1,6 @@
+{release, {"tiny app release", "1.0"}, {erts, "5.7.4"},
+  [{kernel, "1.16.4"},
+   {stdlib, "2.13.4"},
+   {sasl, "2.1.8"},
+   {tiny_app, "1.0"}]
+}.
