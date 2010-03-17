@@ -1,0 +1,248 @@
+一步一步的构建一个Erlang OTP系统
+tiny_top/
+  |-- tiny_app-1.0/
+  |-- tiny_app-2.0/
+  |-- tiny_app-3.0/
+
+Erlang Applicaion的目录结构: Application-Vsn
+
+#v1.0
+1. 目录结构
+tiny_app-1.0/
+  |-- ebin/
+  |-- ebin/tiny_app.app  %% 通常*.app和*.beam默认在一个目录下
+  |-- src/tiny.erl
+  |-- tiny_app-1.0.rel
+
+命名规则:
+Application资源文件, *.app使用程序名, tiny_app.app
+Release资源文件, *.rel使用程序名-vsn, tiny_app-1.0.rel
+
+APIs:
+a. application:get_application(Pid | Module) -> {ok, Application} | undef
+   返回"application的name".
+   application:get_application()等价于get_application(self())
+b. application:which_applications() -> [{Application, Description, Vsn}]
+   返回当前"正在运行"的程序的list(和loaded的application不是一个概念).
+c. application:load(tiny_app);        load程序
+   application:loaded_applications(); 显示所有已经load的程序
+   application:unload(tiny_app);      unload程序
+
+2. 创建一个Application
+   a. 程序(tiny.erl)可以接受消息, 并每隔10秒钟打印一条消息.
+      注意: behaviour-application的"两个"关键的callback函数:
+      Mod:start(_Type, _Args) -> {ok, Pid} | {ok, Pid, State} | {error, Reason}
+      Mod:stop(_State) -> Atom  (做一些清理工作, 返回值被忽略)
+   b. "需要tiny_app.app", 注意app文件的格式.
+      {application, tiny_app,           %% Application的名字(注意: 必须和resource一致, xxx.app)
+        [{description, "tiny app 1.0"}, %% 描述
+         {vsn, "1.0"},                  %% 版本
+         {modules, [tiny]},             %% 这个Application所引入的模块
+         {registered, []},              %% 这个Application中所有"注册进程"的名字.
+         {applications, [kernel, stdlib, sasl]}, 
+	                                %% 在启动这个applicagion前所必须启动的application.
+         {mod, {tiny, []}}]             %% 定义了回调模块, 以及程序启动的参数:
+	                                %% tiny:start(normal, [])
+      }.
+   c. 进入tiny_otp/tiny_app-1.0/
+      erlc -o ./ebin ./src/tiny.erl         %% 编译tiny.erl
+      erl -boot start_sasl -pa ./ebin/      %% 需要启动SASL
+      >application:start(tiny_app).         %% 启动app
+      >application:which_applications().    %% 查看正在运行的application.
+      [{tiny_app,"tiny app","1.0"},         %% 我们自定义的application
+       {sasl,"SASL  CXC 138 11","2.1.8"},
+       {stdlib,"ERTS  CXC 138 10","1.16.4"},
+       {kernel,"ERTS  CXC 138 10","2.13.4"}]
+      >application:stop(tiny_app).          %% 停止app
+   
+3. 创建一个Release
+   需要两个核心的APIs:
+   systools:make_script/2
+   systools:make_tar/2
+   release_handler:unpack_release/1
+
+   a. "需要tiny_app-1.0.rel", 这个*.rel文件需要指定erts的版本, 并且列出所需要的所有的application的版本.
+      {release, {"tiny app release", "tiny1.0"}, {erts, "5.7.4"},  %% 要注意这个tiny1.0, 它会决定安装时候的路径
+                                                               %% /usr/local/lib/erlang/releases/tiny1.0的路径
+        [{kernel, "2.13.4"},
+         {stdlib, "1.16.4"},
+         {sasl, "2.1.8"},
+         {tiny_app, "1.0"}]
+      }.
+   b. 生成boot script(tiny_app-1.0.script和tiny_app-1.0.boot)
+      进入tiny_top/tiny_app-1.0/
+      erl -boot start_sasl -pa ./ebin/
+      >systools:make_script("tiny_app-1.0").
+      分析:
+      systools:make_script(Name:string()) -> Results
+      systools:make_script(Name:string(), [Opt]) -> Reslts
+      *读取Name.rel文件, 产生一个脚本文件Name.script和它的二进制版本Name.boot,
+       这个脚本文件指明了哪些code应该被加载, 哪些application应该被启动.
+      *Name.rel包含了这个release需要的所有application, 所以我们会读取*.rel里面所有的application,
+       对于"每一个application", 根据它的*.app, 去顶哪些modules需要加载, 以及如何启动这个application(modules, mod).
+      *默认情况下产生的Name.script和Name.boot和Name.rel在同样的目录下(当前的工作目录),
+       如果要设置Name.script和Name.boot的输出路径, 可以使用{outdir, Dir:string()}选项. 
+      *注意: *.app和*.beam在相同的目录下, *.erl也在相同的目录下,
+       但是如果*.app和*.beam在ebin下, *.erl在src下也可以找到.
+       所以我们给出的目录结构是:
+       ebin/tiny_app.app
+       ebin/*.beam
+       src/*.erl
+       tiny_app-1.0.rel
+       tiny_app-1.0.script  %% 生成的
+       tiny_app-1.0.boot    %% 生成的
+   c.  生成tar文件(tiny_app-1.0.tar.gz)
+       进入tiny_otp/tiny_app-1.0/
+       erl -boot start_sasl -pa ./ebin/
+       >systools:make_tar("tiny_app-1.0"). %% 会生成tiny_app-1.0.tar.gz
+       分析:
+       systools:make_tar(Name:string()) -> Results
+       systools:make_tar(Name:string(), [Opts]) -> Results
+       *读取Name.rel文件, 产生一个Name.tar.gz的release package, 在安装到target system之前必须使用
+        release_handler来解包(uncompress, unpack).
+       *同systools:make_script类似, 也是读取Name.rel中所有的application, 然后根据每个*.app取人需要加载
+        的module的版本(modules, vsn).
+       *默认情况下产生的Name.tar.gz和Name.rel在同样的目录下(当前的工作目录),
+        如果要设置Name.tar.gz的输出路径, 可以使用{outdir, Dir:string()}选项.
+       *默认情况下Name.tar.gz对每一个包含的application, 包含App-Vsn/ebin和App-Vsn/priv, 如果想包含更多,
+        可以指定{dirs, [src, example]}选项.
+   d.  生成的Name.tar.gz的目录结构:
+       tiny_app.tar.gz
+       |-- lib/
+       |-- lib/kernel-2.13.4
+       |-- lib/sasl-2.1.8
+       |-- lib/stdlib-1.16.4
+       |-- lib/tiny_app-1.0
+       |-- releases/
+       |-- releases/tiny1.0/start.boot
+       |-- releases/tiny_app-1.0.rel
+   e.  使用release_handler:unpack_release(Name:string())来解压release package.
+       (作用是解压$REL_ROOT/releases目录下的Name.tar.gz)
+       注意(前提条件): 拷贝tiny_app-1.0.tar.gz到$ERL_ROOT/releases目录(其中$ERL_ROOT是Erlang安装的根目录, 
+                      这里是/usr/local/lib/erlang)
+       进入tiny_otp/tiny_app-1.0/
+       sudo erl -boot start_sasl
+       >release_handler:unpack_release("tiny_app-1.0").
+       上面的命令会做出下面"三处修改":
+       $ERL_ROOT/lib下面多了一个 tiny_app-1.0
+       $REL_ROOT/release/tiny1.0 新增目录
+       $REL_ROOT/release/RELEASES 作出了修改, 增加了tiny_app-1.0的信息.
+    f. 测试:
+       这时候tiny_app-1.0在"本机"已经安装成功, 我们可以在任何地方运行erlang shell,
+       erl -boot start_sasl
+       >application:start(tiny_app).
+       或者erl -boot $ERL_BOOT/release/tiny1.0/start来启动tiny_app-1.0的application.
+
+4. Target System
+   如果要在一台新的机器上部署我们的tiny_app-1.0, 则需要创建一个target system.
+   erlang otp的参考文档:
+   http://www.erlang.org/doc/system_principles/create_target.html
+   两个核心的APIs:
+   target_system:create("tiny_app-1.0")
+   target_system:install("tiny_app-1.0", "/usr/local/tiny")
+
+   下面是创建一个target system的步骤:
+   a. 创建一个*.rel文件, 和3中的tiny_app-1.0.rel一样.
+   b. 进入到入tiny_otp/tiny_app-1.0/, 启动erlang shell,
+      erl -pa ./ebin -boot start_sasl
+   c. 运行target_system:create("tiny_app-1.0"), 成功以后的目录结构是:
+      ebin/*.app
+      ebin/*.beam
+      src/*.erl
+      tiny_app-1.0.rel
+      tiny_app-1.0.script  %% 生成的
+      tiny_app-1.0.boot    %% 生成的
+      plain.erl        %% 生成的
+      plain.script     %% 生成的
+      plain.boot       %% 生成的
+      tiny_app-1.0.tar.gz  %% 生成的
+
+      说明:
+      plain.*系列只加载kernel和stdlib两个lib, 没有包含我们的tiny_app, 
+      而tiny_app-1.0.*系列除了包含plain之外, 还包含我们的tiny_app的application.
+
+      target_system:create/1简单的流程是首相读取tiny_app-1.0.rel, 根据其内容生成plain.rel(只包
+      含stdlib和kernel),然后根据tiny_app-1.0.rel和plain.rel, 调用systools:make_script/2创建tiny_app-1.0.script, 
+      tiny_app-1.0.boot以及plain.script,plain.boot. 然后再调用systools:make_tar/2创建tiny_app-1.0.tar.gz.
+      ....
+   d. 如何部署到另外的机器上呢?
+      把刚刚tiny_otp/tiny_app-1.0/下所有的内容拷贝到另外的机器上(事实上不需要全部拷贝)
+      进入到tiny_otp/tiny_app-1.0/, erl -pa ./ebin/ -boot start_sasl
+      target_system:install("tiny_app-1.0", "/usr/local/tiny")
+   e. 如何在新机器上启动tiny_app?
+      下面命令可以启动我们的application.
+      /usr/local/tiny/bin/erl -boot /usr/local/tiny/releases/tiny1.0/start
+
+
+#v2.0
+1. 我们在tiny_app-1.0的基础上进行完善, 使用了常用的OTP behaviour, 如application, supervisor, gen_server.
+   并且增加了一个文件tiny_server.erl, 用于提供key-value的存储服务(使用gen_server和dict实现).
+   同时还更新了tiny_app.app和增加了一个新的release资源文件tiny_app-2.0.rel(删除了tiny_app-1.0.rel文件)
+
+   注意: 对于application的每个新的版本, 更新Name.app, 删除Name-oldVsn.rel, 增加Name-NewVsn.rel
+
+   我们可以进入tiny_otp/tiny_app-2.0/, erl -pa ./ebin/ -boot start_sasl
+   >application:start(tiny_app).
+   >appmon:start().   %% 启动一个UI来查看应用程序的运行情况.
+
+   补充superver的核心:
+   通过supervisor:start_link/3启动, 会使用Mod:init的策略:
+   Mod:init的返回值是:
+   {ok, Strategy, [Worker1, Worker2, ...]}
+   Strategy = {RestartStrategy, MaxRestarts, Time}
+   Worker   = {Tag, {Mod, Func, ArgList}, Tag标记这个"工作进程"
+               Restart,                   permanent | transient | temorary
+                                          永久(重启)|瞬间(正常退出才重启)|临时(不重启)
+               Shutdown,                  终止时间
+               Type,                      worker | supervisor
+               [Mod]}                     如果子进程是一个监控进程或者gen_server的行为模式的回调函数,
+                                          指定了回调模块的名字.
+   
+2. 书写appup文件: ebin/tiny_app.appup
+   通用格式:
+   {Vsn,                                                          当前版本
+     [{UpFromVsn, Instructions}, {UpFromVsn1, Instructions}...],  从哪个版本升级过来的列表
+     [{DownToVsn, Instructions}, {DownToVsn1, Instructions}...]   从降级到哪个版本的列表
+   }.
+
+   tiny_app.appup
+   {"2.0",
+     [{"1.0", [{restart_application, tiny_app}]}],  
+     [{"1.0", [{restart_application, tiny_app}]}]
+   }.
+
+3. 生成relup文件: 
+   APIs:
+   systools:make_relup(Name:string(), UpFrom, DownTo)
+   进入tiny_otp/tiny_app-2.0/
+   erl -pa ../tiny_app-1.0/ -pa ../tiny_app-1.0/ebin -pa ./ebin -boot start_sasl
+   >systools:make_relup("tiny_app-2.0", ["tiny_app-1.0"], ["tiny_app-1.0"]).
+   上面命令成功后, 在当前目录会出现一个"relup文件".
+
+   本质上, relup文件就是对比不同版本的release之间资源文件(*.rel)的区别, 
+   也就是对比Name.rel和UpFrom和DownTo列表中的NameUpFrom.rel和NameDownTo.rel的区别,
+   生成这个结果文件.
+
+4. 重复v1当中的步骤
+   systools:make_script("tiny_app-2.0").
+   systools:make_tar("tiny_app-2.0").
+
+5. 部署v2
+   拷贝tiny_app-2.0.tar.gz到/usr/local/tiny/releases目录(也就是我们之前部署v1的地方)
+   /usr/local/tiny/bin/erl 
+   >application:start(sasl).
+   >release_handler:unpack_release("tiny_app-2.0").
+   成功以后下面三个地方会做出修改:
+   /usr/local/tiny/lib下面多了一个 tiny_app-2.0
+   /usr/local/tiny/release/tiny2.0 新增目录(包含start.boot, relup, tiny_app-2.0.rel)
+   /usr/local/tiny/release/RELEASES 作出了修改, 增加了tiny_app-2.0的信息.
+
+   启动v1:
+   /usr/local/tiny/bin/erl -boot /usr/local/tiny/release/tiny1.0/start
+   %% 这个时候v1在运行, 在v1的erlang进程中执行下面命令
+   >release_handler:install_release("tiny2.0").  
+   如果成功会动态的切换到v2.
+   (注意: 新的release的安装必须在旧的code所在erl进程进行,可以通过在新进程CTRL + G 相关命令链接old erl shell)
+
+#v3.0
+1. TODO:

@@ -1,0 +1,6 @@
+{"2.0",
+    [{"1.0", [{restart_application, tiny_app}
+              ]}],
+    [{"1.0", [{restart_application, tiny_app}
+              ]}]
+}.
