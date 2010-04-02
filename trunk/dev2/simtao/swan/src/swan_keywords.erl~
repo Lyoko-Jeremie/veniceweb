@@ -1,0 +1,25 @@
+-module(swan_keywords).
+-export([handle_get/1]).
+
+handle_get(Req) ->
+    case Req:parse_qs() of
+	[{"code", Code}] ->
+	    {Host, Referer} = swan_util:parse_host_and_referer(Req),
+            {_Charset, _TextUtf8, KeywordsUnicode, _Runtime, _WallClock} = swan_http:process_url(Referer),
+	    Data = "var code=" ++ Code ++ ";\n" ++
+		   "var host=" ++ Host ++ ";\n" ++
+		   "var referer=" ++ Referer ++ ";\n" ++
+		   "var keywordList=" ++ binary_to_list(iolist_to_binary(format_keywords(KeywordsUnicode))) ++ ";\n",
+            Req:respond({200, [{"Content-Type", "text/plain"}], Data});
+	_ ->
+	    Data = "api-request-error;",
+            Req:respond({200, [{"Content-Type", "text/plain"}], Data})	    
+    end.
+
+%% Internal APIs:
+format_keywords(KeywordsUnicode) ->
+    Res = lists:foldl(fun({Key, Count}, AccIn) ->
+			  TmpData = ["(", swan_util:unicode_to_utf8(Key), ", ",integer_to_list(Count), ")"],
+                          [", ", TmpData | AccIn]
+                      end, [], KeywordsUnicode),
+    lists:reverse(Res).
