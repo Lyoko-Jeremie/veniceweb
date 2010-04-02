@@ -1,0 +1,57 @@
+-module(swan_analyze).
+-export([handle_get/1, handle_post/1]).
+
+handle_get(Req) ->
+    Data = mochiweb_html:to_html(
+	   {"html", [], [
+	   {"head", [], [
+	     {"meta", [{"http-equiv", "Content-Type"}, 
+		       {"content", "text/html; charset=utf-8"}], []},
+	     {"title", [], ["页面分析"]}]},
+	   {"body", [], [
+	     {"div", [{"class", "page"}], [
+	       {"div", [{"id", "header"}], []},
+	       {"div", [{"id", "menucontainer"}], []},
+               {"div", [{"id", "main"}], [
+	         {"div", [{"id", "url"}], [
+		   {"form", [{"method", "post"}, {"action", "/service/analyze"}], [
+		     "输入URL:",
+                     {"input", [{"type", "text"}, {"name", "url"}], []},
+                     {"input", [{"type", "submit"}, {"value", "发送"}], []}]}]},
+                 {"div", [{"id", "res"}], []}]},
+               {"div", [{"id", "footer"}], []}]}]}]}),
+    Req:respond({200, [{"Content-Type", "text/html"}], Data}).
+
+handle_post(Req) ->
+    [{"url", Url}] = Req:parse_post(),
+    {Charset, TextUtf8, Runtime, WallClock} = swan_http:process_url(Url),
+
+    UnicodeList = swan_util:utf8_to_unicode(TextUtf8),
+    Keywords = swan_token:tokens(UnicodeList),
+    io:format("~p~n", [Keywords]),
+
+    Data = mochiweb_html:to_html(
+	   {"html", [], [
+	   {"head", [], [
+	     {"meta", [{"http-equiv", "Content-Type"}, 
+		       {"content", "text/html; charset=utf-8"}], []},
+	     {"title", [], ["页面分析"]}]},
+	   {"body", [], [
+	     {"div", [{"class", "page"}], [
+	       {"div", [{"id", "header"}], []},
+	       {"div", [{"id", "menucontainer"}], []},
+               {"div", [{"id", "main"}], [
+	         {"div", [{"id", "url"}], [
+		   {"form", [{"method", "post"}, {"action", "/service/analyze"}], [
+		     "输入URL:",
+                     {"input", [{"type", "text"}, {"name", "url"}], []},
+                     {"input", [{"type", "submit"}, {"value", "发送"}], []}]}]},
+                 {"div", [{"id", "res"}], [
+                   {"div", [], ["Url: ", Url]},
+                   {"div", [], ["Charset: ", atom_to_list(Charset)]},
+                   {"div", [], ["Keywords: ", swan_util:unicode_to_utf8(Keywords)]},
+		   {"div", [], ["Runtime(占用的CPU时间): ", io_lib:format("~p 毫秒~n", [Runtime])]},
+                   {"div", [], ["WallClock(代码执行时间): ", io_lib:format("~p 毫秒~n", [WallClock])]},
+                   {"div", [], ["Text: ", TextUtf8]}]}]},
+               {"div", [{"id", "footer"}], []}]}]}]}),
+    Req:respond({200, [{"Content-Type", "text/html"}], Data}).
