@@ -1,7 +1,7 @@
 运行Erlang程序相关知识介绍:
 
 1. erlc hello.erl
-   erlc -noshell -s hello start -s init stop
+   erl -noshell -s hello start -s init stop
    
    每一个-s...命令都会应用apply(hello, start, [])或者apply(init, stop, [])来执行
    -s的命令会顺序执行.

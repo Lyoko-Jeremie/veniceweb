@@ -132,7 +132,7 @@ $hello.c
 a. 编译使用静态库 
 使用gcc和ar命令编译打包成静态库
 静态库的命名规则是: 以lib为前缀, 紧接着跟静态库名,扩展名为.a.
-gcc -c mytool1.c mytool1.c              // 会生成mytool1.o mytool2.o
+gcc -c mytool1.c mytool2.c              // 会生成mytool1.o mytool2.o
 ar -crv libmytool.a mytool1.o mytool2.o  // 创建静态库
 
 使用ar命令来创建和修改库
