@@ -1,7 +1,9 @@
 总结Erlang OTP中的gen_fsm -> finite state machine
 
 1. 有限状态机的描述:
-State(S) x Event(E) -> Action(A), State(S')
+State(S) x Event(E) -> Action(A),
+                       State(S')
+(其中State包含: StateName和StateData)
 当我们处于状态S的时候，发生了事件E，我们需要执行动作A，并妆变为状态S'
 (要注意的是S和S'可能是同一状态)
 
@@ -17,7 +19,7 @@ StateName(Event, StateData) ->
 -export([init/1, locked/2, open/2]).
 
 start_link(Code) ->
-    gen_fsm:start_link({local, ?MODULE}, ?MODULE, Code, []).
+    gen_fsm:start_link({local, ?MODULE}, ?MODULE, Code, []). %% Code是init参数
 
 button(Digit) ->
     gen_fsm:send_event(?MODULE, {button, Digit}).

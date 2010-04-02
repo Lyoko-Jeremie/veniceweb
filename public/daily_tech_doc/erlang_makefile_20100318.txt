@@ -1,0 +1,80 @@
+介绍Erlang的通用makefile的编写
+
+1. 后缀规则
+   <1> 是一种古老的隐含规则定义, 当规则目标中存在两个可被make识别的后缀时, 这个规则就是一个
+   "双后缀"规则.
+
+   例如:
+   .erl和.beam都是可以被make识别的后缀的时候, 定义了一个目标是".erl.beam"的规则的时候,
+   make会把它们看作一个双后缀规则使用, 它的含义是".beam的依赖文件是对应的.erl文件".
+
+   看下面的例子(要注意的是, 后缀规则中"不存在依赖文件"):
+   .erl.beam:
+	erlc -W $<
+    
+   <2>可识别的后缀指的是: 
+   特殊目标.SUFFIXES所有依赖的名字.
+   通过给特殊目标"SUFFIXES"添加依赖来增加一个可被识别的后缀,像下边这样：
+   .SUFFIXES: .erl .beam
+   它所实现的功能是把后缀.erl和.beam加入到可识别后缀列表的末尾.
+   如果需要重设默认的可识别后缀, 因该这样来实现:
+   .SUFFIXES:                #删除所有已定义的可识别后缀
+   .SUFFIXES: .erl .beam     #重新定义
+
+2. 变量的高级用法: "变量值的替换"
+   其格式是“$(var:old=new)”或是“${var:old=new}”, 其意思是, 把变量“var”中所有以“old”字串
+   “结尾”的“old”替换成“new”字符串. 这里的“结尾”意思是“空格”或是“结束符”.
+
+   看下面的例子:
+   foo = a.o b.o c.o
+   bar = $(foo:.o=.c)    #将.o替换成.c
+   这个示例中, 我们先定义了一个“$(foo)”变量, 而第二行的意思是把“$(foo)”中所有以“.o”字串“结尾”全部
+   替换成“.c”，所以我们的“$(bar)”的值就是“a.c b.c c.c”。
+
+   另外一种变量替换的技术是以“静态模式”定义的：
+   foo = a.o b.o c.o
+   bar = $(foo:%.o=%.c)   #将.o替换成.c
+   这依赖于"被替换字串中的有相同的模式"
+
+   MODS = module1 module2 module3
+   compile : ${MODS:%=%.beam}
+   # 等价于 
+   # compile : module1.beam module2.beam module3.beam
+   
+3. 看一个Erlang通用的最基本的makefile模板:
+## 定义可识别的后缀
+.SUFFIXES : .erl .beam
+
+## "双后缀"规则 - .beam文件依赖的是对应的.erl文件
+.erl.beam :
+	erlc -W $<
+
+ERL = erl -boot start_clean
+
+## 希望编译的odule列表
+MODS = mod1 mod2 mod3
+
+## makefile里第一个tag是默认的tag. "make all"等价于"make"
+all : compile
+
+## 自定义我们的程序启动方式
+application : compile
+	${ERL} -pa '/home/woomsgadmin/tmp' -s mod1 start arg1 arg2
+
+compile : ${MODS:%=%.beam}
+
+clean:
+	rm -rf *.beam erl_crash.dump
+   
+
+补充一个erl -s的规则:
+erl -s Mod [Func [Arg1, Arg2, ...]] 初始化tag
+函数默认是start, 如果没有参数列表, 默认调用Mod:start(), 如果有参数列表, 把参数列表看成是atom:list(), 调用
+Mod:start([Arg1:atom(), Arg2:atom(), ...])
+一个erl可以使用多个-s选项, 这些选项的命令会被依次执行.
+
+测试:
+make
+make application   %% 会运行mod1:start([arg1, arg2]).
+make clean
+
