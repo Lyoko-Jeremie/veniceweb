@@ -1,2 +1,0 @@
-all:
-	erlc -o ../../../ebin ./src/iconv.erl
