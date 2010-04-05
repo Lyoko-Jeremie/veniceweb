@@ -1,6 +1,5 @@
-all:
-	(cd deps/mochiweb;$(MAKE))
-	(cd src;$(MAKE))
+all: ebin/
+	(cd src;$(MAKE) all)
 
 edoc:
 	(cd src;$(MAKE) edoc)
@@ -16,3 +15,6 @@ clean_plt:
 
 dialyzer:
 	(cd src;$(MAKE) dialyzer)
+
+ebin/:
+	@mkdir -p ebin
