@@ -1,0 +1,26 @@
+记录bugs
+
+ID#00001  Active - Closed 
+simtao数据库乱码问题:
+从simtao主站导入的数据中文出现乱码, 表现为中文字符显示为问号?.
+simtao.sql为utf8编码格式.
+
+修复方式:
+<1> 修改/etc/my.cnf, 增加如下内容:
+[mysql]
+default-character-set=utf8
+[client]
+default-character-set=utf8
+[mysqld]
+default-character-set=utf8
+
+<2> 在查询之前执行: set names 'utf8'
+
+测试:
+mysql -u root -p
+xxxxx
+use simtao_test_db;
+select * from buildin_keyword;
+
+ID#00002 Active
+
