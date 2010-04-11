@@ -1,0 +1,333 @@
+Ruby语言入门
+
+1. 输出hello world
+<1> ruby -e 'print "hello world"'
+-e参数的作用是把后面的脚本作为ruby程序.
+
+<2> 通过irb进行ruby交互式环境
+print "hello world"
+exit可以退出irb
+
+<3> test.rb中输入
+print "hello world"
+ruby test.rb
+
+2. Ruby的注释和换行
+ruby的注释分为单行和多行注释两种:
+<1> # 单行注释
+<2> =begin
+    这是多行注释
+    =end
+    来组成多行注释, 在多行注释的时候, =begin一定
+    是这一行的前6个字符.
+<3> ruby默认用还行符表示一行结束, 用;表示语句结束,
+    如果语句太长, 可以用"\"连接到下一行.
+
+3. Ruby的"分隔符"和"关键字"
+<1> 分隔符
+;  -  分号   - 分隔一行中的多个语句
+() -  括号   - 优先级, 定义方法的时候容纳参数列表
+   -  空格   - 分隔字符, 在可以省略()的地方代替()
+,  -  逗号   - 分隔多个参数
+.  -  点    -  将对象和它的方法分隔
+:: -  双冒号 -  域作用符, 将模块(类)于它的常量隔开
+
+<2> 关键字
+模块定义: module
+类定义: class
+方法定义: def, undef
+检查类型: defined?
+条件语句: if, then, else, elsif, case, when, unless
+循环语句: for, in, while, until, next, break, do, redo, retry, yield
+逻辑判断语句: not, and, or
+逻辑值和空值: true, false, nil
+异常处理: rescue, ensure
+对象引用: super, self
+快的起始: begin/end
+嵌入模块: BEGIN, END
+文件相关: __FILE__, __LINE__
+方法返回: return
+别名: alias
+
+BEGIN模块相当于C语言中的宏, END模块做一些收尾工作, 有了require, include
+应该取消BEGIN, END的语法定义.
+
+4. 标识名和变量的作用域
+<1> 标识名用来指向常量, 变量, 方法, 类, 模块
+<2> ruby的标识名区分大小写
+<3> 使用约定(用首字母来区分)
+    全局变量使用$作前缀
+    实例变量使用@作前缀
+    类变量使用@@作前缀
+    "类名, 模块名, 和常量"应该"大写字母开头"
+    局部变量, 方法参数, 方法名使用小写字母或者下划线开头.
+
+    首字母后可以跟着字母, 数字或者下划线, 但@后面不能紧跟着数字.
+
+5. 一些基本的IO函数
+   print "arg1", "arg2"                  # 输出所有的参数
+   puts "arg1", "arg2"                   # puts会在每个参数后面加一个换行
+   printf "%4.3f and %s", 3.8, "string"  # 格式化输出3.800(总共4位, 小数点后面3位) and string
+
+6. 数据类型
+<1> ruby的数据类型有数字, 字符串, 数组, 哈希, 区间, 正则表达式
+
+<2> 数字
+    分为: 整型和浮点型
+    1, 3, 5
+    1.5, 0.99, 7.0  浮点型的小数点后必须有数字(1.e3不行, 1.1e3可以)
+    077表示八进制
+    0xff表示16进制
+    0b11110000表示二进制
+
+<3> 字符串
+    是在"单引号"或者"双引号"之间的代码
+
+<4> 数组
+    数组的下标从0开始, 每个元素可以不同
+    [1, "string1", [a, b, c], 78, "string2"]
+
+<5> 区间
+    1..5表示:  1,2,3,4,5
+    1...5表示: 1,2,3,4
+
+7. "赋值"和"条件运算"
+<1> 赋值
+    使用=完成赋值
+    a = 1; b = 2 + 3;
+    a, b = b, a;     # 同时交换a, b的值, a = 5, b = 1
+    a = b = 4 + 2;
+    a = (b = 2 + 3) + 3;
+    x = 4;
+    a, b, c = x, (x + 1), (x + 2)
+
+<2> 条件运算
+    ==      等于       比较两个对象的值是否相等 
+    !=      不等于     比较两个对象的值是否不相等    
+    eql?    比较两个对象的值, 类型是否相等          
+    equal?  比较两个对象在内存中的地址是否相等 
+ 
+    <==>    比较两个对象的大小, 小于, 等于, 大于分别返回-1, 0, 1
+    == =    右边的对象是否在左边的区间之内, 返回true或者false
+    =~      用来比较是否符合一个正则表达式, 返回模式在字符串中被匹配到的位置, 否则返回nil
+    !~      断言不符合一个正则表达式, 返回true或者false
+    <=, <, >, >=  小于等于, 小于, 大于, 大于等于
+
+    例子1:
+    a = 1; b = 1.0;
+    a == b;  # 返回true
+    a.eql?(b);  # 返回false, 因为a为整型, b为浮点型
+
+    例子2:
+    a = 1.0; b = 1.0;
+    a.equal?(b); # 返回false
+    a = b;
+    a.equal?(b); # 返回true
+
+    例子3:
+    "aab" <=> "acb"; # 返回-1, 按照ASCII码大小
+    [5] <=> [4, 9];  # 返回1, 5 > 4
+    (0..9) == = 3.4; # 返回true
+    ('a'..'f') == = 'e'; # 返回true
+    
+8. 条件判断语句:
+<1> 单行if语句(如果)
+    if 条件 then 语句1; 语句2; 语句... end;
+    (语句1; 语句2; 语句...) if 条件
+
+<2> 多行if语句
+    if 条件
+      语句1; 语句2; 语句...
+    elsif 条件
+      语句1; 语句2; 语句...
+    else
+      语句1; 语句2; 语句...
+    end
+
+<3> unless语句
+    unless 条件 等价于  if not 条件
+
+<4> case语句
+    case 对象
+      when 可能性1
+        语句1; 语句2; 语句...
+      when 可能性2
+        语句1; 语句2; 语句...
+      else
+        语句1; 语句2; 语句...
+    end
+
+    例子:
+    x = 3;
+    case x
+      when 1..2
+        print "x=",x,"在1..2中"
+      when 4..9, 0
+        print "x=",x,"在4..9,0中"
+      else
+        print "x=",x,"在其它中"
+    end
+
+9. 循环语句
+<1> while循环
+    while 条件
+      语句1; 语句2;语句...
+    end
+
+<2> 单行while循环
+    (语句1; 语句2;语句...) while 条件
+
+<3> until循环(直到...)
+    "while和until的关系"于"if跟unless关系"一样
+    until 条件 等价于 while not 条件
+
+    例子:
+    x = 1;
+    while x < 10
+      print x, " "
+      x = x + 1
+    end
+
+    x = 1;
+    until x >= 10
+      print x, " "
+      x = x + 1
+    end
+
+<4> for...in循环
+    for 变量 in 对象
+      语句1; 语句2; 语句...
+    end
+
+    对象可以是数组, 区间, 或者集合...
+    for i in 1..9
+      print i, ""
+    end
+
+<5> break, next, redo, retry
+    break - 跳出当层循环
+    next  - 忽略本次循环的剩余部分, 进行下一次循环
+    redo  - 重新开始循环, 还是从这一次开始
+    retry - 重新开始循环
+
+<6> times, upto, downto, each, step
+    3.times {print "Hi"} # "HiHiHi"
+    1.upto(9) {|i| print i if i < 7} #123456
+    9.downto(1) {|i| print i if i < 7} #654321
+    (1..9).each{|i| print i if i < 7} #123456
+    0.step(11, 3){|i| print i} # 0369
+
+<7> 补充一个数组的小例子:
+    $arr=[]        # 定义一个空的全局数组
+    $arr[1] = 1
+    $arr << 2      # 将2加入到数组$arr
+    for i in 0..2
+      print $arr[i], " "  # 输出: nil 1 2
+    end
+
+<8> 补充ruby的异常处理方式:
+    于Java中的try...catch...finally...throw相对应
+    Ruby: begin/end ..rescue...ensure...raise
+
+10. ruby的面向对象
+<1> 封装
+    我们要定义一个Person类 (类的手字母要大写), 
+    属性名字有@name, @age, @motherland (实例变量用@开头) 
+    有一个talk方法 (方法名和参数用消息字母或者下划线开头)
+    class Person
+      def initialize( name, age=18)
+        @name = name
+        @age = age
+        @motherland = "china"
+      end # 初始化结束
+      
+      def talk
+        puts "my name is"+@name, @age.to_s
+        if @motherland == "china"
+          puts "I am chinese."
+        else
+          puts "I am a foreigner."
+        end
+      end # talk结束
+      attr_writer:motherland
+    end # Person类结束
+
+    测试:
+    p1 = Person.new("liqiang", 18)
+    p1.talk
+    p2 = Person.new("huangwei")
+    p2.motherland="abc"
+    p2.talk
+
+    代码分析:
+    @age.to_s的含义是: 将数@age转换成字符串
+
+    initialize是初始化方法, 参数age有一个缺省值18,
+    "可以在任何方法内使用缺省参数", 如果有缺省参数, 必须放在
+    参数表的结尾.
+
+    attr_writer:motherland 相当于
+    def motherland=(value)
+      return @motherland=value
+    end
+    attr_reader:motherland 相当于
+    def motherland
+      return @motherland
+    end
+    实质上就是getter和setter
+    attr_accessor:motherland 相当于
+    attr_writer:motherland
+    attr_reader:motherland
+
+<2> 继承
+    在上面<1>Person类的基础上
+    class Student < Person
+      def talk
+        puts "I am a student, my name is"+@name, "age is "+@age.to_s
+      end
+    end
+
+    测试
+    s1 = Student.new("liqiang")
+    s1.talk
+ 
+    代码分析:
+    用<表示Student是Person的子类, Person的一切, Student都能继承.
+    Student重写了Person的talk方法.
+    Person类没有new函数, 是哪里来的呢?
+    ruby定义, 在定义一个类的时候, 如果没有指定父类, 则父类是Object,
+    Object含有new, initialize等方法, 只要我们不重写, 就使用Object的这些方法.
+
+<3> 多态
+    不同的子类继承一个父亲, 不仅子类和父亲的行为不同, 不同的子类之间也有差异,
+    这就是多态.
+    
+    在上面<1>,<2>Person类和Student类的基础上
+    class Worker < Person
+      def talk
+        puts "I am a worker, my name is"+@name, "age is "+@age.to_s
+      end
+    end
+
+    测试
+    w1 = Worker.new("liqiang")
+    w1.talk
+
+    Student和Worker同样继承自Person, 但是他们的talk方法的行为是不同的.
+
+11. 详解变量 - 动态类型
+
+12.
+
+13.
+
+14.
+
+15.
+
+
+
+
+    
+
+

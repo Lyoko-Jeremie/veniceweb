@@ -1,0 +1,42 @@
+在Ubuntu上安装Ruby on Rails
+
+1. 安装Ruby 1.8.7
+下载地址: http://rubyonrails.org/download
+tar -xzvf ruby-1.8.7-p174.tar.gz
+cd ruby-1.8.7-p174
+./configure
+make
+sudo make install
+
+安装完成后检测是否安装成功:
+ruby -v
+ruby 1.8.7 (2009-06-12 patchlevel 174) [i686-linux]
+
+
+2. 安装RubyGems
+tar -xzvf rubygems-1.3.6.tgz
+cd rubygems-1.3.6
+sudo ruby setup.rb
+
+安装完成后检测是否安装成功:
+gem -v
+1.3.6
+
+
+3. 安装Rails
+sudo install rails
+
+安装完成后检测是否安装成功:
+rails -v
+Rails 2.3.5
+
+4. 产生一个新的Rails程序
+rails /home/kexiao/tmp/railsdemo
+cd /home/kexiao/tmp/railsdemo
+ruby script/server
+
+访问下面的URL测试效果
+http://localhost:3000
+
+
+
