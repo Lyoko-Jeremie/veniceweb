@@ -1,0 +1,20 @@
+{% extends "../base.html" %}
+{% block title %}
+login
+{% endblock %}
+
+{% block content %}
+
+<h2>请登录</h2>
+<i>(使用下面的, 用户名: 'liqiang' 密码: '123456')</i> 
+
+<form action="/login/create" method="post">
+  Username: <input type="text" name="usr" value=""/>
+  <br/>
+  Password: <input type="text" name="pwd" value=""/>
+  <br/><br/>
+  <input type="submit" name="submit" value="登录"/>
+</form>
+
+{% endblock %}
+

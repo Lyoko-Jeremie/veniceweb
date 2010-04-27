@@ -1,0 +1,334 @@
+html {
+background:#E2F2EB none repeat scroll 0 0;
+color:#000000;
+}
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td {
+margin:0;
+padding:0;
+}
+table {
+border-collapse:collapse;
+border-spacing:0;
+}
+fieldset, img {
+border:0 none;
+}
+address, caption, cite, code, dfn, em, strong, th, var {
+font-style:normal;
+font-weight:normal;
+}
+li {
+/*list-style-image:none;
+list-style-position:outside;
+list-style-type:none;
+*/
+}
+
+ol {
+	margin-left:20px;
+	margin-bottom:20px;
+}
+caption, th {
+text-align:left;
+}
+h1, h2, h3, h4, h5, h6 {
+font-size:100%;
+font-weight:normal;
+}
+q:before, q:after {
+content:'';
+}
+abbr, acronym {
+border:0 none;
+font-variant:normal;
+}
+sup {
+vertical-align:text-top;
+}
+sub {
+vertical-align:text-bottom;
+}
+input, textarea, select {
+font-family:inherit;
+font-size:inherit;
+font-weight:inherit;
+}
+legend {
+color:#000000;
+}
+html, body {
+border:medium none !important;
+font-size:small;
+}
+body {
+font-family:tahoma,sans-serif;
+font-size:small;
+}
+h1, h2, h3, .ui-widget-header {
+font-family:'trebuchet ms',trebuchet,verdana;
+font-weight:bold;
+}
+h1 {
+font-size:large;
+font-weight:bold;
+padding:10px 0;
+}
+strong {
+font-weight:bold;
+}
+#page-header h1 {
+position:relative;
+text-align:center;
+}
+#tabs {
+border:medium none;
+height:100%;
+}
+#tabs ul.ui-tabs-nav {
+background-image:none !important;
+}
+#sub-tabs {
+border:medium none;
+padding:0;
+}
+#sub-tabs ul.ui-tabs-nav {
+padding-left:2px;
+}
+#sub-tabs ul.ui-tabs-nav li a {
+font-size:small;
+padding:3px 10px;
+}
+#sub-tabs .ui-widget-content {
+border-top:medium none;
+}
+.ui-widget {
+font-size:1em;
+}
+a.icon {
+display:block;
+height:16px;
+width:16px;
+z-index:10;
+}
+a.home {
+left:10px;
+position:absolute;
+top:15px;
+}
+div.step-holder {
+margin:15px 0;
+}
+span.step-counter {
+display:block;
+float:left;
+font-size:large;
+margin:0 10px 10px 0;
+padding:2px 10px;
+}
+#twitter {
+position:absolute;
+right:8px;
+top:5px;
+z-index:500;
+}
+#twitter a {
+font-family:arial;
+text-decoration:none;
+vertical-align:top;
+}
+#twitter img {
+border:medium none;
+}
+#paypal {
+background-color:transparent;
+border:medium none;
+float:right;
+margin-top:-8px;
+padding:0 5px;
+}
+td {
+vertical-align:top;
+}
+p {
+margin:10px 0;
+}
+dl {
+margin-top:0;
+}
+dt {
+color:#AA0000;
+font-weight:bold;
+}
+dd {
+color:#555555;
+margin:0 0 20px;
+}
+dl.options {
+margin:10px 25px;
+}
+hr {
+height:1px;
+}
+#content {
+padding:20px;
+}
+#busy {
+background-color:#E95555;
+border:1px ridge #CCCCCC;
+color:#EEEEEE;
+display:none;
+padding:3px;
+position:absolute;
+right:7px;
+top:7px;
+}
+#footer {
+border-top:1px solid #DDDDDD;
+color:#888888;
+margin-top:30px;
+padding-top:20px;
+}
+a.external {
+background-image:url(images/external.png);
+background-position:right center;
+background-repeat:no-repeat;
+padding-right:12px;
+}
+pre {
+clear:both;
+margin:10px 0;
+}
+pre {
+background-color:#EEEEEE;
+border-color:#DDDDDD;
+border-style:solid;
+border-width:1px 1px 1px 5px;
+font-size:small;
+overflow-x:auto;
+padding:15px;
+}
+pre.normal {
+background-color:transparent;
+border-color:-moz-use-text-color;
+border-style:none;
+border-width:medium medium medium 0;
+overflow-x:auto;
+}
+code {
+font-size:108%;
+font-style:normal;
+padding:0;
+}
+code.method {
+display:block;
+font-size:150%;
+margin-top:20px;
+}
+code.inline {
+background-color:#FFFFCC;
+}
+.jscom, .mix htcom {
+color:#4040C2;
+}
+.com {
+color:green;
+}
+.regexp {
+color:maroon;
+}
+.string {
+color:teal;
+}
+.keywords {
+color:blue;
+}
+.global {
+color:#000088;
+}
+.numbers {
+color:#888800;
+}
+.comm {
+color:green;
+}
+.tag {
+color:blue;
+}
+.entity {
+color:blue;
+}
+.string {
+color:teal;
+}
+.aname {
+color:maroon;
+}
+.avalue {
+color:maroon;
+}
+.jquery {
+color:#0000AA;
+}
+.plugin {
+color:red;
+}
+.php .tag {
+color:purple;
+}
+.php .com {
+color:green;
+}
+.php .const1 {
+color:maroon;
+}
+.php .const2 {
+color:maroon;
+}
+.php .function {
+color:#E17100;
+}
+.php .global {
+color:maroon;
+}
+.php .keyword {
+color:blue;
+}
+.php .mlcom {
+color:gray;
+}
+.php .name {
+color:maroon;
+}
+.php .number {
+color:#888800;
+}
+.php .string1 {
+color:teal;
+}
+.php .string2 {
+color:teal;
+}
+.php .value {
+color:gray;
+}
+.php .variable {
+color:#E15C03;
+}
+.css .mlcom {
+color:#4040C2;
+}
+.css .color {
+color:black;
+}
+.css .string {
+color:teal;
+}
+.css .attrib {
+color:blue;
+}
+.css .value {
+color:navy;
+}
+.css .number {
+color:#888800;
+}

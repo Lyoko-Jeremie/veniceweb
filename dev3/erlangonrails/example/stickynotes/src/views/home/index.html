@@ -1,0 +1,111 @@
+<html class="ui-widget-content">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <title>StickyNotes Demo</title>
+    <link type="text/css" href="/static/css/core.css" rel="stylesheet"/>
+    <link type="text/css" href="/static/css/ui-lightness/jquery-ui-1.8.custom.css" rel="stylesheet"/>
+    <link type="text/css" href="/static/css/form.css" rel="stylesheet"/>
+    <script type="text/javascript" src="/static/js/core.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-1.8.custom.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(
+        function() {
+          $("#tabs").tabs();
+        }
+      );
+    </script>
+  </head>
+
+  <body style="cursor: auto;">
+    <div id="page-header" class="ui-widget-header">
+      <h1>Erlang On Rails Sticky Notes Demo</h1>
+    </div>
+
+    <div id="tabs" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+
+      <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+	<li class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active">
+	  <a href="#tab1">&nbsp;开始&nbsp;</a>
+	</li>
+	<li class="ui-state-default ui-corner-top">
+	  <a href="#tab2">&nbsp;例子&nbsp;</a>
+        </li>
+	<li class="ui-state-default ui-corner-top">
+	  <a href="#tab3">&nbsp;选项&nbsp;</a>
+        </li>
+	<li class="ui-state-default ui-corner-top">
+	  <a href="#tab4">&nbsp;下载&nbsp;</a>
+        </li>
+      </ul>
+      
+      <div id="tab1" class="ui-tabs-panel ui-widget-content ui-corner-bottom" data-tabid="getting-started">
+      </div>
+      
+      <div id="tab2" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" data-tabid="demo">
+
+	<div id="notes" class="width: 1000px; height: 600px;">
+	  <div id="sticky-container" class="sticky-container">
+	    <button id="add_note">添加Note</button>
+	  </div>
+	</div>
+	<script type="text/javascript" src="/static/js/jquery.stickynotes.js"></script>
+        <link type="text/css" href="/static/css/jquery.stickynotes.css" rel="stylesheet"/>
+	<script type="text/javascript" charset="utf-8">
+	  
+	  jQuery(document).ready(function() {
+	    function nullcallback(data) {};
+            function sync_server(note, action) {
+              var json = 
+                {
+	          "action": action,
+	          "note": {
+	            "id": note.id,
+	            "text": note.text,
+	            "pos_x": note.pos_x,
+	            "pos_y": note.pos_y,
+	            "width": note.width,
+	            "height": note.height,
+                   }
+                };
+	      data = JSON.stringify(json);
+	      $.post("/notes",{"json":data}, nullcallback, "json");
+            };
+            
+            var created = function(note) {
+	      sync_server(note, "create");
+            };
+	    var edited = function(note) {
+	      sync_server(note, "edit");
+            };
+	    var deleted = function(note) {
+	      sync_server(note, "delete");
+	    };
+
+            var options = {
+                    notes:[{"id":1,
+                           "text":"在这里添加内容",
+                           "pos_x": 50,
+                           "pos_y": 50,
+                           "width": 200,
+                           "height": 200}],
+	            createCallback: created,
+	            editCallback: edited,
+	            deleteCallback: deleted
+            };
+            jQuery("#notes").stickyNotes(options);
+          }); 
+	</script>
+      </div>
+
+      <div id="tab3" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" data-tabid="demo">
+	
+      </div>
+
+      <div id="tab4" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" data-tabid="demo">
+      </div>
+
+    </div>
+  </body>
+  
+</html>

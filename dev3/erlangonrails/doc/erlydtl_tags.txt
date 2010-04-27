@@ -1,0 +1,83 @@
+介绍ErlyDTL所支持的Tags
+
+1. 支持的Tags
+<1> autoescape
+<2> block
+<3> cycle(but only in loop context)
+<4> extends
+<5> for
+<6> if 
+     loops over a list or tuple
+     also resolves nested, dot-separated variable attributes
+<7> ifequal
+<8> ifnotequal
+<9> include
+<10> now
+
+2. 例子:
+<1> autoescape
+
+<2> block
+
+<3> cycle
+
+<4> extends
+
+<5> for
+例子1: 
+erlydtl:compile("tpl.html", test_view),
+test_view:render([{name, "liqiang"},
+		  {age, 23},
+		  {friends, ["user1", <<"user2">>, 12345]}]).
+$tpl.html
+hello, {{name}}, your age is {{age}}
+your friends:
+{% for friend in friends %}
+  {{friend}}
+{% endfor %}
+
+例子2:
+erlydtl:compile("tpl.html", test_view),
+test_view:render([{dict1, [["key1", "val1"], ["key2","val2"]]},
+		  {dict2, [{"k1", "v1"}, {"k2","v2"}]}]).
+$tpl.html
+{% for key, val in dict1 %}
+  {{key}} and {{val}}
+{% endfor %}
+{% for key, val in dict2 %}
+  {{key}} and {{val}}
+{% endfor %}
+
+<6> if
+例子1:
+erlydtl:compile("tpl.html", test_view),
+test_view:render([{dict1, [{"k1","v1"}, {"k2","v2"}]},
+		  {dict2, []}]).
+$tpl.html
+{% if dict1 %}
+  number of dict1: {{dict1|length}}
+{% else %}
+  dict1 no data
+{% endif %}
+
+{% if dict2 %}
+  number of dict2: {{dict2|length}}
+{% else %}
+  dict2 no data
+{% endif %}
+
+<7> ifequal
+
+<8> ifnotequal
+
+<9> include
+例子1:
+Val = erlydtl:compile("tpl.html", test_view),
+test_view:render([{val1, "val1"},
+		  {val2, "val2"}]).
+$tpl.html
+this is val1: {{val1}}
+$iner.html
+this is val2: {{val2}}
+
+<10> now
