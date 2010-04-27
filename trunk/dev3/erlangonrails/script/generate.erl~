@@ -1,0 +1,25 @@
+#!/usr/bin/env escript
+%% -*- mode: erlang -*-
+-export([main/1]).
+
+%% External API
+
+main([controller, Controller]) ->
+    ensure(),
+    io:format("generate a controller: ~p~n", [Controller]);
+main([model, _Model]) ->
+    ensure(),
+    io:format("did not implement the command!~n", []);
+main(_) ->
+    usage().
+
+%% Internal API
+
+ensure() ->
+    code:add_patha(filename:join(filename:dirname(escript:script_name()),
+                                 "../ebin")).
+
+usage() ->
+    io:format("usage: ~s [controller] [Name]~n",
+              [filename:basename(escript:script_name())]),
+    halt(1).

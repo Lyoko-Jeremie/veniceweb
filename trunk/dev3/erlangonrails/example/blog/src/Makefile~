@@ -1,0 +1,9 @@
+include ../support/include.mk
+
+all: $(EBIN_FILES)
+	(cd controllers;$(MAKE))
+	(cd controllers:$(MAKE))
+clean:
+	rm -rfv $(EBIN_FILES)
+	(cd controllers;$(MAKE) clean)
+	(cd helpers;$(MAKE) clean)

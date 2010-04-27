@@ -1,0 +1,14 @@
+FAQ:
+
+1. 如何在ErlangOnRails app中启动一个应用程序?
+
+   例如, 如何在app启动的时候同时启动mnesia?
+   在skel.erl中的start/0函数中添加:
+   start() ->
+       skel_deps:ensure(),
+       ensure_started(crypto),
+       ensure_started(mnesia), %% 手动添加
+       application:start(skel).
+
+2.
+

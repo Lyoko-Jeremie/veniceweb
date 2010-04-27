@@ -1,0 +1,21 @@
+-module(erails_gen).
+-export([new_controller/3]).
+-include_lib("kernel/include/file.hrl").
+
+new_controller(BaseDir, Controller, AppName) ->
+    ControllerTpl = filename:join([BaseDir, "support", AppName ++ "_controller.tpl"]),
+    ControllerRes = filename:join([BaseDir, "src/controllers", string:to_lower(Controller) ++ "_controller.erl"]),
+    case file:read_file_info(ControllerTpl) of
+	{ok, #file_info{type=regular, mode=Mode}} ->
+	    {ok, B} = file:read_file(ControllerTpl),
+            S = re:replace(binary_to_list(B), "xxxxxx", Controller,
+                           [{return, list}, global]),
+            ok = file:write_file(ControllerRes, list_to_binary(S)),
+            ok = file:write_file_info(ControllerRes, #file_info{mode=Mode}),
+	    io:format("generate controller: ~p success!~n", [Controller]),
+            ok;
+	_ ->
+	    io:format("generate controller: ~p error!~n", [Controller]),
+	    error
+    end.
+    

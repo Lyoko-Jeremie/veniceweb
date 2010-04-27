@@ -1,0 +1,21 @@
+{% extends "../base.html" %}
+
+{% block content %}
+
+{% include "flash.html" %}
+
+{% if blogs %} 
+  {% for blog in blogs %}
+   <h2>{{ blog.title }}</h2>
+      {{ blog.body }}
+      <br/><br/>
+      <i>时间: {{ blog.posted }}</i>
+      <br/>
+   {% endfor %}
+      <br/>
+   <a href="/home/new">新增一篇Blog!</a>
+{% else %}
+  <b>没有</b>文章<a href="/home/new">新增一篇Blog!</a>
+{% endif %}  
+
+{% endblock %}
