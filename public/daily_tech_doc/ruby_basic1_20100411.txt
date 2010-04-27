@@ -57,8 +57,8 @@ BEGIN模块相当于C语言中的宏, END模块做一些收尾工作, 有了requ
 <2> ruby的标识名区分大小写
 <3> 使用约定(用首字母来区分)
     全局变量使用$作前缀
-    实例变量使用@作前缀
-    类变量使用@@作前缀
+    "实例变量"使用@作前缀(于类相关的, 区分"实例变量"和"类变量")
+    "类变量"使用@@作前缀
     "类名, 模块名, 和常量"应该"大写字母开头"
     局部变量, 方法参数, 方法名使用小写字母或者下划线开头.
 
@@ -316,14 +316,569 @@ BEGIN模块相当于C语言中的宏, END模块做一些收尾工作, 有了requ
     Student和Worker同样继承自Person, 但是他们的talk方法的行为是不同的.
 
 11. 详解变量 - 动态类型
+<1> 变量的几个要素, 变量名, 变量值, 变量类型, 变量作用域, 由编译内核(解释内核)在"运行
+    时判断变量类型"的语言叫做"动态语言"
+    ruby是动态类型语言, 但还是有基本类型的, 解释器会在给变量第一次赋值的时候赋予起类型的.
+    a = 5
+    b = "hh"
+    puts "a=#{a}"
+    puts "b=#{b}"
 
-12.
+<2> ruby中一切都是对象
+    ruby中一个变量被赋予了某种类型, 你可以随时改变赋予它"其它类型的值"
+    a = 5
+    print "a=",a,"  ", a.class, "\n" # 输出 a=5  Fixnum
+    a = "hh"
+    print "a=",a,"  ", a.class, "\n" # 输出 a=hh  String
 
-13.
+<3> Java等语言在编译的时候就完成了类型匹配检测, 是"前期绑定", Ruby是在运行中检测, 
+    不是检测类型匹配, 而是检测语法, 只要语法定义不矛盾, 就能通过.
 
-14.
+12. Ruby是动态语言, 在程序运行中, 方法, 属性可以动态的添加, 修改, 或者删除.
+测试test.rb
+class Person
+  def talk
+    puts "today is saturday"
+  end
+end
 
-15.
+p1 = Person.new
+p1.talk
+
+class Person
+  def talk  # 修改talk方法
+    puts "today is #@data"
+  end
+  attr_writer:data
+end
+p2 = Person.new
+p2.data = "new saturday"
+p2.talk
+
+class Person
+  undef talk # 删除talk方法
+end
+
+p3 = Person.new
+#p3.talk 没定义
+
+13. 编码建议
+<1> 常量全用大写字母, 用下华线分隔单词MAX, ARRAY_LENGTH等
+<2> 类和模块名用大写字母开头的单词组合而成, MyClass, Person等
+<3> 变量和参数用小写字母开头的参数组成, currentValue, name等
+    在ruby中有时候将!或者?附于某个方法名后面, 用下划线分隔单词, 如talk, is_prime?
+    !表示方法具有破坏性, 有可能会改变传入的参数
+    ?表示是一个布尔方法, 返回true或者false
+<4> 类名, 模块名, 变量名, 参数名最好使用"名词"或者"形容词+名词"
+    方法名最好使用"动词"或者"动词+名词"
+    如aStudent.talk
+<5> 空格和圆括号
+    关键子之后要留空格
+    ,逗号;分号后面要留空格, 前面不需要留空格
+    赋值操作, 比较操作, 算术操作, 逻辑操作等二元操作符的前后都应该加空格
+    例如: +, +=, <, >=, +, *, %, &&, ||等
+    [], ., ::这类操作前后不加空格
+    函数名之后的括号()不要留空格, 以区别关键字.
+<6> ruby中的括号常被省略
+    def talk name
+      "Hi!" + name
+    end
+    puts talk "liqiang"
+    puts talk("liqiang")
+    puts(talk "liqiang")
+    puts(talk("liqiang"))
+<7> 括号()可以把多条语句作成一个语句集合
+    (语句1; 语句2; 语句...) if 条件
+<8> 使用return
+    定义方法的时候, 如果最后一行是表达式, 表达式的值会自动返回.
+    如果最后一行不是表达式, 就什么也不返回.
+
+14. 深入面向对象
+<1> 重载和重写 - overload, override
+    overload方法: 方法名相同, 参数列表不同(参数个数或者类型), 根据不同的参数调用返回不同的方法
+    override方法: 子类有一个方法, 方法名, 参数列表, 返回类型和父类完全一样,
+    调用时会调用子类的方法而避开调用父类的方法.
+
+    ruby语言只有override, 没有严格意义上的overload.
+    ruby支持"缺省参数"
+    def sum(a, b=5)
+      a + b
+    end
+    puts sum(3, 6)
+    puts sum(3)
+
+    ruby支持可变参数
+    def sum(*num)
+      numSum = 0;
+      num.each(|i| numSum += i)
+      return numSum
+    end
+    puts sum()
+    puts sum(3, 4)
+    puts sum(1, 2, 3, 4)
+
+    由于缺省参数和可变参数的支持, 由参数个数不同而产生的overload
+    在ruby中不再有用; 
+    ruby在定义方法的时候不指定参数类型, 所以由参数类型不同而产生
+    的overload在ruby中也不再有用
+
+    假如同一个类中有两个同名的方法, 总是
+    "写在后面的方法被执行"
+    class Person
+      def talk(a)
+        puts "verson 1"
+      end
+      def talk(a, b=1)
+        puts "verson 2"
+      end
+    end
+
+    p.talk(2)    # 输出verson 2
+    p.talk(2,3)  # 输出verson 2
+
+<2> 增强父类的方法
+    使用super关键字来增强父类方法:
+    class Person
+      def talk(name)
+        print "my name is #{name}."
+      end
+    end
+    class Student < Person
+      def talk(name)
+        super   # 调用父类的方法
+        print " and i am a student.\n"
+      end
+    end
+
+    
+<3> 实例变量, 类变量, 类方法
+    区别几个概念"实例变量", "方法", "类变量", "类方法".
+
+    如果一个变量只能被某个实例使用, 就是实例变量;
+    如果一个变量能被某个类的所有实例使用, 即使类变量.
+    
+    常量可以定义在类和模块中, 不能定义在方法中. 访问类和模块中的常量,
+    使用::
+    全局变量用$开头
+    实例变量用@开头
+    类变量用@@开头
+
+    例子:
+    class StudentClass
+      @@count = 0             # 类变量, 初始化
+
+      def initialize(name)
+        @name = name
+        @@count += 1
+      end
+
+      def talk
+        puts "my name is #@name, and my class has #@@count students"
+      end
+  
+      def StudentClass.count   # 类方法
+        puts "the class has #@@count students"
+      end
+
+    end
+    于全局变量和实例变量不同, 类变量在使用前必须初始化, 否则默认是nil
+    类方法, 相当于C++中的static方法, 定义类方法要在方法的名字前加一个类名和.
+    
+    测试:
+    p1 = StudentClass.new("liqiang")
+    p2 = StudentClass.new("huangwei")
+    p1.talk
+    p2.talk
+    StudentClass.count  # 使用类方法
+
+<4> 单例方法
+    在ruby中, 可以给具体的实例对象添加方法, 叫做"单例方法"
+    这个方法只属于这个实例对象.
+
+    定义的方式是: 首先要生成一个对象, 然后在方法名前加上对象名和一个点.
+
+    例如:
+    class Person
+      def talk
+        puts "hi"
+      end
+    end
+    
+    p1 = Person.new
+    p2 = Person.new
+    def p2.talk
+      puts "this is p2"
+    end
+    def p2.laugh
+      puts "this is p2 laugh"
+    end
+    p1.talk
+    p2.talk
+    p2.laugh
+
+<5> 访问控制
+    3种控制权限
+    public      - 可以被定义它的类和子类访问, 可以被类和子类的实例对象调用
+    protected   - 可以被定义它的类和子类访问, 不能被类和子类的实例对象直接调用,
+                  "可以在类和子类中指定给实例对象"
+    private     - 可以被定义它的类和子类访问, 不能被类和子类的实例对象直接调用, 
+                  "不可以在类和子类中指定给实例对象"
+   
+    方法默认都是public的(除了initialize是私有的)
+
+    例子1:
+    (只有public方法可以被实例对象调用, protected, private不能被实例对象调用)
+    class Person
+      def talk
+        puts "public puts"
+        speak
+      end
+      def speak
+        puts "protected speak"
+        laugh
+      end
+      def laugh
+        puts "private laugh"
+      end
+      protected:speak
+      private:laugh
+    end
+    测试:
+    p1 = Person.new
+    p1.talk
+    #p1.speak  不能调用protected方法
+    #p1.laugh  不能调用private方法
+
+    例子2:
+    (procted和private方法都可以在类和子类的内部访问)
+    class Person
+      def speak
+        "protected: spaeak"
+      end
+      def laugh
+        "private: laugh"
+      end
+      protected:speak
+      private:laugh
+    end
+
+    class Student < Person
+      def useSpeak
+        puts speak
+      end
+      def useLaugh
+        puts laugh
+      end
+    end
+    测试:
+    s1 = Student.new
+    s1.useSpeak
+    s1.useLaugh
+
+    例子3:
+    (protected方法在类和子类中可以"指定给实例对象", private"不能指定给实例对象")
+    class Person
+      def speak
+        "protected:speak"
+      end
+      def laugh
+        "private:laugh"
+      end
+      protected:speak
+      private:laugh
+
+      def useSpeak(another)
+        puts another.speak
+      end
+
+      def useLaugh(another)
+        puts another.laugh # 错误, private"不能指定给类或者子类的实例对象"
+      end
+    end
+    测试:
+    p1 = Person.new
+    p2 = Person.new
+    p1.useSpeak(p2)
+    p1.useLaugh(p2)  # 错误
+
+<6> ruby动态语言的特性, 可以动态的修访问属性
+    class Person
+      private # private后面的方法是private
+      def laugh
+        puts "Person-laugh"
+      end
+    end
+    p1 = Person.new
+    #p1.laugh 错误, 是private
+    class Person
+      public:laugh
+    end
+    p1.laugh # 正确, 动态修改为public
+    
+
+15. 模块
+<1> 模块的规则
+    定义方式: module ... end
+    模块不能有实例对象
+    模块不能有子类
+
+<2> 模块实质上"提供了一个命名空间", 防止命名冲突
+    例子1:
+    module Mod1
+      def myprint
+        puts "Mod1-myprint"
+      end
+    end
+    module Mod2
+      def myprint
+        puts "Mod2-myprint"
+      end
+    end
+    # 使用方式
+    include Mod1
+    myprint
+    include Mod2
+    myprint
+
+    例子2(类似"类方法"的定义方式):
+    module Mod1
+      def Mod1.myprint
+        puts "Mod1-myprint"
+      end
+    end
+    module Mod2
+      def Mod2.myprint
+        puts "Mod2-myprint"
+      end
+    end
+    #使用方式
+    Mod1.myprint
+    Mod2.myprint
+
+<3> Mix-in与多继承
+    多继承的本质就是: 同时包含多个父亲的特性.
+    ruby是单继承, 可以通过Mix-in实现多继承的优点,
+    模块的另外一个优点实质上实现了一个多继承的功能.
+    
+    两种Mix-in的方式: include和extend
+    module Mod
+      def myprint
+        puts "this is the common print"
+      end
+    end
+    class Person
+      def talk
+        puts "this is person talk"
+      end
+    end
+    例子1: include
+    class Student < Person
+      include Mod   # 具备了Mod的功能
+    end
+    s1 = Student.new
+    s1.talk
+    s1.myprint
+    
+    例子2: extend
+    class Student < Person
+    end
+    s1 = Student.new
+    s1.extend(Mod)  # 具备了Mod的功能
+    s1.talk
+    s1.myprint
+
+<4> require和load
+    将3中的例子, Person放到person.rb, Mod放到mod.rb,
+    可以这样使用:
+    require "person.rb"  # require方法包含另一个文件, 文件名是一个字符串; 或者 require "person"
+    require "mod.rb"
+    class Student < Person
+      include Mod
+    end
+   
+    上面的例子可以修改为:
+    load "person.rb"
+    load "mod.rb"
+    
+    区别:
+    require加载文件只加载一次, 遇到同一文件自动忽略, 不同路径下的同名文件会加载多次;
+    load会多次加载;
+    require加载文件可以不用加后缀, load加载文件必须加后缀;
+    require一般用于加载库, load用于加载配置文件
+    include, extend用于包含模块.
+    
+17. 数组
+<1> 建立数组
+    arr1 = []
+    arr2 = Array.new
+    arr3 = [3,4,5]
+
+<2> 访问数组元素
+    arr = [3,4,5,6,7]
+    puts arr[0]
+    puts arr.first
+    puts arr.last
+    puts arr[-1] # 7
+    puts arr[-2] # 6
+    puts arr[arr.length - 1] # 7
+    puts arr[arr.size - 1] # 7
+    print arr[1..3], "\n"  #456, 
+    print arr[-3,2], "\n"  #56, 第一个数字表示开始的位置, 第二个数字表示元素的个数
+
+<3> 增加和删除数组元素
+    arr.join(",")
+    arr.push(item)
+    arr.delete(item)
+    arr.delete_at(item)
+    arr.insert(index, item)
+    arr<<item1<<item2
+    arr.pop
+    arr.shift
+    arr.clear
+
+    print arr.join(","), "\n"的含义是将数组转换成字符串输出, 每个元素之间
+    用,隔开.最后输出换行
+    
+    例子:
+    arr = [4,5,6]
+    print arr.join(","), "\n" # 输出4,5,6
+    arr[4] = "m"
+    print arr.join(","), "\n" # 输出4,5,6,,m
+    print arr[3], "\n" # 输出nil
+
+    arr.delete_at(3) # 注意:删除索引位置为3的元素, 后面的索引自动向前移动一位
+    print arr.join(","), "\n" # 输出4,5,6,m
+
+    arr[2] = ["a", "b", "c"] # 将2号元素重新赋值
+    print arr.join(","), "\n" # 输出4,5,a,b,c,m
+    print arr[2], "\n" # 输出abc
+    
+    arr[0..1] = [7, "h", "b"] # 注意: 把0..1号元素题换成[7, "h", "b"]
+    print arr.join(","), "\n" # 输出7,h,b,a,b,c,m
+    
+    arr.push("b") # 加入一个新元素
+    print arr.join(","), "\n" # 输出7,h,b,a,b,c,m,b
+
+    arr.delete(["a","b", "c"]) # 删除["a","b","c"]元素
+    print arr.join(","), "\n" # 输出7,h,b,m,b
+
+    arr.delete("b") # 删除所有的"b"元素
+    print arr.join(","), "\n" # 输出7,h,m
+
+    arr.insert(3, "d") # 在位置3插入元素"d"
+    print arr.join(","), "\n" # 输出7,h,m,d
+
+    arr<<"f"<<2  #加入元素"f", 加入元素2
+    print arr.join(","), "\n" # 输出7,h,m,d,f,2
+
+    arr.pop # 删除尾元素
+    print arr.join(","), "\n" # 输出7,h,m,d,f
+
+    arr.shift # 删除首元素
+    print arr.join(","), "\n" # 输出h,m,d,f
+
+    arr.clear # 清空数组
+    print arr.join(","), "\n" # 输出
+
+<4> 数组运算
+    arr1 = [" aa ",4,5," bb "]
+    arr2 = [4,1,3,2,5]
+
+    # 加,减,乘
+    print arr1 + arr2, "\n" # 输出 aa 45 bb 41325
+    print arr1 * 2,    "\n" # 输出 aa 45 bb  aa 45 bb
+    print arr2 - arr1, "\n" # 输出 132
+
+    # 并运算, 交运算(主义并原算的位置区别)
+    print arr1 | arr2, "\n" # 输出 aa 45 bb 132
+    print arr2 | arr1, "\n" # 输出 41325 aa bb
+    print arr1 & arr2, "\n" # 输出 45
+    print arr2 & arr1, "\n" # 输出 45
+
+    # 排序和倒置
+    print arr2.sort,    "\n" # 输出 12345
+    print arr1.reverse, "\n" # 输出 bb 45 aa
+
+18. 字符串相关
+字符串是String类的对象, 一般用字面值来创建
+<1> 生成字符串
+    %q用来生成单引号字符串, %Q用来生成双引号字符串
+    %q和%Q后面跟着的都是分割符(), //, !!, {}等
+    
+    下面例子的str5是一个字符串文档, 从<<文档结束符的下一行开始,
+    直到遇到一个放置在行首的文档结束符结束.
+
+    一个数组可以用join方法转换为字符串, arr.join(","), join的参数
+    也是一个字符串.
+
+    例子:
+    str1 = "this is str1"
+    str2 = 'this is str2'
+    str3 = %q/this is str3/
+    str4 = %Q/this is str4/
+    str5 = <<OK_str
+      here is string document, str5
+        line one;
+        line two;
+        line three;
+      ok 
+    OK_str
+    测试:
+    puts str3
+    puts str4
+    puts str5
+
+<2> 字符串操作
+    str = 'this' + " is"
+    str += " you"
+    str<<" string"<<"."
+    puts str * 2  # this is you string.this is you string.
+    puts str[-12, 12] # you string.
+
+<3> 字符串转义
+    双引号括起来的字符串会有一些转义字符, 如"\n"表示换行, "\t"表示制表符等.
+    单引号字符串不会对里面的字符进行转义, 除了'单引号之外.
+
+<4> 字符串内嵌表达式
+    在双引号字符串中, 不仅有转义字符, 还可以放置任何ruby表达式到#{}中,
+    表达式的值被动态的计算出来, 放置到字符串中.
+    def hello(name)
+      "Welcome, #{name}!"
+    end
+    puts hello("liqiang") # Welcome, liqiang
+
+<5> 正则表达式
+    正则表达式描述了一种字符串匹配的模式:
+    a. 可以用来检查一个串是否有某种子串
+    b. 将匹配的字串作替换
+    c. 取出符合某种条件的子串
+
+    可以使用字面值的形式/正则表达式/来创建一个正则表达式
+    匹配一个正则表达式用=~, 匹配到返回匹配到的位置, 否则返回nil.
+    和数组一样,字符串的索引从0开始.
+
+    不匹配一个正则表达式用!~, 返回true或者false.
+  
+    str.gsub!(re, newstr) 把str中所有符合re的字串替换成newstr
+
+    str = "hello, i love you"
+    puts str =~ /love/ # 9
+    puts str =~ /i/    # 7
+    puts str =~ /abc/  # nil
+    puts str !~ /love/ # false
+    puts str !~ /i/    # false
+    puts str !~ /abc/  # true
+
+    # 使用gsub!来进行替换
+    re = /[w|W]indows/
+    str = "windows Windows operation"
+    str.gsub!(re, "Windows XP")
+    puts str
+
+
+
+
+
 
 
 

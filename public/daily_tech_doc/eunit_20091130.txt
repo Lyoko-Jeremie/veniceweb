@@ -6,7 +6,7 @@
 2. 在使用eunit的时候，需要为测试的Module添加eunit.hrl, 添加之后使你的Module具有了下面的特性:
 我的路径是: /usr/local/lib/erlang/lib/eunit-2.1.2/include/eunit.hrl
 a. 自动将以_test结尾的函数作为测试函数
-b. 为你的module添加并到处test/0函数
+b. 为你的module添加并导出test/0函数
 c. 为你提供丰富的test macro
 
 3. 一个最基本的例子: 使用xxx_test
